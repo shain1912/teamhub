@@ -29,11 +29,14 @@
 |------|------|
 | 채널/메시지 | `list_channels`, `create_channel`, `list_messages`, `post_message` |
 | 공지 | `list_announcements`, `post_announcement`, `delete_announcement` |
-| 티켓 | `list_tickets`, `create_ticket`, `update_ticket`, `delete_ticket` |
+| 티켓 | `list_tickets`, `create_ticket`, `update_ticket`, `delete_ticket`, `add_ticket_comment`, `list_ticket_comments`, `set_ticket_labels`, `assign_ticket` |
+| 스프린트 | `create_sprint`, `list_sprints`, `move_ticket_to_sprint` |
 | 프로젝트/간트 | `list_projects`, `create_project`, `list_gantt_tasks`, `create_gantt_task`, `delete_gantt_task` |
 | 체크리스트 | `list_checklists`, `create_checklist`, `add_checklist_item`, `toggle_checklist_item`, `delete_checklist` |
+| 반응/알림/감사/검색 | `add_reaction`, `list_reactions`, `create_notification`, `list_notifications`, `search`, `log_audit`, `list_audit` |
 
-채널·프로젝트·체크리스트 인자는 **이름 또는 UUID** 둘 다 받는다.
+채널·프로젝트·체크리스트·스프린트 인자는 **이름 또는 UUID** 둘 다 받는다.
+`assign_ticket` 은 담당자 변경 시 알림+감사 로그를 자동 기록한다.
 
 ## 요약 워크플로우 (LLM)
 
