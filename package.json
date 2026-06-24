@@ -1,0 +1,30 @@
+{
+  "name": "teamhub",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "TeamHub — 사내 협업 툴 (메신저 + 파일공유 + 공지 + 티켓 + 간트 + 체크리스트)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 4173"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "date-fns": "^3.6.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.12",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.6"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "teamhub-mcp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "TeamHub MCP 서버 — 에이전트/LLM가 메시지·공지·티켓·간트·체크리스트를 CRUD 하는 백엔드 도구",
+  "bin": {
+    "teamhub-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@supabase/supabase-js": "^2.45.4",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.2"
+  }
+}

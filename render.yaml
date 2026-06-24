@@ -1,0 +1,18 @@
+# Render 정적 사이트 배포 설정
+# https://render.com  →  Blueprint 으로 이 파일을 가리키면 자동 생성됩니다.
+services:
+  - type: web
+    name: teamhub
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+    routes:
+      # SPA fallback — 모든 경로를 index.html 로
+      - type: rewrite
+        source: /*
+        destination: /index.html
