@@ -101,6 +101,9 @@ export default function Tickets() {
   const [labelFilter, setLabelFilter] = useState('')
   const [assigneeFilter, setAssigneeFilter] = useState('')
 
+  // 드래그앤드롭
+  const [dragOverCol, setDragOverCol] = useState<TicketStatus | null>(null)
+
   const profileMap = useMemo(() => {
     const m = new Map<string, Profile>()
     for (const p of profiles) m.set(p.id, p)
@@ -401,8 +404,33 @@ export default function Tickets() {
         <div className="grid min-h-0 flex-1 grid-cols-4 gap-3">
           {COLUMNS.map((col) => {
             const list = filtered.filter((t) => t.status === col.key)
+            const isDropTarget = dragOverCol === col.key
             return (
-              <div key={col.key} className="flex min-h-0 flex-col rounded-xl bg-slate-100 p-2">
+              <div
+                key={col.key}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = 'move'
+                  if (dragOverCol !== col.key) setDragOverCol(col.key)
+                }}
+                onDragLeave={(e) => {
+                  // 컬럼 밖으로 완전히 벗어났을 때만 해제
+                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+                    setDragOverCol((c) => (c === col.key ? null : c))
+                  }
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  setDragOverCol(null)
+                  const id = e.dataTransfer.getData('text/plain')
+                  if (!id) return
+                  const t = tickets.find((x) => x.id === id)
+                  if (t && t.status !== col.key) move(t, col.key)
+                }}
+                className={`flex min-h-0 flex-col rounded-xl bg-slate-100 p-2 transition ${
+                  isDropTarget ? 'bg-brand/10 ring-2 ring-brand' : ''
+                }`}
+              >
                 <div className="px-1 py-1 text-xs font-semibold text-slate-500">
                   {col.label} <span className="text-slate-400">({list.length})</span>
                 </div>
@@ -410,8 +438,13 @@ export default function Tickets() {
                   {list.map((t) => (
                     <div
                       key={t.id}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', t.id)
+                        e.dataTransfer.effectAllowed = 'move'
+                      }}
                       onClick={() => setSelectedId(t.id)}
-                      className={`cursor-pointer rounded-lg border-l-4 bg-white p-2 shadow-sm hover:shadow ${PRIO[t.priority]} ${
+                      className={`cursor-pointer rounded-lg border-l-4 bg-white p-2 shadow-sm hover:shadow active:cursor-grabbing ${PRIO[t.priority]} ${
                         selectedId === t.id ? 'ring-2 ring-brand' : ''
                       }`}
                     >

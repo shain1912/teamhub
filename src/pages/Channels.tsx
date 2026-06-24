@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type { Channel, Message, Reaction, FileRow, Profile } from '../lib/types'
+import FilePreview from '../components/FilePreview'
 
 const QUICK_EMOJIS = ['👍', '✅', '🎉', '❤️', '😄']
 
@@ -18,6 +19,7 @@ export default function Channels() {
   const [body, setBody] = useState('')
   const [dragOver, setDragOver] = useState(false)
   const [thread, setThread] = useState<Message | null>(null)
+  const [preview, setPreview] = useState<FileRow | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
 
   // id -> Profile 맵 (멘션 해석 및 표시용)
@@ -224,9 +226,8 @@ export default function Channels() {
     loadFiles()
   }
 
-  async function openFile(f: FileRow) {
-    const { data } = await supabase.storage.from('files').createSignedUrl(f.storage_path, 60)
-    if (data?.signedUrl) window.open(data.signedUrl, '_blank')
+  function openFile(f: FileRow) {
+    setPreview(f)
   }
 
   const current = channels.find((c) => c.id === channelId)
@@ -354,6 +355,9 @@ export default function Channels() {
           {files.length === 0 && <p className="px-2 text-xs text-slate-400">아직 파일이 없습니다.</p>}
         </div>
       </div>
+
+      {/* 파일 라이트박스 미리보기 */}
+      {preview && <FilePreview file={preview} onClose={() => setPreview(null)} />}
     </div>
   )
 }
