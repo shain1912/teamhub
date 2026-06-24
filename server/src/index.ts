@@ -4,6 +4,7 @@
  *
  * 에이전트/LLM가 TeamHub(Supabase) 데이터를 도구 호출로 다룬다:
  * 채널/메시지, 공지, 티켓, 프로젝트/간트, 체크리스트의 읽기 + CRUD.
+ * 추가: 티켓 댓글/라벨/배정, 스프린트, 반응, 알림, 통합 검색, 감사 로그.
  *
  * 요약 워크플로우: list_messages 로 대화를 읽어 에이전트가 직접 요약한 뒤
  * post_message 또는 post_announcement 로 게시한다.
@@ -220,6 +221,277 @@ server.tool('delete_ticket', '티켓을 삭제한다.', { id: z.string() }, asyn
   const { error } = await db.from('tickets').delete().eq('id', id)
   return error ? fail(error.message) : ok({ deleted: id })
 })
+
+// ===================== 티켓 댓글 / 라벨 / 배정 =====================
+server.tool(
+  'add_ticket_comment',
+  '티켓에 댓글을 추가한다. actor_email 로 작성자를 지정할 수 있다.',
+  { ticket_id: z.string(), body: z.string(), actor_email: z.string().optional() },
+  async ({ ticket_id, body, actor_email }) => {
+    if (!UUID.test(ticket_id)) return fail(`잘못된 ticket_id(UUID 아님): ${ticket_id}`)
+    const user_id = await profileIdByEmail(actor_email)
+    const { data, error } = await db
+      .from('ticket_comments')
+      .insert({ ticket_id, body, user_id })
+      .select('*, profiles(*)')
+      .single()
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+server.tool(
+  'list_ticket_comments',
+  '티켓의 댓글을 시간순으로 반환한다.',
+  { ticket_id: z.string() },
+  async ({ ticket_id }) => {
+    if (!UUID.test(ticket_id)) return fail(`잘못된 ticket_id(UUID 아님): ${ticket_id}`)
+    const { data, error } = await db
+      .from('ticket_comments')
+      .select('*, profiles(*)')
+      .eq('ticket_id', ticket_id)
+      .order('created_at', { ascending: true })
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+server.tool(
+  'set_ticket_labels',
+  '티켓의 라벨 배열을 교체한다(전체 덮어쓰기).',
+  { ticket_id: z.string(), labels: z.array(z.string()) },
+  async ({ ticket_id, labels }) => {
+    if (!UUID.test(ticket_id)) return fail(`잘못된 ticket_id(UUID 아님): ${ticket_id}`)
+    const { data, error } = await db
+      .from('tickets')
+      .update({ labels })
+      .eq('id', ticket_id)
+      .select()
+      .single()
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+server.tool(
+  'assign_ticket',
+  '티켓 담당자를 지정한다. 담당자에게 배정 알림과 감사 로그를 남긴다.',
+  { ticket_id: z.string(), assignee_email: z.string() },
+  async ({ ticket_id, assignee_email }) => {
+    if (!UUID.test(ticket_id)) return fail(`잘못된 ticket_id(UUID 아님): ${ticket_id}`)
+    const assignee_id = await profileIdByEmail(assignee_email)
+    if (!assignee_id) return fail(`담당자를 찾을 수 없음: ${assignee_email}`)
+    const { data, error } = await db
+      .from('tickets')
+      .update({ assignee_id })
+      .eq('id', ticket_id)
+      .select()
+      .single()
+    if (error) return fail(error.message)
+    const ticket = data as { id: string; title?: string } | null
+    // 배정 알림
+    await db.from('notifications').insert({
+      user_id: assignee_id,
+      type: 'assignment',
+      title: '티켓이 배정되었습니다',
+      body: ticket?.title ?? null,
+      link: `/tickets?id=${ticket_id}`,
+      entity_type: 'ticket',
+      entity_id: ticket_id,
+    })
+    // 감사 로그
+    await db.from('audit_log').insert({
+      actor_id: assignee_id,
+      action: 'assign_ticket',
+      entity_type: 'ticket',
+      entity_id: ticket_id,
+      detail: { assignee_email },
+    })
+    return ok(data)
+  },
+)
+
+// ===================== 스프린트 =====================
+server.tool(
+  'create_sprint',
+  '스프린트를 생성한다. project 는 이름 또는 UUID(선택), 날짜는 YYYY-MM-DD.',
+  {
+    name: z.string(),
+    project: z.string().optional().describe('프로젝트 이름 또는 UUID'),
+    start_date: z.string().optional().describe('YYYY-MM-DD'),
+    end_date: z.string().optional().describe('YYYY-MM-DD'),
+    goal: z.string().optional(),
+    status: z.enum(['planned', 'active', 'completed']).default('planned'),
+  },
+  async ({ name, project, start_date, end_date, goal, status }) => {
+    const project_id = project ? await resolveId('projects', project) : null
+    if (project && !project_id) return fail(`프로젝트를 찾을 수 없음: ${project}`)
+    const { data, error } = await db
+      .from('sprints')
+      .insert({ name, project_id, start_date, end_date, goal, status })
+      .select()
+      .single()
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+server.tool('list_sprints', '스프린트 목록을 반환한다.', {}, async () => {
+  const { data, error } = await db.from('sprints').select('*').order('created_at', { ascending: false })
+  return error ? fail(error.message) : ok(data)
+})
+
+server.tool(
+  'move_ticket_to_sprint',
+  '티켓을 스프린트로 이동한다. sprint 는 이름|UUID|null(백로그로 이동).',
+  { ticket_id: z.string(), sprint: z.string().nullable() },
+  async ({ ticket_id, sprint }) => {
+    if (!UUID.test(ticket_id)) return fail(`잘못된 ticket_id(UUID 아님): ${ticket_id}`)
+    let sprint_id: string | null = null
+    if (sprint !== null && sprint !== '') {
+      sprint_id = await resolveId('sprints', sprint, 'name')
+      if (!sprint_id) return fail(`스프린트를 찾을 수 없음: ${sprint}`)
+    }
+    const { data, error } = await db
+      .from('tickets')
+      .update({ sprint_id })
+      .eq('id', ticket_id)
+      .select()
+      .single()
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+// ===================== 반응 =====================
+server.tool(
+  'add_reaction',
+  '메시지에 이모지 반응을 추가한다. actor_email 로 사용자를 지정할 수 있다.',
+  { message_id: z.string(), emoji: z.string(), actor_email: z.string().optional() },
+  async ({ message_id, emoji, actor_email }) => {
+    if (!UUID.test(message_id)) return fail(`잘못된 message_id(UUID 아님): ${message_id}`)
+    const user_id = await profileIdByEmail(actor_email)
+    const { data, error } = await db
+      .from('reactions')
+      .insert({ message_id, emoji, user_id })
+      .select()
+      .single()
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+server.tool(
+  'list_reactions',
+  '메시지의 반응 목록을 반환한다.',
+  { message_id: z.string() },
+  async ({ message_id }) => {
+    if (!UUID.test(message_id)) return fail(`잘못된 message_id(UUID 아님): ${message_id}`)
+    const { data, error } = await db
+      .from('reactions')
+      .select('*')
+      .eq('message_id', message_id)
+      .order('created_at', { ascending: true })
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+// ===================== 알림 =====================
+server.tool(
+  'create_notification',
+  '사용자에게 알림을 생성한다. user_email 로 대상을 지정한다.',
+  {
+    user_email: z.string(),
+    type: z.enum(['mention', 'assignment', 'follow_up', 'system']).default('system'),
+    title: z.string(),
+    body: z.string().optional(),
+    link: z.string().optional(),
+  },
+  async ({ user_email, type, title, body, link }) => {
+    const user_id = await profileIdByEmail(user_email)
+    if (!user_id) return fail(`사용자를 찾을 수 없음: ${user_email}`)
+    const { data, error } = await db
+      .from('notifications')
+      .insert({ user_id, type, title, body, link })
+      .select()
+      .single()
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+server.tool(
+  'list_notifications',
+  '사용자의 알림을 최신순으로 반환한다. only_unread 로 안읽음만 필터.',
+  { user_email: z.string(), only_unread: z.boolean().default(false) },
+  async ({ user_email, only_unread }) => {
+    const user_id = await profileIdByEmail(user_email)
+    if (!user_id) return fail(`사용자를 찾을 수 없음: ${user_email}`)
+    let q = db
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user_id)
+      .order('created_at', { ascending: false })
+    if (only_unread) q = q.eq('is_read', false)
+    const { data, error } = await q
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+// ===================== 통합 검색 =====================
+server.tool(
+  'search',
+  '메시지/티켓/파일/공지를 query 로 통합 검색한다(ilike). 카테고리별 결과를 묶어 반환.',
+  { query: z.string() },
+  async ({ query }) => {
+    const like = `%${query}%`
+    const [messages, tickets, files, announcements] = await Promise.all([
+      db.from('messages').select('id, channel_id, body, created_at').ilike('body', like).order('created_at', { ascending: false }).limit(25),
+      db.from('tickets').select('id, title, description, status, priority, created_at').or(`title.ilike.${like},description.ilike.${like}`).order('created_at', { ascending: false }).limit(25),
+      db.from('files').select('id, channel_id, name, storage_path, created_at').ilike('name', like).order('created_at', { ascending: false }).limit(25),
+      db.from('announcements').select('id, title, body, priority, published_at').or(`title.ilike.${like},body.ilike.${like}`).order('published_at', { ascending: false }).limit(25),
+    ])
+    const firstErr = messages.error || tickets.error || files.error || announcements.error
+    if (firstErr) return fail(firstErr.message)
+    return ok({
+      query,
+      messages: messages.data ?? [],
+      tickets: tickets.data ?? [],
+      files: files.data ?? [],
+      announcements: announcements.data ?? [],
+    })
+  },
+)
+
+// ===================== 감사 로그 =====================
+server.tool(
+  'log_audit',
+  '감사 로그 항목을 기록한다. detail 은 자유 형식 JSON 객체.',
+  {
+    action: z.string(),
+    entity_type: z.string().optional(),
+    entity_id: z.string().optional(),
+    detail: z.record(z.unknown()).optional(),
+    actor_email: z.string().optional(),
+  },
+  async ({ action, entity_type, entity_id, detail, actor_email }) => {
+    if (entity_id && !UUID.test(entity_id)) return fail(`잘못된 entity_id(UUID 아님): ${entity_id}`)
+    const actor_id = await profileIdByEmail(actor_email)
+    const { data, error } = await db
+      .from('audit_log')
+      .insert({ action, entity_type, entity_id: entity_id ?? null, detail: detail ?? null, actor_id })
+      .select()
+      .single()
+    return error ? fail(error.message) : ok(data)
+  },
+)
+
+server.tool(
+  'list_audit',
+  '감사 로그를 최신순으로 반환한다.',
+  { limit: z.number().int().min(1).max(500).default(100) },
+  async ({ limit }) => {
+    const { data, error } = await db
+      .from('audit_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    return error ? fail(error.message) : ok(data)
+  },
+)
 
 // ===================== 프로젝트 / 간트 =====================
 server.tool('list_projects', '프로젝트 목록을 반환한다.', {}, async () => {

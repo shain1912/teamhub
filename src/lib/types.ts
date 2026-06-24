@@ -11,6 +11,7 @@ export interface Channel {
   name: string
   description: string | null
   is_private: boolean
+  is_dm: boolean
   created_at: string
 }
 
@@ -23,6 +24,15 @@ export interface Message {
   created_at: string
   edited_at: string | null
   profiles?: Profile | null
+  reactions?: Reaction[]
+}
+
+export interface Reaction {
+  id: string
+  message_id: string
+  user_id: string | null
+  emoji: string
+  created_at: string
 }
 
 export interface FileRow {
@@ -52,6 +62,7 @@ export interface Announcement {
 
 export type TicketStatus = 'open' | 'in_progress' | 'done' | 'closed'
 export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent'
+export type TicketType = 'epic' | 'story' | 'task' | 'bug' | 'subtask'
 
 export interface Ticket {
   id: string
@@ -59,12 +70,27 @@ export interface Ticket {
   description: string | null
   status: TicketStatus
   priority: TicketPriority
+  type: TicketType
+  labels: string[]
+  story_points: number | null
+  sprint_id: string | null
+  parent_ticket_id: string | null
   reporter_id: string | null
   assignee_id: string | null
   channel_id: string | null
   due_date: string | null
   created_at: string
   updated_at: string
+  assignee?: Profile | null
+}
+
+export interface TicketComment {
+  id: string
+  ticket_id: string
+  user_id: string | null
+  body: string
+  created_at: string
+  profiles?: Profile | null
 }
 
 export interface Project {
@@ -73,6 +99,17 @@ export interface Project {
   description: string | null
   start_date: string | null
   end_date: string | null
+}
+
+export interface Sprint {
+  id: string
+  name: string
+  project_id: string | null
+  goal: string | null
+  start_date: string | null
+  end_date: string | null
+  status: 'planned' | 'active' | 'completed'
+  created_at: string
 }
 
 export interface GanttTask {
@@ -85,6 +122,12 @@ export interface GanttTask {
   status: 'todo' | 'doing' | 'done'
   assignee_id: string | null
   sort_order: number
+}
+
+export interface GanttDependency {
+  id: string
+  task_id: string
+  depends_on_task_id: string
 }
 
 export interface Checklist {
@@ -106,4 +149,30 @@ export interface ChecklistItem {
   follow_up_at: string | null
   completed_at: string | null
   sort_order: number
+}
+
+export type NotificationType = 'mention' | 'assignment' | 'follow_up' | 'system'
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  body: string | null
+  link: string | null
+  entity_type: string | null
+  entity_id: string | null
+  is_read: boolean
+  created_at: string
+}
+
+export interface AuditEntry {
+  id: string
+  actor_id: string | null
+  action: string
+  entity_type: string | null
+  entity_id: string | null
+  detail: Record<string, unknown> | null
+  created_at: string
+  profiles?: Profile | null
 }
