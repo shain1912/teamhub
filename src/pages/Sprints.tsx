@@ -134,20 +134,24 @@ export default function Sprints() {
                 </option>
               ))}
             </select>
-            <div className="flex gap-1">
+            <label className="block">
+              <span className="mb-0.5 block text-[10px] font-semibold text-mute">시작일</span>
               <input
                 type="date"
                 value={form.start_date}
                 onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                className="w-full rounded-full border border-hairline px-1 py-1 font-mono text-xs"
+                className="w-full rounded-full border border-hairline px-2 py-1 font-mono text-xs"
               />
+            </label>
+            <label className="block">
+              <span className="mb-0.5 block text-[10px] font-semibold text-mute">종료일</span>
               <input
                 type="date"
                 value={form.end_date}
                 onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                className="w-full rounded-full border border-hairline px-1 py-1 font-mono text-xs"
+                className="w-full rounded-full border border-hairline px-2 py-1 font-mono text-xs"
               />
-            </div>
+            </label>
             <input
               placeholder="목표 (선택)"
               value={form.goal}

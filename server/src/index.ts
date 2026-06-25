@@ -712,6 +712,61 @@ if (useHttp) {
   app.get('/mcp', methodNotAllowed)
   app.delete('/mcp', methodNotAllowed)
 
+  // ---------- AI 프록시: z.ai(GLM) 호출을 서버에서 대행 ----------
+  // GLM 키는 서버 환경변수에만 둔다(프론트 노출 0). 로그인한 사용자만 호출 가능.
+  const GLM_KEY = process.env.GLM_API_KEY
+  const GLM_BASE = process.env.GLM_BASE_URL || 'https://api.z.ai/api/paas/v4'
+  const GLM_MODEL = process.env.GLM_MODEL || 'glm-4.5'
+
+  // Supabase 액세스 토큰으로 사용자 검증
+  async function verifyUser(token: string): Promise<{ id: string } | null> {
+    if (!token) return null
+    try {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { Authorization: `Bearer ${token}`, apikey: SERVICE_KEY as string },
+      })
+      if (!r.ok) return null
+      const u = (await r.json()) as { id?: string }
+      return u?.id ? { id: u.id } : null
+    } catch {
+      return null
+    }
+  }
+
+  app.post('/ai/chat', async (req, res) => {
+    if (!GLM_KEY) {
+      res.status(503).json({ error: 'AI 가 설정되지 않았습니다 (GLM_API_KEY 없음).' })
+      return
+    }
+    const header = req.headers.authorization ?? ''
+    const token = header.startsWith('Bearer ') ? header.slice(7) : ''
+    const user = await verifyUser(token)
+    if (!user) {
+      res.status(401).json({ error: 'Unauthorized (로그인 필요)' })
+      return
+    }
+    const body = req.body ?? {}
+    try {
+      const upstream = await fetch(`${GLM_BASE}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GLM_KEY}` },
+        body: JSON.stringify({
+          model: body.model || GLM_MODEL,
+          messages: body.messages,
+          ...(Array.isArray(body.tools) && body.tools.length
+            ? { tools: body.tools, tool_choice: 'auto' }
+            : {}),
+          temperature: body.temperature ?? 0.3,
+        }),
+      })
+      const text = await upstream.text()
+      res.status(upstream.status).type('application/json').send(text)
+    } catch (err) {
+      console.error('[teamhub-mcp] AI 프록시 오류:', err)
+      res.status(502).json({ error: 'GLM 프록시 오류' })
+    }
+  })
+
   const port = Number(process.env.PORT) || 8787
   app.listen(port, () => console.error(`[teamhub-mcp] HTTP 전송 listening on :${port}`))
 } else {
