@@ -133,6 +133,15 @@ export default function Gantt() {
     setTasks((list) => list.map((x) => (x.id === t.id ? { ...x, end_date: newEnd } : x)))
   }
 
+  // 진행률(%) 변경 — 0~100 으로 보정, 100/0 이면 상태도 자동 동기화
+  async function setProgress(t: GanttTask, value: number) {
+    const progress = Math.max(0, Math.min(100, Math.round(value)))
+    if (progress === t.progress) return
+    const status: GanttTask['status'] = progress >= 100 ? 'done' : progress > 0 ? 'doing' : 'todo'
+    await supabase.from('gantt_tasks').update({ progress, status }).eq('id', t.id)
+    setTasks((list) => list.map((x) => (x.id === t.id ? { ...x, progress, status } : x)))
+  }
+
   async function addDependency(taskId: string, dependsOnTaskId: string) {
     if (!dependsOnTaskId || dependsOnTaskId === taskId) return
     // prevent exact duplicate
@@ -303,6 +312,38 @@ export default function Gantt() {
                       >
                         ✕
                       </button>
+                    </div>
+
+                    {/* 진행률 조절 */}
+                    <div className="mt-1 flex items-center gap-1 text-[10px] text-ash">
+                      <span>진행</span>
+                      <button
+                        onClick={() => setProgress(t, t.progress - 10)}
+                        className="rounded border border-hairline px-1 leading-none hover:bg-bone"
+                        title="-10%"
+                      >
+                        −
+                      </button>
+                      <input
+                        key={t.progress}
+                        type="number"
+                        min={0}
+                        max={100}
+                        defaultValue={t.progress}
+                        onBlur={(e) => setProgress(t, Number(e.target.value))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                        }}
+                        className="w-11 rounded border border-hairline px-1 py-0.5 text-center font-mono text-[10px]"
+                      />
+                      <button
+                        onClick={() => setProgress(t, t.progress + 10)}
+                        className="rounded border border-hairline px-1 leading-none hover:bg-bone"
+                        title="+10%"
+                      >
+                        +
+                      </button>
+                      <span>%</span>
                     </div>
 
                     {/* 의존성 추가 셀렉터 */}
