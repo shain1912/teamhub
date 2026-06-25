@@ -22,6 +22,7 @@ services:
   - type: web
     name: teamhub-mcp
     runtime: node
+    region: singapore   # 한국 최근접 (Render는 KR/JP 리전 없음). kode-lms·streaming 과 통일
     rootDir: server
     plan: starter   # 상시 가동(슬립 없음). 부하 크면 standard/pro 로 상향
     buildCommand: npm install && npm run build
