@@ -18,6 +18,9 @@ import { dirname, resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
+import express from 'express'
+import cors from 'cors'
 import { z } from 'zod'
 
 // 프로젝트 루트(.env) 로드 — server/ 기준 한 단계 위
@@ -60,7 +63,12 @@ async function profileIdByEmail(email?: string): Promise<string | null> {
   return (data as { id: string } | null)?.id ?? null
 }
 
-const server = new McpServer({ name: 'teamhub', version: '0.1.0' })
+/**
+ * 도구를 모두 등록한 새 McpServer 인스턴스를 만든다.
+ * HTTP(무상태) 모드에선 요청마다 새 인스턴스를 생성하므로 팩토리로 감쌌다.
+ */
+function buildServer() {
+  const server = new McpServer({ name: 'teamhub', version: '0.1.0' })
 
 // ===================== 채널 / 메시지 =====================
 server.tool('list_channels', '모든 채널 목록을 반환한다.', {}, async () => {
@@ -628,7 +636,88 @@ server.tool('delete_checklist', '체크리스트(및 항목)를 삭제한다.', 
   return error ? fail(error.message) : ok({ deleted: id })
 })
 
-// ---------- 시작 ----------
-const transport = new StdioServerTransport()
-await server.connect(transport)
-console.error('[teamhub-mcp] started')
+  return server
+}
+
+// ---------- 전송 선택: 로컬은 stdio, 호스팅은 HTTP ----------
+// Render 등 호스팅 환경은 PORT 를 주입한다. MCP_TRANSPORT=http 로 강제도 가능.
+const useHttp = process.env.MCP_TRANSPORT === 'http' || !!process.env.PORT
+
+if (useHttp) {
+  // 원격 다중 사용자: Bearer 토큰으로 게이트한다.
+  // service_role 키는 이 서버에만 있고, 직원은 토큰만 받는다.
+  const AUTH_TOKEN = process.env.MCP_AUTH_TOKEN
+  if (!AUTH_TOKEN) {
+    console.error(
+      '[teamhub-mcp] HTTP 모드에는 MCP_AUTH_TOKEN 이 필요합니다. ' +
+        '긴 랜덤 문자열을 환경변수로 설정하세요.',
+    )
+    process.exit(1)
+  }
+
+  const app = express()
+  app.use(
+    cors({
+      allowedHeaders: ['Content-Type', 'Authorization', 'Mcp-Session-Id'],
+      exposedHeaders: ['Mcp-Session-Id'],
+    }),
+  )
+  app.use(express.json({ limit: '4mb' }))
+
+  // 헬스체크 (Render)
+  app.get('/healthz', (_req, res) => {
+    res.json({ ok: true, name: 'teamhub-mcp' })
+  })
+
+  // 인증 게이트 — /mcp 만 보호
+  app.use('/mcp', (req, res, next) => {
+    const header = req.headers.authorization ?? ''
+    const token = header.startsWith('Bearer ') ? header.slice(7) : ''
+    if (token !== AUTH_TOKEN) {
+      res
+        .status(401)
+        .json({ jsonrpc: '2.0', error: { code: -32001, message: 'Unauthorized' }, id: null })
+      return
+    }
+    next()
+  })
+
+  // 무상태(stateless): 요청마다 새 서버+전송을 만들어 동시 사용자 충돌을 막는다.
+  app.post('/mcp', async (req, res) => {
+    const server = buildServer()
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined })
+    res.on('close', () => {
+      transport.close()
+      server.close()
+    })
+    try {
+      await server.connect(transport)
+      await transport.handleRequest(req, res, req.body)
+    } catch (err) {
+      console.error('[teamhub-mcp] handleRequest 오류:', err)
+      if (!res.headersSent) {
+        res
+          .status(500)
+          .json({ jsonrpc: '2.0', error: { code: -32603, message: 'Internal server error' }, id: null })
+      }
+    }
+  })
+
+  // 무상태 모드에선 세션 스트림(GET/DELETE) 미지원
+  const methodNotAllowed = (_req: express.Request, res: express.Response) => {
+    res
+      .status(405)
+      .json({ jsonrpc: '2.0', error: { code: -32000, message: 'Method not allowed' }, id: null })
+  }
+  app.get('/mcp', methodNotAllowed)
+  app.delete('/mcp', methodNotAllowed)
+
+  const port = Number(process.env.PORT) || 8787
+  app.listen(port, () => console.error(`[teamhub-mcp] HTTP 전송 listening on :${port}`))
+} else {
+  // 로컬 개발: 기존 stdio 그대로
+  const server = buildServer()
+  const transport = new StdioServerTransport()
+  await server.connect(transport)
+  console.error('[teamhub-mcp] started (stdio)')
+}

@@ -16,3 +16,24 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+
+  # TeamHub MCP 서버 (원격 HTTP) — 팀원들의 Claude 가 접속하는 AI 백엔드
+  # service_role 키는 이 서비스 환경변수에만 두고, 직원은 MCP_AUTH_TOKEN 만 받는다.
+  - type: web
+    name: teamhub-mcp
+    runtime: node
+    rootDir: server
+    plan: starter   # 상시 가동(슬립 없음). 부하 크면 standard/pro 로 상향
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /healthz
+    envVars:
+      - key: MCP_TRANSPORT
+        value: http
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # 직원 접속용 Bearer 토큰 — Render 가 랜덤 생성. 대시보드에서 값 확인 후 배포.
+      - key: MCP_AUTH_TOKEN
+        generateValue: true
