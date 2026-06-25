@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Announcement } from '../lib/types'
 
+// 오렌지는 도장처럼 — 중요/긴급에만. 일반 공지는 잉크 다크 밴드.
 const STYLE: Record<string, string> = {
-  normal: 'bg-brand text-white',
-  high: 'bg-amber-500 text-white',
-  urgent: 'bg-red-600 text-white',
+  normal: 'bg-ink text-white',
+  high: 'bg-brand text-white',
+  urgent: 'bg-brand-dark text-white',
 }
 
-// 상단 고정 공지 배너 — "눈에 띄게" 요구사항. 핀 고정 + 미만료 공지를 우선순위로 노출.
+// 상단 고정 공지 배너(풀블리드 밴드) — "눈에 띄게" 요구사항.
 export default function AnnouncementBanner() {
   const [items, setItems] = useState<Announcement[]>([])
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
@@ -43,15 +44,17 @@ export default function AnnouncementBanner() {
 
   return (
     <div className={`flex items-center gap-3 px-6 py-2 text-sm ${STYLE[a.priority] ?? STYLE.normal}`}>
-      <span className="rounded bg-white/20 px-1.5 py-0.5 text-xs font-bold uppercase">{a.priority}</span>
+      <span className="rounded-full bg-white/20 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider">
+        {a.priority}
+      </span>
       <Link to="/announcements" className="flex-1 truncate font-medium hover:underline">
         {a.title}
       </Link>
-      {visible.length > 1 && <span className="text-xs opacity-80">+{visible.length - 1}</span>}
+      {visible.length > 1 && <span className="font-mono text-xs opacity-80">+{visible.length - 1}</span>}
       <button
         onClick={() => setDismissed((s) => new Set(s).add(a.id))}
-        className="rounded px-1.5 text-white/80 hover:bg-white/20"
-        aria-label="닫기"
+        className="rounded-full px-1.5 text-white/80 transition hover:bg-white/20"
+        aria-label="배너 닫기"
       >
         ✕
       </button>

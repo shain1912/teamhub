@@ -77,7 +77,7 @@ export default function NotificationBell() {
   // me 가 없으면 종 아이콘만 노출
   if (!me?.id) {
     return (
-      <span className="text-xl text-slate-300" aria-label="알림" title="알림">
+      <span className="text-xl text-ash" aria-label="알림" title="알림">
         🔔
       </span>
     )
@@ -87,22 +87,22 @@ export default function NotificationBell() {
     <div ref={wrapRef} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-lg px-1.5 py-1 text-xl hover:bg-slate-100"
+        className="relative rounded-full px-1.5 py-1 text-xl hover:bg-bone"
         aria-label="알림"
         title="알림"
       >
         🔔
         {unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-[1rem] place-items-center rounded-full bg-red-600 px-1 text-[10px] font-bold leading-none text-white">
+          <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-[1rem] place-items-center rounded-full bg-brand px-1 font-mono text-[10px] font-bold leading-none text-white">
             {unread > 99 ? '99+' : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-20 mt-2 w-80 overflow-hidden rounded-xl border bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b px-3 py-2">
-            <span className="text-sm font-semibold">알림</span>
+        <div className="absolute right-0 z-20 mt-2 w-80 overflow-hidden rounded-xl border border-hairline bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
+            <span className="text-sm font-semibold text-ink">알림</span>
             <button
               onClick={() => {
                 setOpen(false)
@@ -114,20 +114,20 @@ export default function NotificationBell() {
             </button>
           </div>
           <div className="max-h-96 overflow-y-auto">
-            {items.length === 0 && <p className="px-3 py-6 text-center text-sm text-slate-400">알림이 없습니다.</p>}
+            {items.length === 0 && <p className="px-3 py-6 text-center text-sm text-ash">알림이 없습니다.</p>}
             {items.map((n) => (
               <button
                 key={n.id}
                 onClick={() => openItem(n)}
-                className={`flex w-full items-start gap-2 border-b px-3 py-2 text-left last:border-b-0 hover:bg-slate-50 ${
+                className={`flex w-full items-start gap-2 border-b border-hairline px-3 py-2 text-left last:border-b-0 hover:bg-canvas ${
                   n.is_read ? 'opacity-60' : 'bg-brand/5'
                 }`}
               >
                 <span className="mt-0.5 text-base">{ICON[n.type] ?? '🔔'}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-slate-800">{n.title}</span>
-                  {n.body && <span className="block truncate text-xs text-slate-500">{n.body}</span>}
-                  <span className="block text-[10px] text-slate-400">{new Date(n.created_at).toLocaleString()}</span>
+                  <span className="block truncate text-sm font-medium text-ink">{n.title}</span>
+                  {n.body && <span className="block truncate text-xs text-mute">{n.body}</span>}
+                  <span className="block font-mono text-[10px] text-ash">{new Date(n.created_at).toLocaleString()}</span>
                 </span>
                 {!n.is_read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand" />}
               </button>

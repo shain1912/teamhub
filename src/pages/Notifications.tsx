@@ -73,48 +73,48 @@ export default function Notifications() {
   const unreadCount = items.filter((n) => !n.is_read).length
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto bg-canvas p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">
+        <h1 className="text-2xl font-bold text-ink">
           알림
           {unreadCount > 0 && (
-            <span className="ml-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">{unreadCount}</span>
+            <span className="ml-2 rounded-full bg-brand px-2 py-0.5 font-mono text-xs font-semibold text-white">{unreadCount}</span>
           )}
         </h1>
         <button
           onClick={markAllRead}
           disabled={unreadCount === 0}
-          className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
           모두 읽음
         </button>
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-400">불러오는 중…</p>
+        <p className="text-sm text-ash">불러오는 중…</p>
       ) : items.length === 0 ? (
-        <p className="text-sm text-slate-400">알림이 없습니다.</p>
+        <p className="text-sm text-ash">알림이 없습니다.</p>
       ) : (
         <div className="space-y-2">
           {items.map((n) => (
             <button
               key={n.id}
               onClick={() => openItem(n)}
-              className={`flex w-full items-start gap-3 rounded-xl border bg-white p-4 text-left transition hover:border-brand ${
+              className={`flex w-full items-start gap-3 rounded-xl border border-hairline bg-white p-4 text-left transition hover:border-brand ${
                 n.is_read ? 'opacity-60' : 'border-brand/40 bg-brand/5'
               }`}
             >
               <span className="mt-0.5 text-xl">{ICON[n.type] ?? '🔔'}</span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
+                  <span className="rounded-full bg-bone px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-mute">
                     {LABEL[n.type] ?? n.type}
                   </span>
-                  <span className="truncate font-medium text-slate-800">{n.title}</span>
+                  <span className="truncate font-medium text-ink">{n.title}</span>
                   {!n.is_read && <span className="h-2 w-2 shrink-0 rounded-full bg-brand" />}
                 </div>
-                {n.body && <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{n.body}</p>}
-                <div className="mt-1 text-xs text-slate-400">{new Date(n.created_at).toLocaleString()}</div>
+                {n.body && <p className="mt-1 whitespace-pre-wrap text-sm text-charcoal">{n.body}</p>}
+                <div className="mt-1 font-mono text-xs text-ash">{new Date(n.created_at).toLocaleString()}</div>
               </div>
             </button>
           ))}

@@ -14,7 +14,7 @@ function Avatar({ profile, size = 'h-10 w-10 text-sm' }: { profile: Profile; siz
     return <img src={profile.avatar_url} alt="" className={`${size} shrink-0 rounded-full object-cover`} />
   }
   return (
-    <div className={`${size} grid shrink-0 place-items-center rounded-full bg-brand/10 font-semibold text-brand`}>
+    <div className={`${size} grid shrink-0 place-items-center rounded-full bg-bone font-semibold text-charcoal`}>
       {initials(profile)}
     </div>
   )
@@ -43,29 +43,29 @@ function PeopleList() {
   }, [])
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto bg-canvas p-6">
       <div className="mb-4">
-        <h1 className="text-xl font-bold">팀원</h1>
-        <p className="text-sm text-slate-500">팀원을 선택하면 배정된 작업을 볼 수 있습니다.</p>
+        <h1 className="text-2xl font-bold text-ink">팀원</h1>
+        <p className="text-sm text-mute">팀원을 선택하면 배정된 작업을 볼 수 있습니다.</p>
       </div>
 
       {loading ? (
-        <p className="text-sm text-slate-400">불러오는 중…</p>
+        <p className="text-sm text-ash">불러오는 중…</p>
       ) : people.length === 0 ? (
-        <p className="text-sm text-slate-400">등록된 팀원이 없습니다.</p>
+        <p className="text-sm text-ash">등록된 팀원이 없습니다.</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {people.map((p) => (
             <button
               key={p.id}
               onClick={() => navigate(`/people/${p.id}`)}
-              className="flex items-center gap-3 rounded-xl border bg-white p-4 text-left transition hover:border-brand hover:shadow-sm"
+              className="flex items-center gap-3 rounded-xl border border-hairline bg-white p-4 text-left transition hover:border-brand"
             >
               <Avatar profile={p} />
               <div className="min-w-0">
-                <div className="truncate font-semibold">{p.full_name ?? '(이름 없음)'}</div>
-                <div className="truncate text-xs text-slate-500">{p.email ?? '-'}</div>
-                <span className="mt-1 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
+                <div className="truncate font-semibold text-ink">{p.full_name ?? '(이름 없음)'}</div>
+                <div className="truncate text-xs text-mute">{p.email ?? '-'}</div>
+                <span className="mt-1 inline-block rounded-full bg-bone px-2 py-0.5 text-[11px] text-charcoal">
                   {p.role}
                 </span>
               </div>
@@ -102,25 +102,25 @@ function PersonDetail({ userId }: { userId: string }) {
   }, [userId])
 
   return (
-    <div className="h-full overflow-y-auto p-6">
-      <button onClick={() => navigate('/people')} className="mb-4 text-sm text-slate-500 hover:text-brand">
+    <div className="h-full overflow-y-auto bg-canvas p-6">
+      <button onClick={() => navigate('/people')} className="mb-4 text-sm text-mute hover:text-brand">
         ← 팀원 목록
       </button>
 
       {loading ? (
-        <p className="text-sm text-slate-400">불러오는 중…</p>
+        <p className="text-sm text-ash">불러오는 중…</p>
       ) : !profile ? (
-        <div className="rounded-xl border bg-white p-6 text-sm text-slate-500">
+        <div className="rounded-xl border border-hairline bg-white p-6 text-sm text-charcoal">
           해당 팀원을 찾을 수 없습니다.
         </div>
       ) : (
         <>
-          <div className="mb-5 flex items-center gap-4 rounded-xl border bg-white p-4">
+          <div className="mb-5 flex items-center gap-4 rounded-xl border border-hairline bg-white p-4">
             <Avatar profile={profile} size="h-14 w-14 text-lg" />
             <div className="min-w-0">
-              <h1 className="truncate text-xl font-bold">{profile.full_name ?? '(이름 없음)'}</h1>
-              <div className="truncate text-sm text-slate-500">{profile.email ?? '-'}</div>
-              <span className="mt-1 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
+              <h1 className="truncate text-2xl font-bold text-ink">{profile.full_name ?? '(이름 없음)'}</h1>
+              <div className="truncate text-sm text-mute">{profile.email ?? '-'}</div>
+              <span className="mt-1 inline-block rounded-full bg-bone px-2 py-0.5 text-[11px] text-charcoal">
                 {profile.role}
               </span>
             </div>

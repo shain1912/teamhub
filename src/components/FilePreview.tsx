@@ -78,7 +78,7 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex flex-col bg-ink/70 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -89,20 +89,20 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
         className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3 text-white"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="truncate text-sm font-semibold" title={file.name}>
+        <span className="truncate font-mono text-sm font-semibold" title={file.name}>
           {file.name}
         </span>
         <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={openExternal}
             disabled={!url}
-            className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10 disabled:opacity-40"
+            className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10 disabled:opacity-40"
           >
             새 탭으로 열기 / 다운로드
           </button>
           <button
             onClick={onClose}
-            className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10"
+            className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10"
             aria-label="닫기"
           >
             ✕
@@ -134,10 +134,10 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
               />
             )}
             {kind === 'pdf' && (
-              <iframe src={url} title={file.name} className="h-full w-full rounded-lg bg-white" />
+              <iframe src={url} title={file.name} className="h-full w-full rounded-xl border border-hairline bg-white" />
             )}
             {kind === 'video' && (
-              <video src={url} controls className="max-h-full max-w-full rounded-lg">
+              <video src={url} controls className="max-h-full max-w-full rounded-xl">
                 동영상을 재생할 수 없습니다.
               </video>
             )}
@@ -147,7 +147,7 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
               </audio>
             )}
             {kind === 'text' && (
-              <pre className="h-full w-full overflow-auto whitespace-pre-wrap break-words rounded-lg bg-white p-4 text-xs text-slate-800">
+              <pre className="h-full w-full overflow-auto whitespace-pre-wrap break-words rounded-xl bg-ink p-4 font-mono text-xs text-white/90">
                 {text ?? ''}
               </pre>
             )}
@@ -156,7 +156,7 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
                 <p className="mb-3">이 형식은 미리보기를 지원하지 않습니다.</p>
                 <button
                   onClick={openExternal}
-                  className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100"
+                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-bone"
                 >
                   새 탭에서 다운로드
                 </button>

@@ -10,9 +10,9 @@ const LABEL_W = 192 // w-48
 const BAR_TOP = 6 // top-1.5
 const BAR_H = 20 // h-5
 const STATUS_COLOR: Record<GanttTask['status'], string> = {
-  todo: 'bg-slate-400',
+  todo: 'bg-ash',
   doing: 'bg-brand',
-  done: 'bg-green-500',
+  done: 'bg-success',
 }
 
 export default function Gantt() {
@@ -207,33 +207,33 @@ export default function Gantt() {
     <div className="flex h-full flex-col p-6">
       <div className="mb-4 flex items-center gap-3">
         <h1 className="text-xl font-bold">간트차트</h1>
-        <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="rounded-lg border px-2 py-1 text-sm">
+        <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="rounded-full border border-hairline px-2 py-1 text-sm">
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}
         </select>
-        <button onClick={createProject} className="rounded-lg border px-3 py-1 text-sm hover:bg-slate-50">
+        <button onClick={createProject} className="rounded-full border border-hairline px-3 py-1 text-sm hover:bg-bone">
           + 프로젝트
         </button>
-        <button onClick={addTask} className="rounded-lg bg-brand px-3 py-1 text-sm font-semibold text-white" disabled={!projectId}>
+        <button onClick={addTask} className="rounded-full bg-brand px-3 py-1 text-sm font-semibold text-white hover:bg-brand-dark" disabled={!projectId}>
           + 작업
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-xl border bg-white">
+      <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-hairline bg-white">
         <div className="inline-block min-w-full">
           {/* 날짜 헤더 */}
-          <div className="flex border-b bg-slate-50" ref={headerRef}>
-            <div className="sticky left-0 z-20 w-48 shrink-0 border-r bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-500">
+          <div className="flex border-b border-hairline bg-bone" ref={headerRef}>
+            <div className="sticky left-0 z-20 w-48 shrink-0 border-r border-hairline bg-bone px-3 py-2 text-xs font-semibold text-mute">
               작업
             </div>
             {days.map((d, i) => (
               <div
                 key={i}
                 style={{ width: DAY_PX }}
-                className="shrink-0 border-r py-2 text-center text-[10px] text-slate-400"
+                className="shrink-0 border-r border-hairline py-2 text-center font-mono text-[10px] text-ash"
               >
                 {format(d, 'd')}
               </div>
@@ -243,23 +243,23 @@ export default function Gantt() {
           {/* 본문: 라벨 열 + 타임라인(+의존선 SVG 오버레이) */}
           <div className="flex">
             {/* 라벨 열 */}
-            <div className="sticky left-0 z-10 w-48 shrink-0 border-r bg-white">
+            <div className="sticky left-0 z-10 w-48 shrink-0 border-r border-hairline bg-white">
               {tasks.map((t) => {
                 const myDeps = depsByTask.get(t.id) ?? []
                 const candidates = tasks.filter((c) => c.id !== t.id)
                 return (
-                  <div key={t.id} className="border-b px-3 py-2 text-sm" style={{ minHeight: ROW_H }}>
+                  <div key={t.id} className="border-b border-hairline px-3 py-2 text-sm text-body" style={{ minHeight: ROW_H }}>
                     <div className="flex items-center">
                       <span className="truncate">{t.title}</span>
-                      <button onClick={() => bump(t, 1)} className="ml-2 text-xs text-slate-400 hover:text-brand" title="+1일">
+                      <button onClick={() => bump(t, 1)} className="ml-2 text-xs text-ash hover:text-brand" title="+1일">
                         +
                       </button>
-                      <button onClick={() => bump(t, -1)} className="ml-1 text-xs text-slate-400 hover:text-brand" title="-1일">
+                      <button onClick={() => bump(t, -1)} className="ml-1 text-xs text-ash hover:text-brand" title="-1일">
                         −
                       </button>
                       <button
                         onClick={() => setDepEditor((cur) => (cur === t.id ? null : t.id))}
-                        className="ml-auto text-[10px] text-slate-400 hover:text-brand"
+                        className="ml-auto text-[10px] text-ash hover:text-brand"
                         title="의존 추가"
                       >
                         의존+
@@ -272,7 +272,7 @@ export default function Gantt() {
                         <select
                           defaultValue=""
                           onChange={(e) => addDependency(t.id, e.target.value)}
-                          className="w-full rounded border px-1 py-0.5 text-[11px]"
+                          className="w-full rounded-full border border-hairline px-1 py-0.5 text-[11px]"
                         >
                           <option value="" disabled>
                             선행 작업 선택…
@@ -294,13 +294,13 @@ export default function Gantt() {
                           return (
                             <span
                               key={d.id}
-                              className="inline-flex items-center gap-1 rounded bg-slate-100 px-1 text-[10px] text-slate-500"
+                              className="inline-flex items-center gap-1 rounded-full bg-bone px-1 text-[10px] text-mute"
                               title={`선행: ${pre?.title ?? '?'}`}
                             >
                               ← {pre?.title ?? '(삭제됨)'}
                               <button
                                 onClick={() => removeDependency(d)}
-                                className="text-slate-400 hover:text-red-500"
+                                className="text-ash hover:text-red-500"
                                 title="의존성 삭제"
                               >
                                 ×
@@ -313,20 +313,20 @@ export default function Gantt() {
                   </div>
                 )
               })}
-              {tasks.length === 0 && <div className="p-6 text-sm text-slate-400">작업을 추가하세요.</div>}
+              {tasks.length === 0 && <div className="p-6 text-sm text-ash">작업을 추가하세요.</div>}
             </div>
 
             {/* 타임라인 */}
             <div className="relative" style={{ width: timelineWidth, minWidth: timelineWidth }}>
               {/* 작업 막대 행 */}
               {tasks.map((t) => (
-                <div key={t.id} className="relative border-b" style={{ height: ROW_H }}>
+                <div key={t.id} className="relative border-b border-hairline" style={{ height: ROW_H }}>
                   <div
                     className={`absolute h-5 rounded ${STATUS_COLOR[t.status]} text-[10px] text-white`}
                     style={{ top: BAR_TOP, left: barLeft(t), width: barSpan(t) * DAY_PX - 4 }}
                     title={`${t.start_date} ~ ${t.end_date}`}
                   >
-                    <span className="px-1 leading-5">{t.progress}%</span>
+                    <span className="px-1 font-mono leading-5">{t.progress}%</span>
                   </div>
                 </div>
               ))}
@@ -349,7 +349,7 @@ export default function Gantt() {
                       markerHeight="6"
                       orient="auto-start-reverse"
                     >
-                      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8" />
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill="#575757" />
                     </marker>
                   </defs>
                   {connectors.map((c) => (
@@ -357,7 +357,7 @@ export default function Gantt() {
                       key={c.id}
                       d={c.d}
                       fill="none"
-                      stroke="#94a3b8"
+                      stroke="#575757"
                       strokeWidth={1.5}
                       markerEnd="url(#gantt-arrow)"
                     />

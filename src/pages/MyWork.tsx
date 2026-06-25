@@ -18,10 +18,10 @@ const STATUS_LABEL: Record<TicketStatus, string> = {
 }
 
 const STATUS_CHIP: Record<TicketStatus, string> = {
-  open: 'bg-slate-100 text-slate-600',
+  open: 'bg-bone text-charcoal',
   in_progress: 'bg-blue-100 text-blue-700',
-  done: 'bg-green-100 text-green-700',
-  closed: 'bg-slate-200 text-slate-500',
+  done: 'bg-success/10 text-success',
+  closed: 'bg-bone text-mute',
 }
 
 const GANTT_LABEL: Record<GanttTask['status'], string> = {
@@ -38,14 +38,14 @@ function fmtDate(iso: string | null): string {
 }
 
 function dueClass(iso: string | null): string {
-  if (!iso) return 'text-slate-400'
+  if (!iso) return 'text-ash'
   const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return 'text-slate-400'
+  if (Number.isNaN(d.getTime())) return 'text-ash'
   const now = new Date()
   if (d < now) return 'text-red-600 font-medium'
   const soon = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 3)
   if (d < soon) return 'text-amber-600 font-medium'
-  return 'text-slate-500'
+  return 'text-mute'
 }
 
 interface SectionCardProps {
@@ -57,13 +57,13 @@ interface SectionCardProps {
 
 function SectionCard({ title, count, emptyText, children }: SectionCardProps) {
   return (
-    <div className="flex flex-col rounded-xl border bg-white p-4">
+    <div className="flex flex-col rounded-xl border border-hairline bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-semibold">{title}</h2>
-        <span className="rounded-full bg-brand/10 px-2 py-0.5 text-xs font-semibold text-brand">{count}</span>
+        <h2 className="font-semibold text-ink">{title}</h2>
+        <span className="rounded-full bg-bone px-2 py-0.5 font-mono text-xs font-semibold text-charcoal">{count}</span>
       </div>
       {count === 0 ? (
-        <p className="text-sm text-slate-400">{emptyText}</p>
+        <p className="text-sm text-ash">{emptyText}</p>
       ) : (
         <ul className="space-y-2">{children}</ul>
       )}
@@ -137,7 +137,7 @@ export function WorkBoard({ userId }: { userId: string }) {
   }, [items])
 
   if (loading) {
-    return <p className="text-sm text-slate-400">불러오는 중…</p>
+    return <p className="text-sm text-ash">불러오는 중…</p>
   }
 
   return (
@@ -155,16 +155,16 @@ export function WorkBoard({ userId }: { userId: string }) {
           <li
             key={t.id}
             onClick={() => navigate('/tickets')}
-            className="flex cursor-pointer items-center justify-between rounded-lg border px-3 py-2 text-sm hover:bg-slate-50"
+            className="flex cursor-pointer items-center justify-between rounded-lg border border-hairline px-3 py-2 text-sm hover:bg-canvas"
           >
-            <span className="truncate">{t.title}</span>
+            <span className="truncate text-body">{t.title}</span>
             <span className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-[11px] ${STATUS_CHIP[t.status]}`}>
               {STATUS_LABEL[t.status]}
             </span>
           </li>
         ))}
         {tickets.length > 6 && (
-          <li className="text-center text-xs text-slate-400">외 {tickets.length - 6}건</li>
+          <li className="text-center font-mono text-xs text-ash">외 {tickets.length - 6}건</li>
         )}
       </SectionCard>
 
@@ -174,24 +174,24 @@ export function WorkBoard({ userId }: { userId: string }) {
           <li
             key={t.id}
             onClick={() => navigate('/gantt')}
-            className="flex cursor-pointer items-center justify-between rounded-lg border px-3 py-2 text-sm hover:bg-slate-50"
+            className="flex cursor-pointer items-center justify-between rounded-lg border border-hairline px-3 py-2 text-sm hover:bg-canvas"
           >
-            <span className="min-w-0 flex-1 truncate">
+            <span className="min-w-0 flex-1 truncate text-body">
               {t.title}
-              <span className="ml-1 text-xs text-slate-400">
+              <span className="ml-1 text-xs text-ash">
                 {projects[t.project_id]?.name ?? '프로젝트'}
               </span>
             </span>
             <span className="ml-2 flex shrink-0 items-center gap-2">
-              <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500">
+              <span className="rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-mute">
                 {GANTT_LABEL[t.status]}
               </span>
-              <span className={`text-xs ${dueClass(t.end_date)}`}>{fmtDate(t.end_date)}</span>
+              <span className={`font-mono text-xs ${dueClass(t.end_date)}`}>{fmtDate(t.end_date)}</span>
             </span>
           </li>
         ))}
         {upcomingGantt.length === 0 && ganttTasks.length > 0 && (
-          <li className="text-sm text-slate-400">진행 중인 작업이 없습니다.</li>
+          <li className="text-sm text-ash">진행 중인 작업이 없습니다.</li>
         )}
       </SectionCard>
 
@@ -201,16 +201,16 @@ export function WorkBoard({ userId }: { userId: string }) {
           <li
             key={i.id}
             onClick={() => navigate('/checklists')}
-            className="flex cursor-pointer items-center justify-between rounded-lg border px-3 py-2 text-sm hover:bg-slate-50"
+            className="flex cursor-pointer items-center justify-between rounded-lg border border-hairline px-3 py-2 text-sm hover:bg-canvas"
           >
-            <span className="min-w-0 flex-1 truncate">{i.content}</span>
+            <span className="min-w-0 flex-1 truncate text-body">{i.content}</span>
             {i.due_date && (
-              <span className={`ml-2 shrink-0 text-xs ${dueClass(i.due_date)}`}>{fmtDate(i.due_date)}</span>
+              <span className={`ml-2 shrink-0 font-mono text-xs ${dueClass(i.due_date)}`}>{fmtDate(i.due_date)}</span>
             )}
           </li>
         ))}
         {openItems.length > 8 && (
-          <li className="text-center text-xs text-slate-400">외 {openItems.length - 8}건</li>
+          <li className="text-center font-mono text-xs text-ash">외 {openItems.length - 8}건</li>
         )}
       </SectionCard>
 
@@ -220,19 +220,19 @@ export function WorkBoard({ userId }: { userId: string }) {
           <li
             key={i.id}
             onClick={() => navigate('/checklists')}
-            className="flex cursor-pointer items-center justify-between rounded-lg border px-3 py-2 text-sm hover:bg-slate-50"
+            className="flex cursor-pointer items-center justify-between rounded-lg border border-hairline px-3 py-2 text-sm hover:bg-canvas"
           >
-            <span className="min-w-0 flex-1 truncate">
+            <span className="min-w-0 flex-1 truncate text-body">
               {i.content}
-              {i.is_done && <span className="ml-1 text-[10px] text-green-600">(완료)</span>}
+              {i.is_done && <span className="ml-1 text-[10px] text-success">(완료)</span>}
             </span>
-            <span className={`ml-2 shrink-0 text-xs ${dueClass(i.follow_up_at)}`}>
+            <span className={`ml-2 shrink-0 font-mono text-xs ${dueClass(i.follow_up_at)}`}>
               ⏰ {fmtDate(i.follow_up_at)}
             </span>
           </li>
         ))}
         {followUps.length > 8 && (
-          <li className="text-center text-xs text-slate-400">외 {followUps.length - 8}건</li>
+          <li className="text-center font-mono text-xs text-ash">외 {followUps.length - 8}건</li>
         )}
       </SectionCard>
     </div>
@@ -244,8 +244,8 @@ export default function MyWork() {
 
   if (!me?.id) {
     return (
-      <div className="h-full overflow-y-auto p-6">
-        <div className="rounded-xl border bg-white p-6 text-sm text-slate-500">
+      <div className="h-full overflow-y-auto bg-canvas p-6">
+        <div className="rounded-xl border border-hairline bg-white p-6 text-sm text-charcoal">
           로그인 정보를 불러올 수 없습니다. 다시 로그인해 주세요.
         </div>
       </div>
@@ -253,10 +253,10 @@ export default function MyWork() {
   }
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto bg-canvas p-6">
       <div className="mb-4">
-        <h1 className="text-xl font-bold">내 작업</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-ink">내 작업</h1>
+        <p className="text-sm text-mute">
           {me.full_name ?? me.email ?? '나'} 님에게 배정된 작업 모음
         </p>
       </div>

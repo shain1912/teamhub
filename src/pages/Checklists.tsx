@@ -112,11 +112,11 @@ export default function Checklists() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-bold">체크리스트</h1>
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-1.5 text-sm text-slate-600">
+          <label className="flex items-center gap-1.5 text-sm text-charcoal">
             <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} />
             내 항목만
           </label>
-          <button onClick={createList} className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
+          <button onClick={createList} className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
             + 새 체크리스트
           </button>
         </div>
@@ -129,16 +129,16 @@ export default function Checklists() {
           if (mineOnly && its.length === 0) return null
           const done = its.filter((i) => i.is_done).length
           return (
-            <div key={l.id} className="rounded-xl border bg-white p-4">
+            <div key={l.id} className="rounded-xl border border-hairline bg-white p-4">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold">{l.title}</h2>
-                <span className="text-xs text-slate-400">
+                <h2 className="font-semibold text-ink">{l.title}</h2>
+                <span className="font-mono text-xs text-ash">
                   {done}/{its.length}
                 </span>
               </div>
-              <div className="mt-1 h-1.5 rounded bg-slate-100">
+              <div className="mt-1 h-1.5 rounded-full bg-bone">
                 <div
-                  className="h-1.5 rounded bg-green-500 transition-all"
+                  className="h-1.5 rounded-full bg-success transition-all"
                   style={{ width: its.length ? `${(done / its.length) * 100}%` : '0%' }}
                 />
               </div>
@@ -156,12 +156,12 @@ export default function Checklists() {
                     >
                       <input type="checkbox" checked={i.is_done} onChange={() => toggle(i)} className="mt-1" />
                       <div className="flex-1">
-                        <span className={i.is_done ? 'text-slate-400 line-through' : ''}>{i.content}</span>
+                        <span className={i.is_done ? 'text-ash line-through' : 'text-body'}>{i.content}</span>
                         <div className="mt-1 flex flex-wrap items-center gap-1.5">
                           <select
                             value={i.assignee_id ?? ''}
                             onChange={(e) => setAssignee(i, e.target.value)}
-                            className="rounded border bg-white px-1 py-0.5 text-[11px] text-slate-600"
+                            className="rounded-full border border-hairline bg-white px-1 py-0.5 text-[11px] text-charcoal"
                             title="담당자"
                           >
                             <option value="">담당자 없음</option>
@@ -174,39 +174,39 @@ export default function Checklists() {
 
                           <button
                             onClick={() => setDueDate(i)}
-                            className={`rounded px-1.5 py-0.5 text-[10px] ${
-                              dueOverdue ? 'bg-red-100 font-semibold text-red-700' : i.due_date ? 'bg-amber-100 text-amber-700' : 'text-slate-400 hover:text-brand'
+                            className={`rounded-full px-1.5 py-0.5 text-[10px] ${
+                              dueOverdue ? 'bg-red-100 font-semibold text-red-700' : i.due_date ? 'bg-amber-100 text-amber-700' : 'text-ash hover:text-brand'
                             }`}
                             title="마감일"
                           >
-                            {i.due_date ? `📅 ${fmtDate(i.due_date)}` : '+ 마감일'}
+                            {i.due_date ? <span className="font-mono">{`📅 ${fmtDate(i.due_date)}`}</span> : '+ 마감일'}
                           </button>
 
                           {i.follow_up_at ? (
                             <button
                               onClick={() => setFollowUp(i)}
-                              className={`rounded px-1.5 py-0.5 text-[10px] ${
-                                followOverdue ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'
+                              className={`rounded-full px-1.5 py-0.5 font-mono text-[10px] ${
+                                followOverdue ? 'bg-red-100 text-red-700' : 'bg-bone text-mute'
                               }`}
                               title="팔로업"
                             >
                               ⏰ {fmtDate(i.follow_up_at)}
                             </button>
                           ) : (
-                            <button onClick={() => setFollowUp(i)} className="text-[10px] text-slate-400 hover:text-brand">
+                            <button onClick={() => setFollowUp(i)} className="text-[10px] text-ash hover:text-brand">
                               + 팔로업
                             </button>
                           )}
 
                           {i.assignee_id && (
-                            <span className="text-[10px] text-slate-400">· {nameOf(i.assignee_id)}</span>
+                            <span className="text-[10px] text-ash">· {nameOf(i.assignee_id)}</span>
                           )}
                         </div>
                       </div>
                     </li>
                   )
                 })}
-                {its.length === 0 && <li className="text-xs text-slate-400">항목이 없습니다.</li>}
+                {its.length === 0 && <li className="text-xs text-ash">항목이 없습니다.</li>}
               </ul>
 
               <div className="mt-3 flex gap-2">
@@ -215,16 +215,16 @@ export default function Checklists() {
                   onChange={(e) => setNewItem((m) => ({ ...m, [l.id]: e.target.value }))}
                   onKeyDown={(e) => e.key === 'Enter' && addItem(l.id)}
                   placeholder="항목 추가"
-                  className="flex-1 rounded-lg border px-2 py-1 text-sm"
+                  className="flex-1 rounded-full border border-hairline px-2 py-1 text-sm"
                 />
-                <button onClick={() => addItem(l.id)} className="rounded-lg border px-2 text-sm hover:bg-slate-50">
+                <button onClick={() => addItem(l.id)} className="rounded-full border border-hairline px-2 text-sm hover:bg-bone">
                   +
                 </button>
               </div>
             </div>
           )
         })}
-        {lists.length === 0 && <p className="text-sm text-slate-400">아직 체크리스트가 없습니다.</p>}
+        {lists.length === 0 && <p className="text-sm text-ash">아직 체크리스트가 없습니다.</p>}
       </div>
     </div>
   )

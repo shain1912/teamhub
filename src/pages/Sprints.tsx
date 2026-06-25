@@ -16,9 +16,9 @@ const STATUS_LABEL: Record<string, string> = {
   completed: '완료',
 }
 const STATUS_BADGE: Record<string, string> = {
-  planned: 'bg-slate-200 text-slate-700',
-  active: 'bg-green-100 text-green-700',
-  completed: 'bg-slate-100 text-slate-400',
+  planned: 'rounded-full font-mono bg-bone text-ink',
+  active: 'rounded-full font-mono bg-green-100 text-green-700',
+  completed: 'rounded-full font-mono bg-bone text-ash',
 }
 const COLS: { key: Ticket['status']; label: string }[] = [
   { key: 'open', label: '열림' },
@@ -105,27 +105,27 @@ export default function Sprints() {
   return (
     <div className="flex h-full">
       {/* 스프린트 목록 */}
-      <div className="w-60 shrink-0 overflow-y-auto border-r bg-white p-3">
+      <div className="w-60 shrink-0 overflow-y-auto border-r border-hairline bg-white p-3">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-500">스프린트</h2>
+          <h2 className="text-sm font-semibold text-mute">스프린트</h2>
           <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-brand hover:underline">
             + 새 스프린트
           </button>
         </div>
 
         {showForm && (
-          <form onSubmit={createSprint} className="mb-3 space-y-2 rounded-lg border bg-slate-50 p-2">
+          <form onSubmit={createSprint} className="mb-3 space-y-2 rounded-xl border border-hairline bg-bone p-2">
             <input
               required
               placeholder="스프린트 이름"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full rounded border px-2 py-1 text-sm"
+              className="w-full rounded-full border border-hairline px-2 py-1 text-sm"
             />
             <select
               value={form.project_id}
               onChange={(e) => setForm({ ...form, project_id: e.target.value })}
-              className="w-full rounded border px-2 py-1 text-sm"
+              className="w-full rounded-full border border-hairline px-2 py-1 text-sm"
             >
               <option value="">프로젝트 없음</option>
               {projects.map((p) => (
@@ -139,22 +139,22 @@ export default function Sprints() {
                 type="date"
                 value={form.start_date}
                 onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                className="w-full rounded border px-1 py-1 text-xs"
+                className="w-full rounded-full border border-hairline px-1 py-1 font-mono text-xs"
               />
               <input
                 type="date"
                 value={form.end_date}
                 onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                className="w-full rounded border px-1 py-1 text-xs"
+                className="w-full rounded-full border border-hairline px-1 py-1 font-mono text-xs"
               />
             </div>
             <input
               placeholder="목표 (선택)"
               value={form.goal}
               onChange={(e) => setForm({ ...form, goal: e.target.value })}
-              className="w-full rounded border px-2 py-1 text-sm"
+              className="w-full rounded-full border border-hairline px-2 py-1 text-sm"
             />
-            <button className="w-full rounded bg-brand py-1 text-sm font-semibold text-white hover:bg-brand-dark">
+            <button className="w-full rounded-full bg-brand py-1 text-sm font-semibold text-white hover:bg-brand-dark">
               생성
             </button>
           </form>
@@ -164,65 +164,65 @@ export default function Sprints() {
           <button
             key={s.id}
             onClick={() => setSelectedId(s.id)}
-            className={`mb-1 block w-full rounded-lg px-2 py-1.5 text-left text-sm ${
-              s.id === selectedId ? 'bg-slate-100 font-semibold text-brand' : 'hover:bg-slate-50'
+            className={`mb-1 block w-full rounded-xl px-2 py-1.5 text-left text-sm ${
+              s.id === selectedId ? 'bg-bone font-semibold text-brand' : 'hover:bg-bone'
             }`}
           >
             <div className="truncate">{s.name}</div>
-            <span className={`mt-0.5 inline-block rounded px-1.5 text-[10px] ${STATUS_BADGE[s.status]}`}>
+            <span className={`mt-0.5 inline-block px-1.5 text-[10px] ${STATUS_BADGE[s.status]}`}>
               {STATUS_LABEL[s.status]}
             </span>
           </button>
         ))}
-        {sprints.length === 0 && <p className="text-xs text-slate-400">스프린트가 없습니다.</p>}
+        {sprints.length === 0 && <p className="text-xs text-ash">스프린트가 없습니다.</p>}
       </div>
 
       {/* 본문 */}
       <div className="min-w-0 flex-1 overflow-y-auto p-6">
         {!selected ? (
-          <p className="text-sm text-slate-400">왼쪽에서 스프린트를 선택하거나 새로 만드세요.</p>
+          <p className="text-sm text-ash">왼쪽에서 스프린트를 선택하거나 새로 만드세요.</p>
         ) : (
           <>
             <div className="mb-4 flex flex-wrap items-center gap-3">
-              <h1 className="text-xl font-bold">{selected.name}</h1>
+              <h1 className="font-display text-xl font-bold text-ink">{selected.name}</h1>
               <select
                 value={selected.status}
                 onChange={(e) => setSprintStatus(selected, e.target.value as Sprint['status'])}
-                className="rounded-lg border px-2 py-1 text-sm"
+                className="rounded-full border border-hairline px-2 py-1 text-sm"
               >
                 <option value="planned">예정</option>
                 <option value="active">진행 중</option>
                 <option value="completed">완료</option>
               </select>
               {selected.start_date && selected.end_date && (
-                <span className="text-sm text-slate-400">
+                <span className="font-mono text-sm text-ash">
                   {selected.start_date} ~ {selected.end_date}
                 </span>
               )}
             </div>
-            {selected.goal && <p className="mb-4 text-sm text-slate-600">🎯 {selected.goal}</p>}
+            {selected.goal && <p className="mb-4 text-sm text-charcoal">🎯 {selected.goal}</p>}
 
             <Burndown sprint={selected} tickets={sprintTickets} />
 
             {/* 스프린트 보드 */}
-            <h2 className="mb-2 mt-6 text-sm font-semibold text-slate-500">
-              스프린트 보드 ({sprintTickets.length})
+            <h2 className="mb-2 mt-6 text-sm font-semibold text-mute">
+              스프린트 보드 <span className="font-mono">({sprintTickets.length})</span>
             </h2>
             <div className="grid grid-cols-4 gap-3">
               {COLS.map((c) => {
                 const list = sprintTickets.filter((t) => t.status === c.key)
                 return (
-                  <div key={c.key} className="rounded-xl bg-slate-100 p-2">
-                    <div className="px-1 py-1 text-xs font-semibold text-slate-500">
-                      {c.label} <span className="text-slate-400">({list.length})</span>
+                  <div key={c.key} className="rounded-xl bg-bone p-2">
+                    <div className="px-1 py-1 text-xs font-semibold text-mute">
+                      {c.label} <span className="font-mono text-ash">({list.length})</span>
                     </div>
                     <div className="space-y-2">
                       {list.map((t) => (
-                        <div key={t.id} className="rounded-lg bg-white p-2 shadow-sm">
-                          <div className="text-sm font-medium">{t.title}</div>
-                          <div className="mt-1 flex items-center gap-2 text-[10px] text-slate-400">
+                        <div key={t.id} className="rounded-xl border border-hairline bg-white p-2">
+                          <div className="text-sm font-medium text-ink">{t.title}</div>
+                          <div className="mt-1 flex items-center gap-2 text-[10px] text-ash">
                             {t.story_points != null && (
-                              <span className="rounded bg-slate-100 px-1 font-semibold text-slate-600">
+                              <span className="rounded-full bg-bone px-1 font-mono font-semibold text-charcoal">
                                 {t.story_points}sp
                               </span>
                             )}
@@ -239,25 +239,25 @@ export default function Sprints() {
             </div>
 
             {/* 백로그 */}
-            <h2 className="mb-2 mt-6 text-sm font-semibold text-slate-500">백로그 ({backlog.length})</h2>
+            <h2 className="mb-2 mt-6 text-sm font-semibold text-mute">백로그 <span className="font-mono">({backlog.length})</span></h2>
             <div className="space-y-1">
               {backlog.map((t) => (
-                <div key={t.id} className="flex items-center gap-2 rounded-lg border bg-white px-3 py-1.5">
+                <div key={t.id} className="flex items-center gap-2 rounded-xl border border-hairline bg-white px-3 py-1.5">
                   <span className="flex-1 truncate text-sm">{t.title}</span>
                   {t.story_points != null && (
-                    <span className="rounded bg-slate-100 px-1 text-[10px] font-semibold text-slate-600">
+                    <span className="rounded-full bg-bone px-1 font-mono text-[10px] font-semibold text-charcoal">
                       {t.story_points}sp
                     </span>
                   )}
                   <button
                     onClick={() => moveTicket(t.id, selected.id)}
-                    className="rounded bg-brand px-2 py-0.5 text-[11px] font-semibold text-white hover:bg-brand-dark"
+                    className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-semibold text-white hover:bg-brand-dark"
                   >
                     스프린트에 추가
                   </button>
                 </div>
               ))}
-              {backlog.length === 0 && <p className="text-xs text-slate-400">백로그가 비었습니다.</p>}
+              {backlog.length === 0 && <p className="text-xs text-ash">백로그가 비었습니다.</p>}
             </div>
           </>
         )}
@@ -280,7 +280,7 @@ function Burndown({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] }) {
 
   if (days.length < 2 || total === 0) {
     return (
-      <div className="rounded-xl border bg-white p-4 text-sm text-slate-400">
+      <div className="rounded-xl border border-hairline bg-white p-4 text-sm text-ash">
         번다운: 스프린트 기간과 스토리포인트(또는 티켓)가 있어야 표시됩니다. (현재 총 {total} 단위)
       </div>
     )
@@ -310,19 +310,19 @@ function Burndown({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] }) {
     .join(' ')
 
   return (
-    <div className="rounded-xl border bg-white p-4">
+    <div className="rounded-xl border border-hairline bg-white p-4">
       <div className="mb-1 flex items-center justify-between">
-        <h3 className="text-sm font-semibold">번다운</h3>
-        <span className="text-xs text-slate-400">총 {total} 단위 · {n}일</span>
+        <h3 className="text-sm font-semibold text-ink">번다운</h3>
+        <span className="font-mono text-xs text-ash">총 {total} 단위 · {n}일</span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
         {/* 축 */}
         <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke="#e2e8f0" />
         <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke="#e2e8f0" />
         {/* 이상선 */}
-        <polyline points={idealPts} fill="none" stroke="#cbd5e1" strokeDasharray="4 4" strokeWidth={2} />
+        <polyline points={idealPts} fill="none" stroke="#bbbbbb" strokeDasharray="4 4" strokeWidth={2} />
         {/* 실제선 */}
-        {actualPts && <polyline points={actualPts} fill="none" stroke="#4f46e5" strokeWidth={2} />}
+        {actualPts && <polyline points={actualPts} fill="none" stroke="#ea2804" strokeWidth={2} />}
         {/* 시작/끝 라벨 */}
         <text x={PAD} y={H - 8} fontSize="9" fill="#94a3b8">
           {sprint.start_date}
@@ -337,8 +337,8 @@ function Burndown({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] }) {
           0
         </text>
       </svg>
-      <div className="flex gap-4 text-[11px] text-slate-500">
-        <span>— 이상선(점선)</span>
+      <div className="flex gap-4 text-[11px] text-mute">
+        <span className="text-stone">— 이상선(점선)</span>
         <span className="text-brand">— 실제 잔여</span>
       </div>
     </div>

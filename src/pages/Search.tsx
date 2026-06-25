@@ -134,18 +134,18 @@ export default function Search() {
         <h1 className="mb-4 text-xl font-bold">검색</h1>
 
         <div className="relative mb-6">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ash">🔍</span>
           <input
             autoFocus
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="메시지, 티켓, 파일, 공지, 채널 검색 (2자 이상)"
-            className="w-full rounded-lg border border-slate-300 py-2.5 pl-9 pr-9 text-sm outline-none focus:border-brand"
+            className="w-full rounded-full border border-hairline py-2.5 pl-9 pr-9 text-sm outline-none focus:border-brand"
           />
           {q && (
             <button
               onClick={() => setQ('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-ash hover:text-charcoal"
               title="지우기"
             >
               ✕
@@ -154,7 +154,7 @@ export default function Search() {
         </div>
 
         {/* 상태 표시줄 */}
-        <div className="mb-4 text-sm text-slate-400">
+        <div className="mb-4 text-sm text-ash">
           {loading
             ? '검색 중…'
             : tooShort
@@ -166,7 +166,7 @@ export default function Search() {
 
         {/* 빈 상태 */}
         {!loading && debounced.length >= 2 && total === 0 && (
-          <div className="rounded-xl border bg-white p-8 text-center text-sm text-slate-400">
+          <div className="rounded-xl border border-hairline bg-white p-8 text-center text-sm text-ash">
             “{debounced}” 에 대한 결과가 없습니다.
           </div>
         )}
@@ -177,8 +177,8 @@ export default function Search() {
             <Section title="채널" icon="💬" count={results.channels.length}>
               {results.channels.map((c) => (
                 <ResultRow key={c.id} onClick={() => navigate(`/channels/${c.id}`)}>
-                  <div className="truncate font-medium text-slate-800"># {c.name}</div>
-                  {c.description && <div className="truncate text-xs text-slate-400">{c.description}</div>}
+                  <div className="truncate font-medium text-ink"># {c.name}</div>
+                  {c.description && <div className="truncate text-xs text-ash">{c.description}</div>}
                 </ResultRow>
               ))}
             </Section>
@@ -189,9 +189,9 @@ export default function Search() {
             <Section title="메시지" icon="🗨️" count={results.messages.length}>
               {results.messages.map((m) => (
                 <ResultRow key={m.id} onClick={() => navigate(`/channels/${m.channel_id}`)}>
-                  <div className="line-clamp-2 whitespace-pre-wrap text-sm text-slate-700">{m.body}</div>
-                  <div className="mt-0.5 text-xs text-slate-400">
-                    {m.profiles?.full_name ?? m.profiles?.email ?? '익명'} · {new Date(m.created_at).toLocaleString()}
+                  <div className="line-clamp-2 whitespace-pre-wrap text-sm text-body">{m.body}</div>
+                  <div className="mt-0.5 text-xs text-ash">
+                    <span className="font-semibold text-ink">{m.profiles?.full_name ?? m.profiles?.email ?? '익명'}</span> · <span className="font-mono">{new Date(m.created_at).toLocaleString()}</span>
                   </div>
                 </ResultRow>
               ))}
@@ -204,12 +204,12 @@ export default function Search() {
               {results.tickets.map((t) => (
                 <ResultRow key={t.id} onClick={() => navigate('/tickets')}>
                   <div className="flex items-center gap-2">
-                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-slate-500">
+                    <span className="rounded-full bg-bone px-1.5 py-0.5 text-[10px] font-semibold uppercase text-mute">
                       {t.type}
                     </span>
-                    <span className="truncate font-medium text-slate-800">{t.title}</span>
+                    <span className="truncate font-medium text-ink">{t.title}</span>
                   </div>
-                  {t.description && <div className="mt-0.5 line-clamp-1 text-xs text-slate-400">{t.description}</div>}
+                  {t.description && <div className="mt-0.5 line-clamp-1 text-xs text-ash">{t.description}</div>}
                 </ResultRow>
               ))}
             </Section>
@@ -220,8 +220,8 @@ export default function Search() {
             <Section title="파일" icon="📄" count={results.files.length}>
               {results.files.map((f) => (
                 <ResultRow key={f.id} onClick={() => openFile(f)}>
-                  <div className="truncate font-medium text-slate-800">📄 {f.name}</div>
-                  <div className="text-xs text-slate-400">
+                  <div className="truncate font-mono font-medium text-ink">📄 {f.name}</div>
+                  <div className="font-mono text-xs text-ash">
                     {f.mime_type ?? '파일'} · {new Date(f.created_at).toLocaleString()}
                   </div>
                 </ResultRow>
@@ -234,8 +234,8 @@ export default function Search() {
             <Section title="공지" icon="📢" count={results.announcements.length}>
               {results.announcements.map((a) => (
                 <ResultRow key={a.id} onClick={() => navigate('/announcements')}>
-                  <div className="truncate font-medium text-slate-800">{a.title}</div>
-                  <div className="mt-0.5 line-clamp-1 text-xs text-slate-400">{a.body}</div>
+                  <div className="truncate font-medium text-ink">{a.title}</div>
+                  <div className="mt-0.5 line-clamp-1 text-xs text-ash">{a.body}</div>
                 </ResultRow>
               ))}
             </Section>
@@ -259,19 +259,19 @@ function Section({
 }) {
   return (
     <section>
-      <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-500">
+      <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-mute">
         <span>{icon}</span>
         {title}
-        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-normal text-slate-400">{count}</span>
+        <span className="rounded-full bg-bone px-2 py-0.5 font-mono text-xs font-normal text-ash">{count}</span>
       </h2>
-      <div className="divide-y overflow-hidden rounded-xl border bg-white">{children}</div>
+      <div className="divide-y divide-hairline overflow-hidden rounded-xl border border-hairline bg-white">{children}</div>
     </section>
   )
 }
 
 function ResultRow({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className="block w-full px-4 py-2.5 text-left hover:bg-slate-50">
+    <button onClick={onClick} className="block w-full px-4 py-2.5 text-left hover:bg-bone">
       {children}
     </button>
   )

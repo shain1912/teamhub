@@ -41,11 +41,11 @@ const TYPE_LABEL: Record<TicketType, string> = {
 }
 
 const TYPE_BADGE: Record<TicketType, string> = {
-  epic: 'bg-purple-100 text-purple-700',
-  story: 'bg-emerald-100 text-emerald-700',
-  task: 'bg-blue-100 text-blue-700',
-  bug: 'bg-red-100 text-red-700',
-  subtask: 'bg-slate-100 text-slate-600',
+  epic: 'rounded-full font-mono lowercase bg-purple-100 text-purple-700',
+  story: 'rounded-full font-mono lowercase bg-emerald-100 text-emerald-700',
+  task: 'rounded-full font-mono lowercase bg-blue-100 text-blue-700',
+  bug: 'rounded-full font-mono lowercase bg-red-100 text-red-700',
+  subtask: 'rounded-full font-mono lowercase bg-bone text-charcoal',
 }
 
 const PRIORITIES: TicketPriority[] = ['low', 'medium', 'high', 'urgent']
@@ -231,10 +231,10 @@ export default function Tickets() {
     <div className="flex h-full">
       <div className="flex min-w-0 flex-1 flex-col p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold">티켓</h1>
+          <h1 className="font-display text-xl font-bold text-ink">티켓</h1>
           <button
             onClick={() => setOpen((v) => !v)}
-            className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
+            className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             + 새 티켓
           </button>
@@ -242,11 +242,11 @@ export default function Tickets() {
 
         {/* 필터 바 */}
         <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-xs font-semibold text-slate-400">필터</span>
+          <span className="text-xs font-semibold text-ash">필터</span>
           <select
             value={assigneeFilter}
             onChange={(e) => setAssigneeFilter(e.target.value)}
-            className="rounded-lg border px-2 py-1 text-sm"
+            className="rounded-full border border-hairline px-2 py-1 text-sm"
           >
             <option value="">담당자: 전체</option>
             <option value="__none__">미지정</option>
@@ -259,7 +259,7 @@ export default function Tickets() {
           <select
             value={labelFilter}
             onChange={(e) => setLabelFilter(e.target.value)}
-            className="rounded-lg border px-2 py-1 text-sm"
+            className="rounded-full border border-hairline px-2 py-1 text-sm"
           >
             <option value="">라벨: 전체</option>
             {labelOptions.map((l) => (
@@ -274,7 +274,7 @@ export default function Tickets() {
                 setLabelFilter('')
                 setAssigneeFilter('')
               }}
-              className="rounded-lg border px-2 py-1 text-xs text-slate-500 hover:bg-slate-50"
+              className="rounded-full border border-hairline px-2 py-1 text-xs text-mute hover:bg-bone"
             >
               초기화
             </button>
@@ -282,27 +282,27 @@ export default function Tickets() {
         </div>
 
         {open && (
-          <form onSubmit={create} className="mb-4 grid gap-2 rounded-xl border bg-white p-4 md:grid-cols-2">
+          <form onSubmit={create} className="mb-4 grid gap-2 rounded-xl border border-hairline bg-white p-4 md:grid-cols-2">
             <input
               required
               placeholder="제목"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="rounded-lg border px-3 py-2 text-sm md:col-span-2"
+              className="rounded-full border border-hairline px-3 py-2 text-sm md:col-span-2"
             />
             <textarea
               placeholder="설명"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="rounded-lg border px-3 py-2 text-sm md:col-span-2"
+              className="rounded-xl border border-hairline px-3 py-2 text-sm md:col-span-2"
               rows={2}
             />
-            <label className="text-xs text-slate-500">
+            <label className="text-xs text-mute">
               종류
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value as TicketType })}
-                className="mt-0.5 w-full rounded-lg border px-2 py-2 text-sm text-slate-900"
+                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
               >
                 {TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -311,12 +311,12 @@ export default function Tickets() {
                 ))}
               </select>
             </label>
-            <label className="text-xs text-slate-500">
+            <label className="text-xs text-mute">
               우선순위
               <select
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value as TicketPriority })}
-                className="mt-0.5 w-full rounded-lg border px-2 py-2 text-sm text-slate-900"
+                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
               >
                 {PRIORITIES.map((p) => (
                   <option key={p} value={p}>
@@ -329,21 +329,21 @@ export default function Tickets() {
               placeholder="라벨 (쉼표로 구분)"
               value={form.labels}
               onChange={(e) => setForm({ ...form, labels: e.target.value })}
-              className="rounded-lg border px-3 py-2 text-sm"
+              className="rounded-full border border-hairline px-3 py-2 text-sm"
             />
             <input
               type="number"
               placeholder="스토리 포인트"
               value={form.story_points}
               onChange={(e) => setForm({ ...form, story_points: e.target.value })}
-              className="rounded-lg border px-3 py-2 text-sm"
+              className="rounded-full border border-hairline px-3 py-2 text-sm"
             />
-            <label className="text-xs text-slate-500">
+            <label className="text-xs text-mute">
               담당자
               <select
                 value={form.assignee_id}
                 onChange={(e) => setForm({ ...form, assignee_id: e.target.value })}
-                className="mt-0.5 w-full rounded-lg border px-2 py-2 text-sm text-slate-900"
+                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
               >
                 <option value="">미지정</option>
                 {profiles.map((p) => (
@@ -353,12 +353,12 @@ export default function Tickets() {
                 ))}
               </select>
             </label>
-            <label className="text-xs text-slate-500">
+            <label className="text-xs text-mute">
               스프린트
               <select
                 value={form.sprint_id}
                 onChange={(e) => setForm({ ...form, sprint_id: e.target.value })}
-                className="mt-0.5 w-full rounded-lg border px-2 py-2 text-sm text-slate-900"
+                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
               >
                 <option value="">없음</option>
                 {sprints.map((s) => (
@@ -368,12 +368,12 @@ export default function Tickets() {
                 ))}
               </select>
             </label>
-            <label className="text-xs text-slate-500 md:col-span-2">
+            <label className="text-xs text-mute md:col-span-2">
               부모 티켓
               <select
                 value={form.parent_ticket_id}
                 onChange={(e) => setForm({ ...form, parent_ticket_id: e.target.value })}
-                className="mt-0.5 w-full rounded-lg border px-2 py-2 text-sm text-slate-900"
+                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
               >
                 <option value="">없음</option>
                 {tickets.map((t) => (
@@ -390,11 +390,11 @@ export default function Tickets() {
                   setForm(EMPTY_FORM)
                   setOpen(false)
                 }}
-                className="rounded-lg border px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                className="rounded-full border border-hairline px-4 py-2 text-sm text-charcoal hover:bg-bone"
               >
                 취소
               </button>
-              <button className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+              <button className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
                 생성
               </button>
             </div>
@@ -427,12 +427,12 @@ export default function Tickets() {
                   const t = tickets.find((x) => x.id === id)
                   if (t && t.status !== col.key) move(t, col.key)
                 }}
-                className={`flex min-h-0 flex-col rounded-xl bg-slate-100 p-2 transition ${
+                className={`flex min-h-0 flex-col rounded-xl bg-bone p-2 transition ${
                   isDropTarget ? 'bg-brand/10 ring-2 ring-brand' : ''
                 }`}
               >
-                <div className="px-1 py-1 text-xs font-semibold text-slate-500">
-                  {col.label} <span className="text-slate-400">({list.length})</span>
+                <div className="px-1 py-1 text-xs font-semibold text-mute">
+                  {col.label} <span className="font-mono text-ash">({list.length})</span>
                 </div>
                 <div className="space-y-2 overflow-y-auto">
                   {list.map((t) => (
@@ -444,31 +444,31 @@ export default function Tickets() {
                         e.dataTransfer.effectAllowed = 'move'
                       }}
                       onClick={() => setSelectedId(t.id)}
-                      className={`cursor-pointer rounded-lg border-l-4 bg-white p-2 shadow-sm hover:shadow active:cursor-grabbing ${PRIO[t.priority]} ${
+                      className={`cursor-pointer rounded-xl border border-hairline border-l-4 bg-white p-2 hover:border-stone active:cursor-grabbing ${PRIO[t.priority]} ${
                         selectedId === t.id ? 'ring-2 ring-brand' : ''
                       }`}
                     >
                       <div className="flex items-start justify-between gap-1">
-                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[t.type]}`}>
+                        <span className={`px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[t.type]}`}>
                           {TYPE_LABEL[t.type]}
                         </span>
                         {t.story_points != null && (
-                          <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500">
+                          <span className="rounded-full bg-bone px-1.5 py-0.5 font-mono text-[10px] text-mute">
                             {t.story_points} SP
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 text-sm font-medium">{t.title}</div>
+                      <div className="mt-1 text-sm font-medium text-ink">{t.title}</div>
                       {(t.labels ?? []).length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1">
                           {t.labels.map((l) => (
-                            <span key={l} className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-600">
+                            <span key={l} className="rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-charcoal">
                               {l}
                             </span>
                           ))}
                         </div>
                       )}
-                      <div className="mt-1.5 text-[11px] text-slate-400">
+                      <div className="mt-1.5 text-[11px] text-ash">
                         {nameOf(profileMap, t.assignee_id)}
                       </div>
                       <div className="mt-2 flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
@@ -476,7 +476,7 @@ export default function Tickets() {
                           <button
                             key={c.key}
                             onClick={() => move(t, c.key)}
-                            className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-500 hover:bg-slate-200"
+                            className="rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-mute hover:bg-stone/40"
                           >
                             → {c.label}
                           </button>
@@ -484,7 +484,7 @@ export default function Tickets() {
                       </div>
                     </div>
                   ))}
-                  {list.length === 0 && <div className="px-1 py-2 text-[11px] text-slate-400">없음</div>}
+                  {list.length === 0 && <div className="px-1 py-2 text-[11px] text-ash">없음</div>}
                 </div>
               </div>
             )
@@ -598,12 +598,12 @@ function DetailPanel({
   const parent = ticket.parent_ticket_id ? allTickets.find((t) => t.id === ticket.parent_ticket_id) : null
 
   return (
-    <div className="flex w-[26rem] shrink-0 flex-col border-l bg-white">
-      <div className="flex items-center justify-between border-b px-4 py-3">
-        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[ticket.type]}`}>
+    <div className="flex w-[26rem] shrink-0 flex-col border-l border-hairline bg-white">
+      <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
+        <span className={`px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[ticket.type]}`}>
           {TYPE_LABEL[ticket.type]}
         </span>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-700" title="닫기">
+        <button onClick={onClose} className="text-ash hover:text-ink" title="닫기">
           ✕
         </button>
       </div>
@@ -617,12 +617,12 @@ function DetailPanel({
             const v = titleDraft.trim()
             if (v && v !== ticket.title) onPatch(ticket, { title: v })
           }}
-          className="w-full rounded-lg border px-2 py-1.5 text-base font-semibold outline-none focus:border-brand"
+          className="w-full rounded-xl border border-hairline px-2 py-1.5 text-base font-semibold outline-none focus:border-brand"
         />
 
         {/* 부모 링크 */}
         {parent && (
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-mute">
             부모:{' '}
             <button onClick={() => onSelect(parent.id)} className="text-brand hover:underline">
               {parent.title}
@@ -632,7 +632,7 @@ function DetailPanel({
 
         {/* 설명 */}
         <div>
-          <div className="mb-1 text-xs font-semibold text-slate-400">설명</div>
+          <div className="mb-1 text-xs font-semibold text-ash">설명</div>
           <textarea
             value={descDraft}
             onChange={(e) => setDescDraft(e.target.value)}
@@ -641,19 +641,19 @@ function DetailPanel({
               if (v !== (ticket.description ?? '')) onPatch(ticket, { description: v || null })
             }}
             rows={3}
-            className="w-full rounded-lg border px-2 py-1.5 text-sm outline-none focus:border-brand"
+            className="w-full rounded-xl border border-hairline px-2 py-1.5 text-sm outline-none focus:border-brand"
             placeholder="설명 추가..."
           />
         </div>
 
         {/* 인라인 편집 필드 */}
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <label className="text-slate-500">
+          <label className="text-mute">
             상태
             <select
               value={ticket.status}
               onChange={(e) => onPatch(ticket, { status: e.target.value as TicketStatus })}
-              className="mt-0.5 w-full rounded-lg border px-2 py-1.5 text-sm text-slate-900"
+              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               {COLUMNS.map((c) => (
                 <option key={c.key} value={c.key}>
@@ -662,12 +662,12 @@ function DetailPanel({
               ))}
             </select>
           </label>
-          <label className="text-slate-500">
+          <label className="text-mute">
             우선순위
             <select
               value={ticket.priority}
               onChange={(e) => onPatch(ticket, { priority: e.target.value as TicketPriority })}
-              className="mt-0.5 w-full rounded-lg border px-2 py-1.5 text-sm text-slate-900"
+              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               {PRIORITIES.map((p) => (
                 <option key={p} value={p}>
@@ -676,12 +676,12 @@ function DetailPanel({
               ))}
             </select>
           </label>
-          <label className="text-slate-500">
+          <label className="text-mute">
             종류
             <select
               value={ticket.type}
               onChange={(e) => onPatch(ticket, { type: e.target.value as TicketType })}
-              className="mt-0.5 w-full rounded-lg border px-2 py-1.5 text-sm text-slate-900"
+              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               {TYPES.map((t) => (
                 <option key={t} value={t}>
@@ -690,7 +690,7 @@ function DetailPanel({
               ))}
             </select>
           </label>
-          <label className="text-slate-500">
+          <label className="text-mute">
             스토리 포인트
             <input
               type="number"
@@ -701,15 +701,15 @@ function DetailPanel({
                 const val = sp !== null && !Number.isNaN(sp) ? sp : null
                 if (val !== ticket.story_points) onPatch(ticket, { story_points: val })
               }}
-              className="mt-0.5 w-full rounded-lg border px-2 py-1.5 text-sm text-slate-900"
+              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
             />
           </label>
-          <label className="text-slate-500">
+          <label className="text-mute">
             담당자
             <select
               value={ticket.assignee_id ?? ''}
               onChange={(e) => onPatch(ticket, { assignee_id: e.target.value || null })}
-              className="mt-0.5 w-full rounded-lg border px-2 py-1.5 text-sm text-slate-900"
+              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               <option value="">미지정</option>
               {profiles.map((p) => (
@@ -719,12 +719,12 @@ function DetailPanel({
               ))}
             </select>
           </label>
-          <label className="text-slate-500">
+          <label className="text-mute">
             스프린트
             <select
               value={ticket.sprint_id ?? ''}
               onChange={(e) => onPatch(ticket, { sprint_id: e.target.value || null })}
-              className="mt-0.5 w-full rounded-lg border px-2 py-1.5 text-sm text-slate-900"
+              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               <option value="">없음</option>
               {sprints.map((s) => (
@@ -736,24 +736,24 @@ function DetailPanel({
           </label>
         </div>
 
-        <div className="text-xs text-slate-400">보고자: {nameOf(profileMap, ticket.reporter_id)}</div>
+        <div className="text-xs text-ash">보고자: {nameOf(profileMap, ticket.reporter_id)}</div>
 
         {/* 라벨 */}
         <div>
-          <div className="mb-1 text-xs font-semibold text-slate-400">라벨</div>
+          <div className="mb-1 text-xs font-semibold text-ash">라벨</div>
           <div className="flex flex-wrap items-center gap-1">
             {(ticket.labels ?? []).map((l) => (
               <span
                 key={l}
-                className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-600"
+                className="inline-flex items-center gap-1 rounded-full bg-bone px-1.5 py-0.5 text-[11px] text-charcoal"
               >
                 {l}
-                <button onClick={() => removeLabel(l)} className="text-slate-400 hover:text-red-500" title="삭제">
+                <button onClick={() => removeLabel(l)} className="text-ash hover:text-red-500" title="삭제">
                   ✕
                 </button>
               </span>
             ))}
-            {(ticket.labels ?? []).length === 0 && <span className="text-[11px] text-slate-400">없음</span>}
+            {(ticket.labels ?? []).length === 0 && <span className="text-[11px] text-ash">없음</span>}
           </div>
           <div className="mt-1.5 flex gap-1">
             <input
@@ -766,9 +766,9 @@ function DetailPanel({
                 }
               }}
               placeholder="라벨 추가"
-              className="flex-1 rounded-lg border px-2 py-1 text-sm"
+              className="flex-1 rounded-full border border-hairline px-2 py-1 text-sm"
             />
-            <button onClick={addLabel} className="rounded-lg border px-2 text-sm hover:bg-slate-50">
+            <button onClick={addLabel} className="rounded-full border border-hairline px-2 text-sm hover:bg-bone">
               +
             </button>
           </div>
@@ -776,54 +776,54 @@ function DetailPanel({
 
         {/* 서브태스크 */}
         <div>
-          <div className="mb-1 text-xs font-semibold text-slate-400">
-            서브태스크 <span className="text-slate-300">({subtasks.length})</span>
+          <div className="mb-1 text-xs font-semibold text-ash">
+            서브태스크 <span className="font-mono text-stone">({subtasks.length})</span>
           </div>
           <div className="space-y-1">
             {subtasks.map((s) => (
               <button
                 key={s.id}
                 onClick={() => onSelect(s.id)}
-                className="flex w-full items-center gap-2 rounded-lg border px-2 py-1.5 text-left text-sm hover:bg-slate-50"
+                className="flex w-full items-center gap-2 rounded-xl border border-hairline px-2 py-1.5 text-left text-sm hover:bg-bone"
               >
-                <span className={`rounded px-1 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[s.type]}`}>
+                <span className={`px-1 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[s.type]}`}>
                   {TYPE_LABEL[s.type]}
                 </span>
                 <span className="flex-1 truncate">{s.title}</span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-ash">
                   {COLUMNS.find((c) => c.key === s.status)?.label}
                 </span>
               </button>
             ))}
-            {subtasks.length === 0 && <div className="text-[11px] text-slate-400">없음</div>}
+            {subtasks.length === 0 && <div className="text-[11px] text-ash">없음</div>}
           </div>
         </div>
 
         {/* 코멘트 스레드 */}
         <div>
-          <div className="mb-1 text-xs font-semibold text-slate-400">
-            코멘트 <span className="text-slate-300">({comments.length})</span>
+          <div className="mb-1 text-xs font-semibold text-ash">
+            코멘트 <span className="font-mono text-stone">({comments.length})</span>
           </div>
           <div className="space-y-2">
             {comments.map((c) => (
-              <div key={c.id} className="rounded-lg bg-slate-50 px-2 py-1.5 text-sm">
-                <div className="text-[11px] text-slate-400">
-                  <b className="text-slate-600">{c.profiles?.full_name ?? c.profiles?.email ?? '익명'}</b>{' '}
-                  {new Date(c.created_at).toLocaleString()}
+              <div key={c.id} className="rounded-xl bg-bone px-2 py-1.5 text-sm">
+                <div className="text-[11px] text-ash">
+                  <b className="text-charcoal">{c.profiles?.full_name ?? c.profiles?.email ?? '익명'}</b>{' '}
+                  <span className="font-mono">{new Date(c.created_at).toLocaleString()}</span>
                 </div>
                 <div className="whitespace-pre-wrap">{c.body}</div>
               </div>
             ))}
-            {comments.length === 0 && <div className="text-[11px] text-slate-400">아직 코멘트가 없습니다.</div>}
+            {comments.length === 0 && <div className="text-[11px] text-ash">아직 코멘트가 없습니다.</div>}
           </div>
           <form onSubmit={addComment} className="mt-2 flex gap-1">
             <input
               value={commentBody}
               onChange={(e) => setCommentBody(e.target.value)}
               placeholder="코멘트 작성..."
-              className="flex-1 rounded-lg border px-2 py-1.5 text-sm outline-none focus:border-brand"
+              className="flex-1 rounded-full border border-hairline px-2 py-1.5 text-sm outline-none focus:border-brand"
             />
-            <button className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
+            <button className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
               작성
             </button>
           </form>

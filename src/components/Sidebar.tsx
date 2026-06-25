@@ -18,27 +18,39 @@ export default function Sidebar() {
   const { profile, signOut } = useAuth()
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col bg-slate-900 text-slate-200">
-      <div className="px-5 py-4 text-lg font-bold text-white">TeamHub</div>
-      <nav className="flex-1 space-y-1 overflow-y-auto px-2">
+    <aside className="flex w-56 shrink-0 flex-col bg-ink text-white">
+      <div className="flex items-center gap-2 px-5 py-5">
+        <span className="h-2.5 w-2.5 rounded-full bg-brand" />
+        <span className="font-display text-xl font-bold tracking-tight text-white">TeamHub</span>
+      </div>
+
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-2">
         {NAV.map((n) => (
           <NavLink
             key={n.to}
             to={n.to}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${
-                isActive ? 'bg-brand text-white' : 'hover:bg-slate-800'
+              `group relative flex items-center gap-3 rounded-full px-3 py-2 text-sm transition ${
+                isActive ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white'
               }`
             }
           >
-            <span>{n.icon}</span>
-            {n.label}
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-brand" />
+                )}
+                <span className="text-base">{n.icon}</span>
+                {n.label}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
-      <div className="border-t border-slate-800 px-4 py-3 text-xs">
-        <div className="truncate text-slate-300">{profile?.full_name ?? profile?.email ?? '사용자'}</div>
-        <button onClick={signOut} className="mt-1 text-slate-400 hover:text-white">
+
+      <div className="border-t border-white/10 px-4 py-3 text-xs">
+        <div className="truncate text-white/80">{profile?.full_name ?? profile?.email ?? '사용자'}</div>
+        <button onClick={signOut} className="mt-1 text-white/45 transition hover:text-white">
           로그아웃
         </button>
       </div>

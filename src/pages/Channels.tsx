@@ -249,8 +249,8 @@ export default function Channels() {
   return (
     <div className="flex h-full">
       {/* 채널 목록 */}
-      <div className="w-48 shrink-0 border-r bg-white">
-        <div className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-400">
+      <div className="w-48 shrink-0 border-r border-hairline bg-canvas">
+        <div className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-ash">
           채널
           <button onClick={createChannel} className="text-brand hover:underline">+ 추가</button>
         </div>
@@ -259,7 +259,7 @@ export default function Channels() {
             key={c.id}
             onClick={() => navigate(`/channels/${c.id}`)}
             className={`block w-full truncate px-3 py-1.5 text-left text-sm ${
-              c.id === channelId ? 'bg-slate-100 font-semibold text-brand' : 'hover:bg-slate-50'
+              c.id === channelId ? 'rounded-full bg-bone font-semibold text-brand' : 'text-body hover:bg-bone'
             }`}
           >
             # {c.name}
@@ -281,9 +281,9 @@ export default function Channels() {
           uploadFiles(e.dataTransfer.files)
         }}
       >
-        <div className="border-b bg-white px-4 py-2 font-semibold"># {current?.name ?? '채널 선택'}</div>
+        <div className="border-b border-hairline bg-white px-4 py-2 font-semibold text-ink"># {current?.name ?? '채널 선택'}</div>
 
-        <div className={`relative flex-1 overflow-y-auto px-4 py-3 ${dragOver ? 'bg-brand/5' : ''}`}>
+        <div className={`relative flex-1 overflow-y-auto bg-white px-4 py-3 ${dragOver ? 'bg-brand/5' : ''}`}>
           {dragOver && (
             <div className="pointer-events-none absolute inset-2 grid place-items-center rounded-xl border-2 border-dashed border-brand text-brand">
               여기에 파일을 놓아 업로드
@@ -305,8 +305,8 @@ export default function Channels() {
           <div ref={endRef} />
         </div>
 
-        <form onSubmit={send} className="flex items-center gap-2 border-t bg-white p-3">
-          <label className="cursor-pointer rounded-lg border px-2 py-2 text-sm hover:bg-slate-50" title="파일 첨부">
+        <form onSubmit={send} className="flex items-center gap-2 border-t border-hairline bg-white p-3">
+          <label className="cursor-pointer rounded-full border border-hairline px-2 py-2 text-sm hover:bg-bone" title="파일 첨부">
             📎
             <input type="file" multiple hidden onChange={(e) => uploadFiles(e.target.files)} />
           </label>
@@ -314,9 +314,9 @@ export default function Channels() {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder={`#${current?.name ?? ''} 에 메시지 (@이름 으로 멘션)`}
-            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand"
+            className="flex-1 rounded-full border border-hairline px-3 py-2 text-sm outline-none focus:border-brand"
           />
-          <button className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+          <button className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
             전송
           </button>
         </form>
@@ -346,13 +346,13 @@ export default function Channels() {
       )}
 
       {/* 파일함 */}
-      <div className="hidden w-56 shrink-0 border-l bg-white lg:block">
-        <div className="px-3 py-2 text-xs font-semibold text-slate-400">파일</div>
+      <div className="hidden w-56 shrink-0 border-l border-hairline bg-canvas lg:block">
+        <div className="px-3 py-2 text-xs font-semibold text-ash">파일</div>
         <div className="space-y-2 px-2 pb-4">
           {files.map((f) => (
             <FileCard key={f.id} file={f} onOpen={() => openFile(f)} />
           ))}
-          {files.length === 0 && <p className="px-2 text-xs text-slate-400">아직 파일이 없습니다.</p>}
+          {files.length === 0 && <p className="px-2 text-xs text-ash">아직 파일이 없습니다.</p>}
         </div>
       </div>
 
@@ -394,10 +394,10 @@ function MessageRow({
 
   return (
     <div className="group mb-3">
-      <div className="text-xs text-slate-400">
-        <b className="text-slate-600">{name}</b> {new Date(message.created_at).toLocaleString()}
+      <div className="text-xs text-ash">
+        <span className="font-semibold text-ink">{name}</span> <span className="font-mono text-mute">{new Date(message.created_at).toLocaleString()}</span>
       </div>
-      <div className="whitespace-pre-wrap text-sm">{message.body}</div>
+      <div className="whitespace-pre-wrap text-sm text-body">{message.body}</div>
 
       <div className="mt-1 flex flex-wrap items-center gap-1">
         {Array.from(groups.entries()).map(([emoji, rs]) => {
@@ -407,11 +407,11 @@ function MessageRow({
               key={emoji}
               onClick={() => onToggleReaction(emoji)}
               className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${
-                mine ? 'border-brand bg-brand/10 text-brand' : 'border-slate-200 bg-white hover:bg-slate-50'
+                mine ? 'border-brand bg-brand/10 text-brand' : 'border-hairline bg-white hover:bg-bone'
               }`}
             >
               <span>{emoji}</span>
-              <span>{rs.length}</span>
+              <span className="font-mono">{rs.length}</span>
             </button>
           )
         })}
@@ -419,13 +419,13 @@ function MessageRow({
         <div className="relative">
           <button
             onClick={() => setPicker((v) => !v)}
-            className="rounded-full border border-slate-200 px-2 py-0.5 text-xs text-slate-400 opacity-0 hover:bg-slate-50 group-hover:opacity-100"
+            className="rounded-full border border-hairline px-2 py-0.5 text-xs text-ash opacity-0 hover:bg-bone group-hover:opacity-100"
             title="반응 추가"
           >
             🙂+
           </button>
           {picker && (
-            <div className="absolute z-10 mt-1 flex gap-1 rounded-lg border bg-white p-1 shadow-md">
+            <div className="absolute z-10 mt-1 flex gap-1 rounded-xl border border-hairline bg-white p-1">
               {quickEmojis.map((emoji) => (
                 <button
                   key={emoji}
@@ -433,7 +433,7 @@ function MessageRow({
                     onToggleReaction(emoji)
                     setPicker(false)
                   }}
-                  className="rounded px-1.5 py-0.5 text-base hover:bg-slate-100"
+                  className="rounded-full px-1.5 py-0.5 text-base hover:bg-bone"
                 >
                   {emoji}
                 </button>
@@ -444,7 +444,7 @@ function MessageRow({
 
         <button
           onClick={onOpenThread}
-          className="rounded-full px-2 py-0.5 text-xs text-slate-400 hover:text-brand"
+          className="rounded-full px-2 py-0.5 text-xs text-ash hover:text-brand"
         >
           💬 답글{replyCount > 0 ? ` ${replyCount}` : ''}
         </button>
@@ -496,24 +496,24 @@ function ThreadPanel({
   }
 
   return (
-    <div className="flex w-80 shrink-0 flex-col border-l bg-white">
-      <div className="flex items-center justify-between border-b px-3 py-2">
-        <span className="text-sm font-semibold">스레드</span>
-        <button onClick={onClose} className="rounded px-1.5 text-slate-400 hover:bg-slate-100" aria-label="닫기">
+    <div className="flex w-80 shrink-0 flex-col border-l border-hairline bg-white">
+      <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
+        <span className="text-sm font-semibold text-ink">스레드</span>
+        <button onClick={onClose} className="rounded-full px-1.5 text-ash hover:bg-bone" aria-label="닫기">
           ✕
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-3">
         {/* 원본 메시지 */}
-        <div className="mb-3 rounded-xl border bg-slate-50 p-2">
-          <div className="text-xs text-slate-400">
-            <b className="text-slate-600">{parentName}</b> {new Date(parent.created_at).toLocaleString()}
+        <div className="mb-3 rounded-xl border border-hairline bg-bone p-2">
+          <div className="text-xs text-ash">
+            <span className="font-semibold text-ink">{parentName}</span> <span className="font-mono text-mute">{new Date(parent.created_at).toLocaleString()}</span>
           </div>
-          <div className="whitespace-pre-wrap text-sm">{parent.body}</div>
+          <div className="whitespace-pre-wrap text-sm text-body">{parent.body}</div>
         </div>
 
-        <div className="mb-2 text-xs font-semibold text-slate-400">답글 {replies.length}</div>
+        <div className="mb-2 text-xs font-semibold text-ash">답글 <span className="font-mono">{replies.length}</span></div>
         {replies.map((m) => {
           const rs = reactions.filter((r) => r.message_id === m.id)
           const groups = new Map<string, Reaction[]>()
@@ -524,10 +524,10 @@ function ThreadPanel({
           }
           return (
             <div key={m.id} className="mb-3">
-              <div className="text-xs text-slate-400">
-                <b className="text-slate-600">{nameOf(m.user_id)}</b> {new Date(m.created_at).toLocaleString()}
+              <div className="text-xs text-ash">
+                <span className="font-semibold text-ink">{nameOf(m.user_id)}</span> <span className="font-mono text-mute">{new Date(m.created_at).toLocaleString()}</span>
               </div>
-              <div className="whitespace-pre-wrap text-sm">{m.body}</div>
+              <div className="whitespace-pre-wrap text-sm text-body">{m.body}</div>
               <div className="mt-1 flex flex-wrap items-center gap-1">
                 {Array.from(groups.entries()).map(([emoji, grs]) => {
                   const mine = myId ? grs.some((r) => r.user_id === myId) : false
@@ -536,11 +536,11 @@ function ThreadPanel({
                       key={emoji}
                       onClick={() => onToggleReaction(m.id, emoji)}
                       className={`flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-xs ${
-                        mine ? 'border-brand bg-brand/10 text-brand' : 'border-slate-200 bg-white hover:bg-slate-50'
+                        mine ? 'border-brand bg-brand/10 text-brand' : 'border-hairline bg-white hover:bg-bone'
                       }`}
                     >
                       <span>{emoji}</span>
-                      <span>{grs.length}</span>
+                      <span className="font-mono">{grs.length}</span>
                     </button>
                   )
                 })}
@@ -548,7 +548,7 @@ function ThreadPanel({
                   <button
                     key={emoji}
                     onClick={() => onToggleReaction(m.id, emoji)}
-                    className="rounded px-1 text-xs opacity-0 hover:bg-slate-100 group-hover:opacity-100"
+                    className="rounded-full px-1 text-xs opacity-0 hover:bg-bone group-hover:opacity-100"
                     title={`${emoji} 반응`}
                   >
                     {emoji}
@@ -558,17 +558,17 @@ function ThreadPanel({
             </div>
           )
         })}
-        {replies.length === 0 && <p className="text-xs text-slate-400">아직 답글이 없습니다.</p>}
+        {replies.length === 0 && <p className="text-xs text-ash">아직 답글이 없습니다.</p>}
       </div>
 
-      <form onSubmit={sendReply} className="flex items-center gap-2 border-t p-2">
+      <form onSubmit={sendReply} className="flex items-center gap-2 border-t border-hairline p-2">
         <input
           value={reply}
           onChange={(e) => setReply(e.target.value)}
           placeholder="답글 입력 (@이름 으로 멘션)"
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand"
+          className="flex-1 rounded-full border border-hairline px-3 py-2 text-sm outline-none focus:border-brand"
         />
-        <button className="rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+        <button className="rounded-full bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
           답글
         </button>
       </form>
@@ -599,19 +599,19 @@ function FileCard({ file, onOpen }: { file: FileRow; onOpen: () => void }) {
   }, [file.storage_path, previewable])
 
   return (
-    <div className="rounded-xl border bg-white p-2">
-      <button onClick={onOpen} className="block w-full truncate text-left text-sm font-medium hover:text-brand" title={file.name}>
+    <div className="rounded-xl border border-hairline bg-white p-2">
+      <button onClick={onOpen} className="block w-full truncate text-left font-mono text-sm font-medium text-body hover:text-brand" title={file.name}>
         📄 {file.name}
       </button>
       {isImage && url && (
-        <button onClick={onOpen} className="mt-1 block w-full overflow-hidden rounded-lg border">
+        <button onClick={onOpen} className="mt-1 block w-full overflow-hidden rounded-xl border border-hairline">
           <img src={url} alt={file.name} className="h-28 w-full object-cover" />
         </button>
       )}
       {isPdf && url && (
-        <iframe src={url} title={file.name} className="mt-1 h-32 w-full rounded-lg border" />
+        <iframe src={url} title={file.name} className="mt-1 h-32 w-full rounded-xl border border-hairline" />
       )}
-      {!previewable && <div className="mt-0.5 text-[11px] text-slate-400">클릭하여 다운로드</div>}
+      {!previewable && <div className="mt-0.5 font-mono text-[11px] text-ash">클릭하여 다운로드</div>}
     </div>
   )
 }
