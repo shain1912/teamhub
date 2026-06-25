@@ -46,6 +46,16 @@ async function idByName(table: string, ref?: string, col = 'name'): Promise<stri
   const like = await supabase.from(table).select('id').ilike(col, `%${ref}%`).limit(1).maybeSingle()
   return (like.data as any)?.id ?? null
 }
+// 삭제용: 정확매칭만(부분일치 금지). 못 찾으면 null, 둘 이상이면 '__AMBIGUOUS__'
+async function idExact(table: string, ref?: string, col = 'name'): Promise<string | null | '__AMBIGUOUS__'> {
+  if (!ref) return null
+  if (UUID.test(ref)) return ref
+  const { data } = await supabase.from(table).select('id').eq(col, ref).limit(2)
+  if (!data || data.length === 0) return null
+  if (data.length > 1) return '__AMBIGUOUS__'
+  return (data[0] as any).id
+}
+
 const channelId = (r?: string) => idByName('channels', r, 'name')
 const projectId = (r?: string) => idByName('projects', r, 'name')
 const sprintId = (r?: string) => idByName('sprints', r, 'name')
@@ -121,11 +131,33 @@ export const AI_TOOLS = [
   // 반응 / 알림
   fn('add_reaction', '메시지에 이모지 반응을 추가한다. message_id 는 UUID(list_messages 로 조회).', { message_id: S, emoji: S }, ['message_id', 'emoji']),
   fn('create_notification', '사용자에게 알림을 생성한다.', { person: S, type: S, title: S, body: S, link: S }, ['person', 'title']),
+  // 삭제 (파괴적 — 정확한 이름/UUID 만 매칭. 모호하면 거부)
+  fn('delete_ticket', '티켓을 삭제한다. ticket 은 정확한 제목 또는 UUID.', { ticket: S }, ['ticket']),
+  fn('delete_sprint', '스프린트를 삭제한다. sprint 는 정확한 이름 또는 UUID. (소속 티켓은 백로그로 빠짐)', { sprint: S }, ['sprint']),
+  fn('delete_project', '프로젝트를 삭제한다. project 는 정확한 이름 또는 UUID.', { project: S }, ['project']),
+  fn('delete_gantt_task', '간트 작업을 삭제한다. task 는 정확한 제목 또는 UUID.', { task: S }, ['task']),
+  fn('delete_checklist', '체크리스트(및 항목)를 삭제한다. checklist 는 정확한 제목 또는 UUID.', { checklist: S }, ['checklist']),
+  fn('delete_checklist_item', '체크리스트 항목을 삭제한다. item_id 는 UUID.', { item_id: S }, ['item_id']),
+  fn('delete_announcement', '공지를 삭제한다. announcement 는 정확한 제목 또는 UUID.', { announcement: S }, ['announcement']),
+  fn('delete_channel', '채널(및 메시지)을 삭제한다. channel 은 정확한 이름 또는 UUID.', { channel: S }, ['channel']),
 ] as const
 
 // ---------- 실행기 ----------
 const okR = (summary: string) => ({ ok: true, summary })
 const errR = (summary: string) => ({ ok: false, summary })
+
+// 정확매칭으로 찾은 id 로 삭제. id 가 null/모호면 안전하게 거부.
+async function delById(
+  table: string,
+  label: string,
+  id: string | null | '__AMBIGUOUS__',
+  ref: string,
+): Promise<{ ok: boolean; summary: string }> {
+  if (id === '__AMBIGUOUS__') return errR(`"${ref}" 와 일치하는 ${label}이 여러 개입니다. 더 정확히 지정하세요.`)
+  if (!id) return errR(`${label}을 찾을 수 없음(정확 일치): ${ref}`)
+  const { error } = await supabase.from(table).delete().eq('id', id)
+  return error ? errR(`${label} 삭제 실패: ${error.message}`) : okR(`${label} 삭제: "${ref}"`)
+}
 
 export async function executeAiTool(
   name: string,
@@ -341,6 +373,26 @@ export async function executeAiTool(
         })
         return error ? errR(`알림 실패: ${error.message}`) : okR(`알림 전송 → ${args.person}: "${args.title}"`)
       }
+
+      // ---- 삭제 (정확매칭) ----
+      case 'delete_ticket':
+        return delById('tickets', '티켓', await idExact('tickets', args.ticket, 'title'), args.ticket)
+      case 'delete_sprint':
+        return delById('sprints', '스프린트', await idExact('sprints', args.sprint, 'name'), args.sprint)
+      case 'delete_project':
+        return delById('projects', '프로젝트', await idExact('projects', args.project, 'name'), args.project)
+      case 'delete_gantt_task':
+        return delById('gantt_tasks', '간트 작업', await idExact('gantt_tasks', args.task, 'title'), args.task)
+      case 'delete_checklist':
+        return delById('checklists', '체크리스트', await idExact('checklists', args.checklist, 'title'), args.checklist)
+      case 'delete_checklist_item':
+        return UUID.test(args.item_id)
+          ? delById('checklist_items', '체크리스트 항목', args.item_id, args.item_id)
+          : errR(`잘못된 item_id: ${args.item_id}`)
+      case 'delete_announcement':
+        return delById('announcements', '공지', await idExact('announcements', args.announcement, 'title'), args.announcement)
+      case 'delete_channel':
+        return delById('channels', '채널', await idExact('channels', args.channel, 'name'), args.channel)
 
       default:
         return errR(`알 수 없는 도구: ${name}`)
