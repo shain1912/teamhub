@@ -205,6 +205,17 @@ export default function Tickets() {
     loadTickets()
   }
 
+  async function deleteTicket(t: Ticket) {
+    if (!confirm(`티켓 "${t.title}" 를 삭제할까요?`)) return
+    const { error } = await supabase.from('tickets').delete().eq('id', t.id)
+    if (error) {
+      alert('삭제 실패: ' + error.message)
+      return
+    }
+    setSelectedId(null)
+    loadTickets()
+  }
+
   const labelOptions = useMemo(() => {
     const set = new Set<string>()
     for (const t of tickets) for (const l of t.labels ?? []) set.add(l)
@@ -504,6 +515,7 @@ export default function Tickets() {
           onClose={() => setSelectedId(null)}
           onSelect={(id) => setSelectedId(id)}
           onPatch={patchTicket}
+          onDelete={deleteTicket}
         />
       )}
     </div>
@@ -520,6 +532,7 @@ interface DetailProps {
   onClose: () => void
   onSelect: (id: string) => void
   onPatch: (ticket: Ticket, patch: Partial<Ticket>) => void
+  onDelete: (ticket: Ticket) => void
 }
 
 function DetailPanel({
@@ -532,6 +545,7 @@ function DetailPanel({
   onClose,
   onSelect,
   onPatch,
+  onDelete,
 }: DetailProps) {
   const [comments, setComments] = useState<TicketComment[]>([])
   const [commentBody, setCommentBody] = useState('')
@@ -603,9 +617,18 @@ function DetailPanel({
         <span className={`px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[ticket.type]}`}>
           {TYPE_LABEL[ticket.type]}
         </span>
-        <button onClick={onClose} className="text-ash hover:text-ink" title="닫기">
-          ✕
-        </button>
+        <div className="ml-auto flex items-center gap-3">
+          <button
+            onClick={() => onDelete(ticket)}
+            className="text-xs text-ash hover:text-red-500"
+            title="티켓 삭제"
+          >
+            🗑 삭제
+          </button>
+          <button onClick={onClose} className="text-ash hover:text-ink" title="닫기">
+            ✕
+          </button>
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">

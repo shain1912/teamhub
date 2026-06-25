@@ -103,6 +103,30 @@ export default function Gantt() {
     if (data) setTasks((t) => [...t, data as GanttTask])
   }
 
+  async function deleteTask(t: GanttTask) {
+    if (!confirm(`작업 "${t.title}" 를 삭제할까요?`)) return
+    const { error } = await supabase.from('gantt_tasks').delete().eq('id', t.id)
+    if (error) {
+      alert('삭제 실패: ' + error.message)
+      return
+    }
+    setTasks((list) => list.filter((x) => x.id !== t.id))
+  }
+
+  async function deleteProject() {
+    const p = projects.find((x) => x.id === projectId)
+    if (!p) return
+    if (!confirm(`프로젝트 "${p.name}" 와 모든 작업을 삭제할까요?`)) return
+    const { error } = await supabase.from('projects').delete().eq('id', projectId)
+    if (error) {
+      alert('삭제 실패: ' + error.message)
+      return
+    }
+    const rest = projects.filter((x) => x.id !== projectId)
+    setProjects(rest)
+    setProjectId(rest[0]?.id ?? '')
+  }
+
   async function bump(t: GanttTask, days: number) {
     const newEnd = format(addDays(parseISO(t.end_date), days), 'yyyy-MM-dd')
     await supabase.from('gantt_tasks').update({ end_date: newEnd }).eq('id', t.id)
@@ -220,6 +244,14 @@ export default function Gantt() {
         <button onClick={addTask} className="rounded-full bg-brand px-3 py-1 text-sm font-semibold text-white hover:bg-brand-dark" disabled={!projectId}>
           + 작업
         </button>
+        <button
+          onClick={deleteProject}
+          className="ml-auto rounded-full border border-hairline px-3 py-1 text-sm text-mute hover:border-red-300 hover:text-red-500"
+          disabled={!projectId}
+          title="프로젝트 삭제"
+        >
+          프로젝트 삭제
+        </button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-hairline bg-white">
@@ -263,6 +295,13 @@ export default function Gantt() {
                         title="의존 추가"
                       >
                         의존+
+                      </button>
+                      <button
+                        onClick={() => deleteTask(t)}
+                        className="ml-1.5 text-[11px] text-ash hover:text-red-500"
+                        title="작업 삭제"
+                      >
+                        ✕
                       </button>
                     </div>
 

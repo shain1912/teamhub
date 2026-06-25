@@ -65,6 +65,25 @@ export default function Checklists() {
     loadLists()
   }
 
+  async function deleteList(l: Checklist) {
+    if (!confirm(`체크리스트 "${l.title}" 를 삭제할까요?`)) return
+    const { error } = await supabase.from('checklists').delete().eq('id', l.id)
+    if (error) {
+      alert('삭제 실패: ' + error.message)
+      return
+    }
+    loadLists()
+  }
+
+  async function deleteItem(item: ChecklistItem) {
+    const { error } = await supabase.from('checklist_items').delete().eq('id', item.id)
+    if (error) {
+      alert('삭제 실패: ' + error.message)
+      return
+    }
+    loadItems(item.checklist_id)
+  }
+
   async function addItem(checklistId: string) {
     const content = newItem[checklistId]?.trim()
     if (!content) return
@@ -132,9 +151,18 @@ export default function Checklists() {
             <div key={l.id} className="rounded-xl border border-hairline bg-white p-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-ink">{l.title}</h2>
-                <span className="font-mono text-xs text-ash">
-                  {done}/{its.length}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs text-ash">
+                    {done}/{its.length}
+                  </span>
+                  <button
+                    onClick={() => deleteList(l)}
+                    className="text-ash hover:text-red-500"
+                    title="체크리스트 삭제"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
               <div className="mt-1 h-1.5 rounded-full bg-bone">
                 <div
@@ -203,6 +231,13 @@ export default function Checklists() {
                           )}
                         </div>
                       </div>
+                      <button
+                        onClick={() => deleteItem(i)}
+                        className="mt-0.5 text-[11px] text-ash hover:text-red-500"
+                        title="항목 삭제"
+                      >
+                        ✕
+                      </button>
                     </li>
                   )
                 })}

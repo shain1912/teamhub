@@ -90,6 +90,17 @@ export default function Sprints() {
     loadAll()
   }
 
+  async function deleteSprint(s: Sprint) {
+    if (!confirm(`스프린트 "${s.name}" 를 삭제할까요? (소속 티켓은 백로그로 이동)`)) return
+    const { error } = await supabase.from('sprints').delete().eq('id', s.id)
+    if (error) {
+      alert('삭제 실패: ' + error.message)
+      return
+    }
+    if (selectedId === s.id) setSelectedId('')
+    loadAll()
+  }
+
   async function moveTicket(ticketId: string, sprintId: string | null) {
     await supabase.from('tickets').update({ sprint_id: sprintId }).eq('id', ticketId)
     loadAll()
@@ -165,18 +176,26 @@ export default function Sprints() {
         )}
 
         {sprints.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setSelectedId(s.id)}
-            className={`mb-1 block w-full rounded-xl px-2 py-1.5 text-left text-sm ${
-              s.id === selectedId ? 'bg-bone font-semibold text-brand' : 'hover:bg-bone'
-            }`}
-          >
-            <div className="truncate">{s.name}</div>
-            <span className={`mt-0.5 inline-block px-1.5 text-[10px] ${STATUS_BADGE[s.status]}`}>
-              {STATUS_LABEL[s.status]}
-            </span>
-          </button>
+          <div key={s.id} className="group relative mb-1">
+            <button
+              onClick={() => setSelectedId(s.id)}
+              className={`block w-full rounded-xl px-2 py-1.5 pr-7 text-left text-sm ${
+                s.id === selectedId ? 'bg-bone font-semibold text-brand' : 'hover:bg-bone'
+              }`}
+            >
+              <div className="truncate">{s.name}</div>
+              <span className={`mt-0.5 inline-block px-1.5 text-[10px] ${STATUS_BADGE[s.status]}`}>
+                {STATUS_LABEL[s.status]}
+              </span>
+            </button>
+            <button
+              onClick={() => deleteSprint(s)}
+              className="absolute right-1.5 top-1.5 hidden text-ash hover:text-red-500 group-hover:block"
+              title="스프린트 삭제"
+            >
+              ✕
+            </button>
+          </div>
         ))}
         {sprints.length === 0 && <p className="text-xs text-ash">스프린트가 없습니다.</p>}
       </div>

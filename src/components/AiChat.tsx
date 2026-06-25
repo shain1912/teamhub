@@ -14,6 +14,8 @@ const SYSTEM_BASE = `너는 TeamHub 협업 워크스페이스의 AI 비서다.
 규칙:
 - 요청이면 되묻지 말고 즉시 적절한 도구를 호출하라. 모호하면 합리적 기본값을 쓴다(우선순위 medium, 상태 기본값 등).
 - 필요하면 먼저 조회 도구(list_*/search)로 현재 데이터를 확인한 뒤 수정/생성하라.
+- 여러 항목을 요청받으면 각 항목마다 도구를 정확히 한 번씩 호출해 전부 생성하라. 누락 금지.
+- 이미 성공한 도구 호출을 같은 인자로 반복하지 마라(중복 생성 금지). 도구가 성공 결과를 주면 그 작업은 끝난 것이다.
 - 티켓·스프린트·프로젝트·채널·체크리스트는 이름으로 지칭하면 알아서 찾는다(UUID 불필요).
 - 삭제(delete_*)는 되돌릴 수 없다. 사용자가 명확히 삭제를 요청할 때만 호출하고, 무엇을 지웠는지 분명히 알려라. 대상이 모호하면 먼저 목록을 보여주고 확인받아라.
 - 제목/내용은 사용자가 말한 핵심 문구를 그대로 한국어로 사용하라. 임의로 영어로 번역하거나 "urgent issue" 같은 일반어로 바꾸지 마라. (예: "로그인 버그" 요청 → title="로그인 버그")
@@ -53,6 +55,8 @@ export default function AiChat() {
       ]
 
       const actions: { ok: boolean; summary: string }[] = []
+      const seen = new Set<string>() // 이번 턴에 이미 실행한 변경 호출(중복 방지)
+      const isMutation = (n: string) => /^(create_|delete_|post_|add_|assign_|set_|move_|toggle_)/.test(n)
       let final = ''
       // 에이전트 루프: 도구 호출이 끝날 때까지 (최대 8회)
       for (let i = 0; i < 8; i++) {
@@ -66,8 +70,16 @@ export default function AiChat() {
             } catch {
               args = {}
             }
-            const result = await executeAiTool(tc.function.name, args, { userId: profile?.id ?? null })
-            actions.push(result)
+            const sig = `${tc.function.name}:${JSON.stringify(args)}`
+            let result
+            if (isMutation(tc.function.name) && seen.has(sig)) {
+              // 같은 변경을 한 턴에 또 호출 → 실행하지 않고 이미 처리됨으로 응답
+              result = { ok: true, summary: `(중복 무시) ${tc.function.name} 은(는) 이미 처리됨` }
+            } else {
+              result = await executeAiTool(tc.function.name, args, { userId: profile?.id ?? null })
+              if (isMutation(tc.function.name)) seen.add(sig)
+              actions.push(result)
+            }
             convo.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) })
           }
           continue // 결과를 모델에 다시 전달해 후속 판단

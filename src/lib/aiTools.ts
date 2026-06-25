@@ -226,6 +226,8 @@ export async function executeAiTool(
 
       // ---- 채널 / 메시지 ----
       case 'create_channel': {
+        const exist = await idExact('channels', args.name, 'name')
+        if (exist && exist !== '__AMBIGUOUS__') return okR(`채널 "${args.name}" 는 이미 있어 재사용합니다.`)
         const { data, error } = await supabase.from('channels').insert({ name: args.name, description: args.description ?? null }).select('name').single()
         return error ? errR(`채널 생성 실패: ${error.message}`) : okR(`채널 생성: "${(data as any).name}"`)
       }
@@ -319,14 +321,22 @@ export async function executeAiTool(
         return error ? errR(`스프린트 실패: ${error.message}`) : okR(`스프린트 생성: "${(data as any).name}"`)
       }
       case 'create_project': {
+        // 멱등: 같은 이름이 이미 있으면 중복 생성하지 않고 재사용
+        const exist = await idExact('projects', args.name, 'name')
+        if (exist && exist !== '__AMBIGUOUS__') return okR(`프로젝트 "${args.name}" 는 이미 있어 재사용합니다.`)
         const { data, error } = await supabase.from('projects').insert({
           name: args.name, description: args.description ?? null, start_date: args.start_date ?? null, end_date: args.end_date ?? null,
         }).select('name').single()
         return error ? errR(`프로젝트 실패: ${error.message}`) : okR(`프로젝트 생성: "${(data as any).name}"`)
       }
       case 'create_gantt_task': {
-        const pid = await projectId(args.project)
-        if (!pid) return errR(`프로젝트를 찾을 수 없음: ${args.project}`)
+        // 프로젝트가 없으면 자동 생성(get-or-create) — 실패→재시도로 인한 중복/노이즈 방지
+        let pid = await projectId(args.project)
+        if (!pid) {
+          const { data: np } = await supabase.from('projects').insert({ name: args.project }).select('id').single()
+          pid = (np as any)?.id ?? null
+        }
+        if (!pid) return errR(`프로젝트 생성/조회 실패: ${args.project}`)
         const assignee_id = await profileIdByPerson(args.assignee)
         const { count } = await supabase.from('gantt_tasks').select('id', { count: 'exact', head: true }).eq('project_id', pid)
         const { data, error } = await supabase.from('gantt_tasks').insert({

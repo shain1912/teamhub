@@ -41,6 +41,16 @@ export default function Announcements() {
     load()
   }
 
+  async function remove(a: Announcement) {
+    if (!confirm(`공지 "${a.title}" 를 삭제할까요?`)) return
+    const { error } = await supabase.from('announcements').delete().eq('id', a.id)
+    if (error) {
+      alert('삭제 실패: ' + error.message)
+      return
+    }
+    load()
+  }
+
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -94,6 +104,9 @@ export default function Announcements() {
               <h2 className="font-semibold">{a.title}</h2>
               <button onClick={() => togglePin(a)} className="ml-auto text-xs text-slate-400 hover:text-brand">
                 {a.pinned ? '고정 해제' : '고정'}
+              </button>
+              <button onClick={() => remove(a)} className="text-slate-300 hover:text-red-500" title="공지 삭제">
+                ✕
               </button>
             </div>
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{a.body}</p>
