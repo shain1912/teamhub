@@ -21,7 +21,7 @@ export default function Gantt() {
   const [projectId, setProjectId] = useState<string>('')
   const [tasks, setTasks] = useState<GanttTask[]>([])
   const [deps, setDeps] = useState<GanttDependency[]>([])
-  const [depEditor, setDepEditor] = useState<string | null>(null) // task id whose "add dependency" picker is open
+  const [editorTask, setEditorTask] = useState<string | null>(null) // 편집 모달 대상 작업 id
   const headerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -145,17 +145,23 @@ export default function Gantt() {
   async function addDependency(taskId: string, dependsOnTaskId: string) {
     if (!dependsOnTaskId || dependsOnTaskId === taskId) return
     // prevent exact duplicate
-    if (deps.some((d) => d.task_id === taskId && d.depends_on_task_id === dependsOnTaskId)) {
-      setDepEditor(null)
-      return
-    }
+    if (deps.some((d) => d.task_id === taskId && d.depends_on_task_id === dependsOnTaskId)) return
     const { data } = await supabase
       .from('gantt_dependencies')
       .insert({ task_id: taskId, depends_on_task_id: dependsOnTaskId })
       .select()
       .single()
     if (data) setDeps((d) => [...d, data as GanttDependency])
-    setDepEditor(null)
+  }
+
+  // 작업 필드 일괄 수정(제목/시작일/종료일/상태)
+  async function patchTask(t: GanttTask, patch: Partial<GanttTask>) {
+    const { error } = await supabase.from('gantt_tasks').update(patch).eq('id', t.id)
+    if (error) {
+      alert('수정 실패: ' + error.message)
+      return
+    }
+    setTasks((list) => list.map((x) => (x.id === t.id ? { ...x, ...patch } : x)))
   }
 
   async function removeDependency(dep: GanttDependency) {
@@ -267,7 +273,7 @@ export default function Gantt() {
         <div className="inline-block min-w-full">
           {/* 날짜 헤더 */}
           <div className="flex border-b border-hairline bg-bone" ref={headerRef}>
-            <div className="sticky left-0 z-20 w-48 shrink-0 border-r border-hairline bg-bone px-3 py-2 text-xs font-semibold text-mute">
+            <div className="sticky left-0 z-20 w-64 shrink-0 border-r border-hairline bg-bone px-3 py-2 text-xs font-semibold text-mute">
               작업
             </div>
             {days.map((d, i) => (
@@ -284,115 +290,30 @@ export default function Gantt() {
           {/* 본문: 라벨 열 + 타임라인(+의존선 SVG 오버레이) */}
           <div className="flex">
             {/* 라벨 열 */}
-            <div className="sticky left-0 z-10 w-48 shrink-0 border-r border-hairline bg-white">
-              {tasks.map((t) => {
-                const myDeps = depsByTask.get(t.id) ?? []
-                const candidates = tasks.filter((c) => c.id !== t.id)
-                return (
-                  <div key={t.id} className="border-b border-hairline px-3 py-2 text-sm text-body" style={{ minHeight: ROW_H }}>
-                    <div className="flex items-center">
-                      <span className="truncate">{t.title}</span>
-                      <button onClick={() => bump(t, 1)} className="ml-2 text-xs text-ash hover:text-brand" title="+1일">
-                        +
-                      </button>
-                      <button onClick={() => bump(t, -1)} className="ml-1 text-xs text-ash hover:text-brand" title="-1일">
-                        −
-                      </button>
-                      <button
-                        onClick={() => setDepEditor((cur) => (cur === t.id ? null : t.id))}
-                        className="ml-auto text-[10px] text-ash hover:text-brand"
-                        title="의존 추가"
-                      >
-                        의존+
-                      </button>
-                      <button
-                        onClick={() => deleteTask(t)}
-                        className="ml-1.5 text-[11px] text-ash hover:text-red-500"
-                        title="작업 삭제"
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    {/* 진행률 조절 */}
-                    <div className="mt-1 flex items-center gap-1 text-[10px] text-ash">
-                      <span>진행</span>
-                      <button
-                        onClick={() => setProgress(t, t.progress - 10)}
-                        className="rounded border border-hairline px-1 leading-none hover:bg-bone"
-                        title="-10%"
-                      >
-                        −
-                      </button>
-                      <input
-                        key={t.progress}
-                        type="number"
-                        min={0}
-                        max={100}
-                        defaultValue={t.progress}
-                        onBlur={(e) => setProgress(t, Number(e.target.value))}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-                        }}
-                        className="w-11 rounded border border-hairline px-1 py-0.5 text-center font-mono text-[10px]"
-                      />
-                      <button
-                        onClick={() => setProgress(t, t.progress + 10)}
-                        className="rounded border border-hairline px-1 leading-none hover:bg-bone"
-                        title="+10%"
-                      >
-                        +
-                      </button>
-                      <span>%</span>
-                    </div>
-
-                    {/* 의존성 추가 셀렉터 */}
-                    {depEditor === t.id && (
-                      <div className="mt-1">
-                        <select
-                          defaultValue=""
-                          onChange={(e) => addDependency(t.id, e.target.value)}
-                          className="w-full rounded-full border border-hairline px-1 py-0.5 text-[11px]"
-                        >
-                          <option value="" disabled>
-                            선행 작업 선택…
-                          </option>
-                          {candidates.map((c) => (
-                            <option key={c.id} value={c.id}>
-                              {c.title}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    {/* 현재 의존성 목록 */}
-                    {myDeps.length > 0 && (
-                      <div className="mt-1 flex flex-wrap gap-1">
-                        {myDeps.map((d) => {
-                          const pre = taskById.get(d.depends_on_task_id)
-                          return (
-                            <span
-                              key={d.id}
-                              className="inline-flex items-center gap-1 rounded-full bg-bone px-1 text-[10px] text-mute"
-                              title={`선행: ${pre?.title ?? '?'}`}
-                            >
-                              ← {pre?.title ?? '(삭제됨)'}
-                              <button
-                                onClick={() => removeDependency(d)}
-                                className="text-ash hover:text-red-500"
-                                title="의존성 삭제"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+            <div className="sticky left-0 z-10 w-64 shrink-0 border-r border-hairline bg-white">
+              {tasks.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex items-center gap-1 border-b border-hairline px-3 text-sm text-body"
+                  style={{ height: ROW_H }}
+                >
+                  <button
+                    onClick={() => setEditorTask(t.id)}
+                    title={t.title}
+                    className="min-w-0 flex-1 truncate text-left hover:text-brand"
+                  >
+                    {t.title}
+                  </button>
+                  <span className="shrink-0 font-mono text-[10px] text-ash">{t.progress}%</span>
+                  <button
+                    onClick={() => setEditorTask(t.id)}
+                    className="shrink-0 text-[11px] text-ash hover:text-brand"
+                    title="작업 수정"
+                  >
+                    ✏️
+                  </button>
+                </div>
+              ))}
               {tasks.length === 0 && <div className="p-6 text-sm text-ash">작업을 추가하세요.</div>}
             </div>
 
@@ -448,6 +369,150 @@ export default function Gantt() {
           </div>
         </div>
       </div>
+
+      {/* 작업 편집 모달 — 레이아웃에 영향 없는 오버레이(행 정렬 보존) */}
+      {editorTask &&
+        (() => {
+          const t = tasks.find((x) => x.id === editorTask)
+          if (!t) return null
+          const myDeps = depsByTask.get(t.id) ?? []
+          const candidates = tasks.filter((c) => c.id !== t.id)
+          return (
+            <div
+              className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4"
+              onClick={() => setEditorTask(null)}
+            >
+              <div
+                className="w-full max-w-sm space-y-3 rounded-2xl border border-hairline bg-white p-5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-ink">작업 수정</h3>
+                  <button onClick={() => setEditorTask(null)} className="text-ash hover:text-ink">
+                    ✕
+                  </button>
+                </div>
+
+                <label className="block text-xs text-mute">
+                  제목
+                  <input
+                    key={t.id}
+                    defaultValue={t.title}
+                    onBlur={(e) => {
+                      const v = e.target.value.trim()
+                      if (v && v !== t.title) patchTask(t, { title: v })
+                    }}
+                    className="mt-0.5 w-full rounded-full border border-hairline px-3 py-2 text-sm text-ink"
+                  />
+                </label>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="text-xs text-mute">
+                    시작일
+                    <input
+                      type="date"
+                      value={t.start_date}
+                      onChange={(e) => e.target.value && patchTask(t, { start_date: e.target.value })}
+                      className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 font-mono text-xs"
+                    />
+                  </label>
+                  <label className="text-xs text-mute">
+                    종료일
+                    <input
+                      type="date"
+                      value={t.end_date}
+                      min={t.start_date}
+                      onChange={(e) => e.target.value && patchTask(t, { end_date: e.target.value })}
+                      className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 font-mono text-xs"
+                    />
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-mute">진행률</span>
+                  <button onClick={() => setProgress(t, t.progress - 10)} className="rounded border border-hairline px-2 hover:bg-bone">
+                    −
+                  </button>
+                  <input
+                    key={t.progress}
+                    type="number"
+                    min={0}
+                    max={100}
+                    defaultValue={t.progress}
+                    onBlur={(e) => setProgress(t, Number(e.target.value))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+                    }}
+                    className="w-14 rounded border border-hairline px-1 py-1 text-center font-mono text-sm"
+                  />
+                  <button onClick={() => setProgress(t, t.progress + 10)} className="rounded border border-hairline px-2 hover:bg-bone">
+                    +
+                  </button>
+                  <span className="text-xs text-mute">%</span>
+                  <select
+                    value={t.status}
+                    onChange={(e) => patchTask(t, { status: e.target.value as GanttTask['status'] })}
+                    className="ml-auto rounded-full border border-hairline px-2 py-1 text-xs"
+                  >
+                    <option value="todo">할일</option>
+                    <option value="doing">진행</option>
+                    <option value="done">완료</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div className="mb-1 text-xs text-mute">선행 작업(의존)</div>
+                  <div className="mb-1 flex flex-wrap gap-1">
+                    {myDeps.map((d) => {
+                      const pre = taskById.get(d.depends_on_task_id)
+                      return (
+                        <span key={d.id} className="inline-flex items-center gap-1 rounded-full bg-bone px-2 py-0.5 text-[11px] text-mute">
+                          ← {pre?.title ?? '(삭제됨)'}
+                          <button onClick={() => removeDependency(d)} className="text-ash hover:text-red-500">
+                            ×
+                          </button>
+                        </span>
+                      )
+                    })}
+                    {myDeps.length === 0 && <span className="text-[11px] text-ash">없음</span>}
+                  </div>
+                  {candidates.length > 0 && (
+                    <select
+                      value=""
+                      onChange={(e) => e.target.value && addDependency(t.id, e.target.value)}
+                      className="w-full rounded-full border border-hairline px-2 py-1 text-xs"
+                    >
+                      <option value="">+ 선행 작업 추가…</option>
+                      {candidates.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.title}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                <div className="flex justify-between pt-1">
+                  <button
+                    onClick={() => {
+                      deleteTask(t)
+                      setEditorTask(null)
+                    }}
+                    className="rounded-full border border-hairline px-3 py-1.5 text-xs text-red-500 hover:bg-red-50"
+                  >
+                    🗑 삭제
+                  </button>
+                  <button
+                    onClick={() => setEditorTask(null)}
+                    className="rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
+                  >
+                    완료
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
     </div>
   )
 }

@@ -42,6 +42,8 @@ export default function Sprints() {
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [selectedId, setSelectedId] = useState<string>('')
   const [showForm, setShowForm] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editForm, setEditForm] = useState({ name: '', start_date: '', end_date: '', goal: '' })
   const [form, setForm] = useState({
     name: '',
     project_id: '',
@@ -87,6 +89,36 @@ export default function Sprints() {
 
   async function setSprintStatus(s: Sprint, status: Sprint['status']) {
     await supabase.from('sprints').update({ status }).eq('id', s.id)
+    loadAll()
+  }
+
+  function startEdit(s: Sprint) {
+    setEditForm({
+      name: s.name,
+      start_date: s.start_date ?? '',
+      end_date: s.end_date ?? '',
+      goal: s.goal ?? '',
+    })
+    setEditing(true)
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedId) return
+    const { error } = await supabase
+      .from('sprints')
+      .update({
+        name: editForm.name,
+        start_date: editForm.start_date || null,
+        end_date: editForm.end_date || null,
+        goal: editForm.goal || null,
+      })
+      .eq('id', selectedId)
+    if (error) {
+      alert('수정 실패: ' + error.message)
+      return
+    }
+    setEditing(false)
     loadAll()
   }
 
@@ -222,8 +254,56 @@ export default function Sprints() {
                   {selected.start_date} ~ {selected.end_date}
                 </span>
               )}
+              <button
+                onClick={() => (editing ? setEditing(false) : startEdit(selected))}
+                className="rounded-full border border-hairline px-2 py-1 text-xs text-mute hover:border-ink/30"
+              >
+                {editing ? '취소' : '✏️ 수정'}
+              </button>
             </div>
-            {selected.goal && <p className="mb-4 text-sm text-charcoal">🎯 {selected.goal}</p>}
+
+            {editing ? (
+              <form onSubmit={saveEdit} className="mb-4 grid max-w-md gap-2 rounded-xl border border-hairline bg-white p-4">
+                <input
+                  required
+                  placeholder="스프린트 이름"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="rounded-full border border-hairline px-3 py-2 text-sm"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="text-[11px] text-mute">
+                    시작일
+                    <input
+                      type="date"
+                      value={editForm.start_date}
+                      onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })}
+                      className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 font-mono text-xs"
+                    />
+                  </label>
+                  <label className="text-[11px] text-mute">
+                    종료일
+                    <input
+                      type="date"
+                      value={editForm.end_date}
+                      onChange={(e) => setEditForm({ ...editForm, end_date: e.target.value })}
+                      className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 font-mono text-xs"
+                    />
+                  </label>
+                </div>
+                <input
+                  placeholder="목표 (선택)"
+                  value={editForm.goal}
+                  onChange={(e) => setEditForm({ ...editForm, goal: e.target.value })}
+                  className="rounded-full border border-hairline px-3 py-2 text-sm"
+                />
+                <button className="justify-self-start rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
+                  저장
+                </button>
+              </form>
+            ) : (
+              selected.goal && <p className="mb-4 text-sm text-charcoal">🎯 {selected.goal}</p>
+            )}
 
             <Burndown sprint={selected} tickets={sprintTickets} />
 
