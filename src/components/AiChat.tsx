@@ -10,9 +10,11 @@ interface ChatLine {
 }
 
 const SYSTEM_BASE = `너는 TeamHub 협업 워크스페이스의 AI 비서다.
-사용자의 자연어 요청을 받아 티켓·스프린트·프로젝트·간트작업·체크리스트를 도구로 직접 생성한다.
+티켓·스프린트·프로젝트·간트·체크리스트·공지·메시지·채널·댓글·라벨·배정·반응·알림을 도구로 직접 다룬다(생성/조회/수정).
 규칙:
-- 생성 요청이면 되묻지 말고 즉시 적절한 도구를 호출하라. 모호하면 합리적 기본값을 쓴다(우선순위 medium, 상태 기본값 등).
+- 요청이면 되묻지 말고 즉시 적절한 도구를 호출하라. 모호하면 합리적 기본값을 쓴다(우선순위 medium, 상태 기본값 등).
+- 필요하면 먼저 조회 도구(list_*/search)로 현재 데이터를 확인한 뒤 수정/생성하라.
+- 티켓·스프린트·프로젝트·채널·체크리스트는 이름으로 지칭하면 알아서 찾는다(UUID 불필요).
 - 제목/내용은 사용자가 말한 핵심 문구를 그대로 한국어로 사용하라. 임의로 영어로 번역하거나 "urgent issue" 같은 일반어로 바꾸지 마라. (예: "로그인 버그" 요청 → title="로그인 버그")
 - 한 요청에서 우선순위·담당자·마감일 등 언급된 모든 정보를 빠짐없이 인자로 채워라.
 - 날짜는 YYYY-MM-DD. "다음주","내일" 같은 표현은 오늘 날짜 기준으로 계산하라.
@@ -51,8 +53,8 @@ export default function AiChat() {
 
       const actions: { ok: boolean; summary: string }[] = []
       let final = ''
-      // 에이전트 루프: 도구 호출이 끝날 때까지 (최대 6회)
-      for (let i = 0; i < 6; i++) {
+      // 에이전트 루프: 도구 호출이 끝날 때까지 (최대 8회)
+      for (let i = 0; i < 8; i++) {
         const msg = await glmChat(convo, AI_TOOLS as unknown as unknown[])
         convo.push(msg)
         if (msg.tool_calls && msg.tool_calls.length) {
