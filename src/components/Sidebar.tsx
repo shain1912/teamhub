@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../store/auth'
-import InviteGuest from './InviteGuest'
+import ClientsManager from './ClientsManager'
 
 const NAV = [
   { to: '/me', label: '내 작업', icon: '🏠' },
@@ -120,9 +120,9 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             className={`mx-2 mb-1 rounded-full border border-white/15 py-1.5 text-xs text-white/70 transition hover:bg-white/5 hover:text-white ${
               collapsed ? 'md:hidden' : ''
             }`}
-            title="외부 게스트 초대"
+            title="클라이언트/게스트 관리"
           >
-            + 게스트 초대
+            클라이언트 · 게스트
           </button>
         )}
 
@@ -142,7 +142,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
         </div>
       </aside>
 
-      {invite && <InviteGuest onClose={() => setInvite(false)} />}
+      {invite && <ClientsManager onClose={() => setInvite(false)} />}
     </>
   )
 }

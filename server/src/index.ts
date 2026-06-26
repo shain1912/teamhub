@@ -792,9 +792,9 @@ if (useHttp) {
       res.status(403).json({ error: '게스트는 초대할 수 없습니다.' })
       return
     }
-    const { email, full_name, channel_id, expires_days } = req.body ?? {}
-    if (!email || !channel_id) {
-      res.status(400).json({ error: 'email, channel_id 가 필요합니다.' })
+    const { email, full_name, client_id, channel_id, expires_days } = req.body ?? {}
+    if (!email || !client_id) {
+      res.status(400).json({ error: 'email, client_id 가 필요합니다.' })
       return
     }
     const days = Number(expires_days) > 0 ? Number(expires_days) : 14
@@ -811,10 +811,11 @@ if (useHttp) {
         res.status(500).json({ error: '게스트 계정 생성 실패' })
         return
       }
-      // 2) 프로필을 게스트로(만료 설정) + 3) 채널 멤버 추가 (둘 다 upsert)
+      // 2) 프로필을 게스트로(클라 배정 + 만료). 가시성은 client_id 기준.
       const expires_at = new Date(Date.now() + days * 86400000).toISOString()
-      await sbAdmin('/rest/v1/profiles?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({ id: userId, email, full_name: full_name || email, role: 'guest', expires_at }) })
-      await sbAdmin('/rest/v1/channel_members?on_conflict=channel_id,user_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({ channel_id, user_id: userId, role: 'guest' }) })
+      await sbAdmin('/rest/v1/profiles?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({ id: userId, email, full_name: full_name || email, role: 'guest', client_id, expires_at }) })
+      // 3) (선택) 특정 채널 멤버로도 추가
+      if (channel_id) await sbAdmin('/rest/v1/channel_members?on_conflict=channel_id,user_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({ channel_id, user_id: userId, role: 'guest' }) })
       // 4) 매직 로그인 링크 생성
       const gj = (await (await sbAdmin('/auth/v1/admin/generate_link', { method: 'POST', body: JSON.stringify({ type: 'magiclink', email }) })).json()) as { action_link?: string; properties?: { action_link?: string } }
       res.json({ ok: true, email, expires_at, link: gj.action_link || gj.properties?.action_link || null })

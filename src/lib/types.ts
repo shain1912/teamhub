@@ -4,6 +4,13 @@ export interface Profile {
   full_name: string | null
   avatar_url: string | null
   role: string
+  client_id?: string | null
+}
+
+export interface Client {
+  id: string
+  name: string
+  created_at: string
 }
 
 export interface Channel {
@@ -13,6 +20,7 @@ export interface Channel {
   is_private: boolean
   is_dm: boolean
   created_at: string
+  client_id?: string | null
 }
 
 export interface Message {
@@ -99,6 +107,7 @@ export interface Project {
   description: string | null
   start_date: string | null
   end_date: string | null
+  client_id?: string | null
 }
 
 export interface Sprint {
