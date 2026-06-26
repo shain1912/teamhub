@@ -825,6 +825,46 @@ if (useHttp) {
     }
   })
 
+  // 게스트 수정: 클라 재배정 / 즉시 차단 / 만료 연장 (프로필은 본인만 update 가능해 서버 경유)
+  app.post('/admin/guest-update', async (req, res) => {
+    const header = req.headers.authorization ?? ''
+    const token = header.startsWith('Bearer ') ? header.slice(7) : ''
+    const caller = await verifyUser(token)
+    if (!caller) {
+      res.status(401).json({ error: 'Unauthorized' })
+      return
+    }
+    if ((await userRole(caller.id)) === 'guest') {
+      res.status(403).json({ error: '권한 없음' })
+      return
+    }
+    const { guest_id, client_id, expires_days, block } = req.body ?? {}
+    if (!guest_id) {
+      res.status(400).json({ error: 'guest_id 필요' })
+      return
+    }
+    const patch: Record<string, unknown> = {}
+    if (client_id !== undefined) patch.client_id = client_id // null 이면 배정 해제
+    if (block === true) patch.expires_at = new Date().toISOString()
+    else if (Number(expires_days) > 0) patch.expires_at = new Date(Date.now() + Number(expires_days) * 86400000).toISOString()
+    if (Object.keys(patch).length === 0) {
+      res.status(400).json({ error: '변경 내용 없음' })
+      return
+    }
+    try {
+      const r = await sbAdmin(`/rest/v1/profiles?id=eq.${guest_id}&role=eq.guest`, { method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(patch) })
+      const rows = (await r.json()) as unknown[]
+      if (!Array.isArray(rows) || rows.length === 0) {
+        res.status(404).json({ error: '게스트를 찾을 수 없음' })
+        return
+      }
+      res.json({ ok: true, guest: rows[0] })
+    } catch (err) {
+      console.error('[teamhub-mcp] 게스트 수정 오류:', err)
+      res.status(500).json({ error: '수정 실패' })
+    }
+  })
+
   const port = Number(process.env.PORT) || 8787
   app.listen(port, () => console.error(`[teamhub-mcp] HTTP 전송 listening on :${port}`))
 } else {

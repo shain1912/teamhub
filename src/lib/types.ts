@@ -5,6 +5,7 @@ export interface Profile {
   avatar_url: string | null
   role: string
   client_id?: string | null
+  expires_at?: string | null
 }
 
 export interface Client {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import type { Client, Channel, Project } from '../lib/types'
+import type { Client, Channel, Project, Profile } from '../lib/types'
 
 const PROXY = (import.meta.env.VITE_AI_PROXY_URL as string) || 'https://teamhub-mcp.onrender.com'
 
@@ -13,6 +13,7 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
   const [clients, setClients] = useState<Client[]>([])
   const [channels, setChannels] = useState<Channel[]>([])
   const [projects, setProjects] = useState<Project[]>([])
+  const [guests, setGuests] = useState<Profile[]>([])
   const [sel, setSel] = useState<string>('')
   const [newName, setNewName] = useState('')
   const [email, setEmail] = useState('')
@@ -22,15 +23,28 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
   const [link, setLink] = useState<string | null>(null)
 
   async function load() {
-    const [{ data: cl }, { data: ch }, { data: pj }] = await Promise.all([
+    const [{ data: cl }, { data: ch }, { data: pj }, { data: gs }] = await Promise.all([
       supabase.from('clients').select('*').order('created_at'),
       supabase.from('channels').select('*').order('created_at'),
       supabase.from('projects').select('*').order('created_at'),
+      supabase.from('profiles').select('id,email,full_name,client_id,expires_at,role').eq('role', 'guest').order('email'),
     ])
     setClients((cl as Client[]) ?? [])
     setChannels((ch as Channel[]) ?? [])
     setProjects((pj as Project[]) ?? [])
+    setGuests((gs as Profile[]) ?? [])
     setSel((s) => s || (cl as Client[])?.[0]?.id || '')
+  }
+
+  async function guestUpdate(guest_id: string, body: Record<string, unknown>) {
+    const { data } = await supabase.auth.getSession()
+    const token = data.session?.access_token ?? ''
+    await fetch(`${PROXY}/admin/guest-update`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ guest_id, ...body }),
+    })
+    load()
   }
   useEffect(() => {
     load()
@@ -163,6 +177,45 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
               </form>
               <p className="text-[11px] text-ash">게스트는 이 클라이언트의 프로젝트·채널·티켓만 보고 다른 클라는 차단됩니다. 만료 후 자동 비활성.</p>
             </>
+          )}
+
+          {/* 전체 게스트 관리 */}
+          {guests.length > 0 && (
+            <div className="border-t border-hairline pt-3">
+              <div className="mb-1 text-xs font-semibold text-mute">전체 게스트 ({guests.length})</div>
+              <div className="space-y-1.5">
+                {guests.map((g) => {
+                  const active = !g.expires_at || new Date(g.expires_at) > new Date()
+                  return (
+                    <div key={g.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-hairline px-2 py-1.5">
+                      <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate">
+                        <span className="truncate">{g.full_name || g.email}</span>
+                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] ${active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                          {active ? (g.expires_at ? `~${new Date(g.expires_at).toLocaleDateString()}` : '무기한') : '차단됨'}
+                        </span>
+                      </span>
+                      <select
+                        value={g.client_id ?? ''}
+                        onChange={(e) => guestUpdate(g.id, { client_id: e.target.value || null })}
+                        className="rounded-full border border-hairline px-2 py-1 text-xs"
+                        title="클라이언트 재배정"
+                      >
+                        <option value="">미배정</option>
+                        {clients.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                      <button onClick={() => guestUpdate(g.id, { expires_days: 30 })} className="rounded-full border border-hairline px-2 py-1 text-[11px] hover:bg-bone" title="만료 30일 연장">
+                        +30일
+                      </button>
+                      <button onClick={() => guestUpdate(g.id, { block: true })} className="rounded-full border border-hairline px-2 py-1 text-[11px] text-red-500 hover:bg-red-50" title="즉시 차단">
+                        차단
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           )}
         </div>
       </div>
