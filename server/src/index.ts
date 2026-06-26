@@ -767,6 +767,63 @@ if (useHttp) {
     }
   })
 
+  // ---------- 게스트 초대: 외부 클라/외주를 특정 채널에 만료부 게스트로 ----------
+  const sbAdmin = (path: string, init: RequestInit = {}) =>
+    fetch(`${SUPABASE_URL}${path}`, {
+      ...init,
+      headers: { apikey: SERVICE_KEY as string, Authorization: `Bearer ${SERVICE_KEY}`, 'Content-Type': 'application/json', ...(init.headers ?? {}) },
+    })
+
+  async function userRole(id: string): Promise<string | null> {
+    const r = await sbAdmin(`/rest/v1/profiles?id=eq.${id}&select=role`)
+    const a = (await r.json()) as { role?: string }[]
+    return a?.[0]?.role ?? null
+  }
+
+  app.post('/admin/invite-guest', async (req, res) => {
+    const header = req.headers.authorization ?? ''
+    const token = header.startsWith('Bearer ') ? header.slice(7) : ''
+    const caller = await verifyUser(token)
+    if (!caller) {
+      res.status(401).json({ error: 'Unauthorized' })
+      return
+    }
+    if ((await userRole(caller.id)) === 'guest') {
+      res.status(403).json({ error: '게스트는 초대할 수 없습니다.' })
+      return
+    }
+    const { email, full_name, channel_id, expires_days } = req.body ?? {}
+    if (!email || !channel_id) {
+      res.status(400).json({ error: 'email, channel_id 가 필요합니다.' })
+      return
+    }
+    const days = Number(expires_days) > 0 ? Number(expires_days) : 14
+    try {
+      // 1) 유저 생성(이미 있으면 조회)
+      let userId: string | undefined
+      const cj = (await (await sbAdmin('/auth/v1/admin/users', { method: 'POST', body: JSON.stringify({ email, email_confirm: true }) })).json()) as { id?: string }
+      if (cj.id) userId = cj.id
+      else {
+        const lj = (await (await sbAdmin(`/auth/v1/admin/users?email=${encodeURIComponent(email)}`)).json()) as { users?: { id: string }[] }
+        userId = lj.users?.[0]?.id
+      }
+      if (!userId) {
+        res.status(500).json({ error: '게스트 계정 생성 실패' })
+        return
+      }
+      // 2) 프로필을 게스트로(만료 설정) + 3) 채널 멤버 추가 (둘 다 upsert)
+      const expires_at = new Date(Date.now() + days * 86400000).toISOString()
+      await sbAdmin('/rest/v1/profiles?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({ id: userId, email, full_name: full_name || email, role: 'guest', expires_at }) })
+      await sbAdmin('/rest/v1/channel_members?on_conflict=channel_id,user_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify({ channel_id, user_id: userId, role: 'guest' }) })
+      // 4) 매직 로그인 링크 생성
+      const gj = (await (await sbAdmin('/auth/v1/admin/generate_link', { method: 'POST', body: JSON.stringify({ type: 'magiclink', email }) })).json()) as { action_link?: string; properties?: { action_link?: string } }
+      res.json({ ok: true, email, expires_at, link: gj.action_link || gj.properties?.action_link || null })
+    } catch (err) {
+      console.error('[teamhub-mcp] 게스트 초대 오류:', err)
+      res.status(500).json({ error: '초대 처리 실패' })
+    }
+  })
+
   const port = Number(process.env.PORT) || 8787
   app.listen(port, () => console.error(`[teamhub-mcp] HTTP 전송 listening on :${port}`))
 } else {

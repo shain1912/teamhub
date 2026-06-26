@@ -16,7 +16,7 @@ import Notifications from './pages/Notifications'
 import Audit from './pages/Audit'
 
 export default function App() {
-  const { session, loading, init } = useAuth()
+  const { session, loading, init, profile } = useAuth()
 
   useEffect(() => {
     init()
@@ -28,10 +28,12 @@ export default function App() {
 
   if (!session) return <Login />
 
+  const home = profile?.role === 'guest' ? '/channels' : '/me'
+
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Navigate to="/me" replace />} />
+        <Route path="/" element={<Navigate to={home} replace />} />
         <Route path="/me" element={<MyWork />} />
         <Route path="/people" element={<People />} />
         <Route path="/people/:userId" element={<People />} />
@@ -45,7 +47,7 @@ export default function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/audit" element={<Audit />} />
-        <Route path="*" element={<Navigate to="/me" replace />} />
+        <Route path="*" element={<Navigate to={home} replace />} />
       </Routes>
     </Layout>
   )

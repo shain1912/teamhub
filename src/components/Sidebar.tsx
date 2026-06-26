@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../store/auth'
+import InviteGuest from './InviteGuest'
 
 const NAV = [
   { to: '/me', label: '내 작업', icon: '🏠' },
@@ -27,6 +29,10 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClose }: SidebarProps) {
   const { profile, signOut } = useAuth()
+  const isGuest = profile?.role === 'guest'
+  const [invite, setInvite] = useState(false)
+  // 게스트는 채널·티켓만 (나머지 섹션은 RLS로도 비지만 UI에서도 숨김)
+  const nav = isGuest ? NAV.filter((n) => n.to === '/channels' || n.to === '/tickets') : NAV
 
   return (
     <>
@@ -81,7 +87,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
         </div>
 
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-2">
-          {NAV.map((n) => (
+          {nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
@@ -108,9 +114,22 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
           ))}
         </nav>
 
+        {!isGuest && (
+          <button
+            onClick={() => setInvite(true)}
+            className={`mx-2 mb-1 rounded-full border border-white/15 py-1.5 text-xs text-white/70 transition hover:bg-white/5 hover:text-white ${
+              collapsed ? 'md:hidden' : ''
+            }`}
+            title="외부 게스트 초대"
+          >
+            + 게스트 초대
+          </button>
+        )}
+
         <div className="border-t border-white/10 px-4 py-3 text-xs">
-          <div className={`truncate text-white/80 ${collapsed ? 'md:hidden' : ''}`}>
-            {profile?.full_name ?? profile?.email ?? '사용자'}
+          <div className={`flex items-center gap-1.5 truncate text-white/80 ${collapsed ? 'md:hidden' : ''}`}>
+            {isGuest && <span className="rounded-full bg-brand/30 px-1.5 py-0.5 text-[9px] font-semibold text-white">게스트</span>}
+            <span className="truncate">{profile?.full_name ?? profile?.email ?? '사용자'}</span>
           </div>
           <button
             onClick={signOut}
@@ -122,6 +141,8 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
           </button>
         </div>
       </aside>
+
+      {invite && <InviteGuest onClose={() => setInvite(false)} />}
     </>
   )
 }
