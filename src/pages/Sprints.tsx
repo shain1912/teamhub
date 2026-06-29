@@ -164,12 +164,12 @@ export default function Sprints() {
               placeholder="스프린트 이름"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full rounded-full border border-hairline px-2 py-1 text-sm"
+              className="w-full rounded-lg border border-hairline px-2 py-1 text-sm"
             />
             <select
               value={form.project_id}
               onChange={(e) => setForm({ ...form, project_id: e.target.value })}
-              className="w-full rounded-full border border-hairline px-2 py-1 text-sm"
+              className="w-full rounded-lg border border-hairline px-2 py-1 text-sm"
             >
               <option value="">프로젝트 없음</option>
               {projects.map((p) => (
@@ -184,7 +184,7 @@ export default function Sprints() {
                 type="date"
                 value={form.start_date}
                 onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                className="w-full rounded-full border border-hairline px-2 py-1 font-mono text-xs"
+                className="w-full rounded-lg border border-hairline px-2 py-1 font-mono text-xs"
               />
             </label>
             <label className="block">
@@ -193,16 +193,16 @@ export default function Sprints() {
                 type="date"
                 value={form.end_date}
                 onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                className="w-full rounded-full border border-hairline px-2 py-1 font-mono text-xs"
+                className="w-full rounded-lg border border-hairline px-2 py-1 font-mono text-xs"
               />
             </label>
             <input
               placeholder="목표 (선택)"
               value={form.goal}
               onChange={(e) => setForm({ ...form, goal: e.target.value })}
-              className="w-full rounded-full border border-hairline px-2 py-1 text-sm"
+              className="w-full rounded-lg border border-hairline px-2 py-1 text-sm"
             />
-            <button className="w-full rounded-full bg-brand py-1 text-sm font-semibold text-white hover:bg-brand-dark">
+            <button className="w-full rounded-lg bg-brand py-1 text-sm font-semibold text-white hover:bg-brand-dark">
               생성
             </button>
           </form>
@@ -244,7 +244,7 @@ export default function Sprints() {
               <select
                 value={selected.status}
                 onChange={(e) => setSprintStatus(selected, e.target.value as Sprint['status'])}
-                className="rounded-full border border-hairline px-2 py-1 text-sm"
+                className="rounded-lg border border-hairline px-2 py-1 text-sm"
               >
                 <option value="planned">예정</option>
                 <option value="active">진행 중</option>
@@ -270,7 +270,7 @@ export default function Sprints() {
                   placeholder="스프린트 이름"
                   value={editForm.name}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="rounded-full border border-hairline px-3 py-2 text-sm"
+                  className="rounded-lg border border-hairline px-3 py-2 text-sm"
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <label className="text-[11px] text-mute">
@@ -279,7 +279,7 @@ export default function Sprints() {
                       type="date"
                       value={editForm.start_date}
                       onChange={(e) => setEditForm({ ...editForm, start_date: e.target.value })}
-                      className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 font-mono text-xs"
+                      className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 font-mono text-xs"
                     />
                   </label>
                   <label className="text-[11px] text-mute">
@@ -288,7 +288,7 @@ export default function Sprints() {
                       type="date"
                       value={editForm.end_date}
                       onChange={(e) => setEditForm({ ...editForm, end_date: e.target.value })}
-                      className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 font-mono text-xs"
+                      className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 font-mono text-xs"
                     />
                   </label>
                 </div>
@@ -296,9 +296,9 @@ export default function Sprints() {
                   placeholder="목표 (선택)"
                   value={editForm.goal}
                   onChange={(e) => setEditForm({ ...editForm, goal: e.target.value })}
-                  className="rounded-full border border-hairline px-3 py-2 text-sm"
+                  className="rounded-lg border border-hairline px-3 py-2 text-sm"
                 />
-                <button className="justify-self-start rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
+                <button className="justify-self-start rounded-lg bg-brand px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
                   저장
                 </button>
               </form>
@@ -361,7 +361,7 @@ export default function Sprints() {
                   )}
                   <button
                     onClick={() => moveTicket(t.id, selected.id)}
-                    className="rounded-full bg-brand px-2 py-0.5 text-[11px] font-semibold text-white hover:bg-brand-dark"
+                    className="rounded-lg bg-brand px-2 py-0.5 text-[11px] font-semibold text-white hover:bg-brand-dark"
                   >
                     스프린트에 추가
                   </button>

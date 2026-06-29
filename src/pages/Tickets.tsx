@@ -263,7 +263,7 @@ export default function Tickets() {
           <h1 className="font-display text-xl font-bold text-ink">티켓</h1>
           <button
             onClick={() => setOpen((v) => !v)}
-            className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
+            className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             + 새 티켓
           </button>
@@ -275,7 +275,7 @@ export default function Tickets() {
           <select
             value={assigneeFilter}
             onChange={(e) => setAssigneeFilter(e.target.value)}
-            className="rounded-full border border-hairline px-2 py-1 text-sm"
+            className="rounded-lg border border-hairline px-2 py-1 text-sm"
           >
             <option value="">담당자: 전체</option>
             <option value="__none__">미지정</option>
@@ -288,7 +288,7 @@ export default function Tickets() {
           <select
             value={labelFilter}
             onChange={(e) => setLabelFilter(e.target.value)}
-            className="rounded-full border border-hairline px-2 py-1 text-sm"
+            className="rounded-lg border border-hairline px-2 py-1 text-sm"
           >
             <option value="">라벨: 전체</option>
             {labelOptions.map((l) => (
@@ -303,7 +303,7 @@ export default function Tickets() {
                 setLabelFilter('')
                 setAssigneeFilter('')
               }}
-              className="rounded-full border border-hairline px-2 py-1 text-xs text-mute hover:bg-bone"
+              className="rounded-lg border border-hairline px-2 py-1 text-xs text-mute hover:bg-bone"
             >
               초기화
             </button>
@@ -317,7 +317,7 @@ export default function Tickets() {
               placeholder="제목"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="rounded-full border border-hairline px-3 py-2 text-sm md:col-span-2"
+              className="rounded-lg border border-hairline px-3 py-2 text-sm md:col-span-2"
             />
             <textarea
               placeholder="설명"
@@ -331,7 +331,7 @@ export default function Tickets() {
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value as TicketType })}
-                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
+                className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-2 text-sm text-ink"
               >
                 {TYPES.map((t) => (
                   <option key={t} value={t}>
@@ -345,7 +345,7 @@ export default function Tickets() {
               <select
                 value={form.priority}
                 onChange={(e) => setForm({ ...form, priority: e.target.value as TicketPriority })}
-                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
+                className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-2 text-sm text-ink"
               >
                 {PRIORITIES.map((p) => (
                   <option key={p} value={p}>
@@ -358,21 +358,21 @@ export default function Tickets() {
               placeholder="라벨 (쉼표로 구분)"
               value={form.labels}
               onChange={(e) => setForm({ ...form, labels: e.target.value })}
-              className="rounded-full border border-hairline px-3 py-2 text-sm"
+              className="rounded-lg border border-hairline px-3 py-2 text-sm"
             />
             <input
               type="number"
               placeholder="스토리 포인트"
               value={form.story_points}
               onChange={(e) => setForm({ ...form, story_points: e.target.value })}
-              className="rounded-full border border-hairline px-3 py-2 text-sm"
+              className="rounded-lg border border-hairline px-3 py-2 text-sm"
             />
             <label className="text-xs text-mute">
               담당자
               <select
                 value={form.assignee_id}
                 onChange={(e) => setForm({ ...form, assignee_id: e.target.value })}
-                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
+                className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-2 text-sm text-ink"
               >
                 <option value="">미지정</option>
                 {profiles.map((p) => (
@@ -387,7 +387,7 @@ export default function Tickets() {
               <select
                 value={form.sprint_id}
                 onChange={(e) => setForm({ ...form, sprint_id: e.target.value })}
-                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
+                className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-2 text-sm text-ink"
               >
                 <option value="">없음</option>
                 {sprints.map((s) => (
@@ -402,7 +402,7 @@ export default function Tickets() {
               <select
                 value={form.parent_ticket_id}
                 onChange={(e) => setForm({ ...form, parent_ticket_id: e.target.value })}
-                className="mt-0.5 w-full rounded-full border border-hairline px-2 py-2 text-sm text-ink"
+                className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-2 text-sm text-ink"
               >
                 <option value="">없음</option>
                 {tickets.map((t) => (
@@ -419,11 +419,11 @@ export default function Tickets() {
                   setForm(EMPTY_FORM)
                   setOpen(false)
                 }}
-                className="rounded-full border border-hairline px-4 py-2 text-sm text-charcoal hover:bg-bone"
+                className="rounded-lg border border-hairline px-4 py-2 text-sm text-charcoal hover:bg-bone"
               >
                 취소
               </button>
-              <button className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+              <button className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
                 생성
               </button>
             </div>
@@ -541,7 +541,7 @@ export default function Tickets() {
                                 <button
                                   key={c.key}
                                   onClick={() => move(t, c.key)}
-                                  className="flex items-center gap-0.5 rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-mute hover:bg-stone/40"
+                                  className="flex items-center gap-0.5 rounded-md bg-bone px-1.5 py-0.5 text-[10px] text-mute hover:bg-stone/40"
                                 >
                                   <ChevronRight size={10} /> {c.label}
                                 </button>
@@ -740,7 +740,7 @@ function DetailPanel({
             <select
               value={ticket.status}
               onChange={(e) => onPatch(ticket, { status: e.target.value as TicketStatus })}
-              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
+              className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               {COLUMNS.map((c) => (
                 <option key={c.key} value={c.key}>
@@ -754,7 +754,7 @@ function DetailPanel({
             <select
               value={ticket.priority}
               onChange={(e) => onPatch(ticket, { priority: e.target.value as TicketPriority })}
-              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
+              className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               {PRIORITIES.map((p) => (
                 <option key={p} value={p}>
@@ -768,7 +768,7 @@ function DetailPanel({
             <select
               value={ticket.type}
               onChange={(e) => onPatch(ticket, { type: e.target.value as TicketType })}
-              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
+              className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               {TYPES.map((t) => (
                 <option key={t} value={t}>
@@ -788,7 +788,7 @@ function DetailPanel({
                 const val = sp !== null && !Number.isNaN(sp) ? sp : null
                 if (val !== ticket.story_points) onPatch(ticket, { story_points: val })
               }}
-              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
+              className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 text-sm text-ink"
             />
           </label>
           <label className="text-mute">
@@ -796,7 +796,7 @@ function DetailPanel({
             <select
               value={ticket.assignee_id ?? ''}
               onChange={(e) => onPatch(ticket, { assignee_id: e.target.value || null })}
-              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
+              className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               <option value="">미지정</option>
               {profiles.map((p) => (
@@ -811,7 +811,7 @@ function DetailPanel({
             <select
               value={ticket.sprint_id ?? ''}
               onChange={(e) => onPatch(ticket, { sprint_id: e.target.value || null })}
-              className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 text-sm text-ink"
+              className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 text-sm text-ink"
             >
               <option value="">없음</option>
               {sprints.map((s) => (
@@ -853,9 +853,9 @@ function DetailPanel({
                 }
               }}
               placeholder="라벨 추가"
-              className="flex-1 rounded-full border border-hairline px-2 py-1 text-sm"
+              className="flex-1 rounded-lg border border-hairline px-2 py-1 text-sm"
             />
-            <button onClick={addLabel} className="rounded-full border border-hairline px-2 text-sm hover:bg-bone">
+            <button onClick={addLabel} className="rounded-lg border border-hairline px-2 text-sm hover:bg-bone">
               +
             </button>
           </div>
@@ -908,9 +908,9 @@ function DetailPanel({
               value={commentBody}
               onChange={(e) => setCommentBody(e.target.value)}
               placeholder="코멘트 작성..."
-              className="flex-1 rounded-full border border-hairline px-2 py-1.5 text-sm outline-none focus:border-brand"
+              className="flex-1 rounded-lg border border-hairline px-2 py-1.5 text-sm outline-none focus:border-brand"
             />
-            <button className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
+            <button className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
               작성
             </button>
           </form>

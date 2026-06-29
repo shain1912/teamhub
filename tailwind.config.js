@@ -31,7 +31,8 @@ export default {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
-      borderRadius: { DEFAULT: '0.5rem', md: '0.75rem', lg: '1rem', xl: '1.5rem' },
+      // borderRadius 는 Tailwind 표준 스케일 사용 (Stitch 정렬: lg=8px 버튼, xl=12px 카드)
+      // 이전 커스텀(lg=16px·xl=24px)이 과하게 둥글어 제거함.
       boxShadow: {
         raised: '0 2px 4px rgba(0,0,0,0.05)',
         overlay: '0 10px 15px rgba(0,0,0,0.1)',

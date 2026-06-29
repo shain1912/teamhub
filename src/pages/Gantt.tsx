@@ -247,22 +247,22 @@ export default function Gantt() {
     <div className="flex h-full flex-col p-4 lg:p-6">
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <h1 className="whitespace-nowrap text-xl font-bold">간트차트</h1>
-        <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="rounded-full border border-hairline px-2 py-1 text-sm">
+        <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="rounded-lg border border-hairline px-2 py-1 text-sm">
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}
         </select>
-        <button onClick={createProject} className="rounded-full border border-hairline px-3 py-1 text-sm hover:bg-bone">
+        <button onClick={createProject} className="rounded-lg border border-hairline px-3 py-1 text-sm hover:bg-bone">
           + 프로젝트
         </button>
-        <button onClick={addTask} className="rounded-full bg-brand px-3 py-1 text-sm font-semibold text-white hover:bg-brand-dark" disabled={!projectId}>
+        <button onClick={addTask} className="rounded-lg bg-brand px-3 py-1 text-sm font-semibold text-white hover:bg-brand-dark" disabled={!projectId}>
           + 작업
         </button>
         <button
           onClick={deleteProject}
-          className="ml-auto rounded-full border border-hairline px-3 py-1 text-sm text-mute hover:border-danger hover:text-danger"
+          className="ml-auto rounded-lg border border-hairline px-3 py-1 text-sm text-mute hover:border-danger hover:text-danger"
           disabled={!projectId}
           title="프로젝트 삭제"
         >
@@ -403,7 +403,7 @@ export default function Gantt() {
                       const v = e.target.value.trim()
                       if (v && v !== t.title) patchTask(t, { title: v })
                     }}
-                    className="mt-0.5 w-full rounded-full border border-hairline px-3 py-2 text-sm text-ink"
+                    className="mt-0.5 w-full rounded-lg border border-hairline px-3 py-2 text-sm text-ink"
                   />
                 </label>
 
@@ -414,7 +414,7 @@ export default function Gantt() {
                       type="date"
                       value={t.start_date}
                       onChange={(e) => e.target.value && patchTask(t, { start_date: e.target.value })}
-                      className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 font-mono text-xs"
+                      className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 font-mono text-xs"
                     />
                   </label>
                   <label className="text-xs text-mute">
@@ -424,7 +424,7 @@ export default function Gantt() {
                       value={t.end_date}
                       min={t.start_date}
                       onChange={(e) => e.target.value && patchTask(t, { end_date: e.target.value })}
-                      className="mt-0.5 w-full rounded-full border border-hairline px-2 py-1.5 font-mono text-xs"
+                      className="mt-0.5 w-full rounded-lg border border-hairline px-2 py-1.5 font-mono text-xs"
                     />
                   </label>
                 </div>
@@ -453,7 +453,7 @@ export default function Gantt() {
                   <select
                     value={t.status}
                     onChange={(e) => patchTask(t, { status: e.target.value as GanttTask['status'] })}
-                    className="ml-auto rounded-full border border-hairline px-2 py-1 text-xs"
+                    className="ml-auto rounded-lg border border-hairline px-2 py-1 text-xs"
                   >
                     <option value="todo">할일</option>
                     <option value="doing">진행</option>
@@ -481,7 +481,7 @@ export default function Gantt() {
                     <select
                       value=""
                       onChange={(e) => e.target.value && addDependency(t.id, e.target.value)}
-                      className="w-full rounded-full border border-hairline px-2 py-1 text-xs"
+                      className="w-full rounded-lg border border-hairline px-2 py-1 text-xs"
                     >
                       <option value="">+ 선행 작업 추가…</option>
                       {candidates.map((c) => (
@@ -499,13 +499,13 @@ export default function Gantt() {
                       deleteTask(t)
                       setEditorTask(null)
                     }}
-                    className="flex items-center gap-1 rounded-full border border-hairline px-3 py-1.5 text-xs text-danger hover:bg-danger-soft"
+                    className="flex items-center gap-1 rounded-lg border border-hairline px-3 py-1.5 text-xs text-danger hover:bg-danger-soft"
                   >
                     <Trash2 size={13} /> 삭제
                   </button>
                   <button
                     onClick={() => setEditorTask(null)}
-                    className="rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
+                    className="rounded-lg bg-brand px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
                   >
                     완료
                   </button>

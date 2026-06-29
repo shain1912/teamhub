@@ -85,7 +85,7 @@ export default function Notifications() {
         <button
           onClick={markAllRead}
           disabled={unreadCount === 0}
-          className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
           모두 읽음
         </button>

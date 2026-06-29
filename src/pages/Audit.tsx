@@ -84,7 +84,7 @@ export default function Audit() {
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="rounded-full border border-hairline bg-card px-2 py-1 text-sm text-body"
+            className="rounded-lg border border-hairline bg-card px-2 py-1 text-sm text-body"
           >
             <option value="">모든 action</option>
             {actionOptions.map((a) => (
@@ -96,7 +96,7 @@ export default function Audit() {
           <select
             value={entityFilter}
             onChange={(e) => setEntityFilter(e.target.value)}
-            className="rounded-full border border-hairline bg-card px-2 py-1 text-sm text-body"
+            className="rounded-lg border border-hairline bg-card px-2 py-1 text-sm text-body"
           >
             <option value="">모든 entity</option>
             {entityOptions.map((t) => (

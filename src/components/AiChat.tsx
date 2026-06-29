@@ -186,7 +186,7 @@ export default function AiChat() {
               onChange={(e) => setInput(e.target.value)}
               disabled={!isGlmConfigured || busy}
               placeholder="무엇을 만들까요?"
-              className="min-w-0 flex-1 rounded-full border border-hairline px-3 py-1.5 text-sm outline-none focus:border-ink disabled:opacity-50"
+              className="min-w-0 flex-1 rounded-lg border border-hairline px-3 py-1.5 text-sm outline-none focus:border-ink disabled:opacity-50"
             />
             <button
               disabled={!isGlmConfigured || busy || !input.trim()}

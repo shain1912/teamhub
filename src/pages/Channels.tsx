@@ -260,7 +260,7 @@ export default function Channels() {
             key={c.id}
             onClick={() => navigate(`/channels/${c.id}`)}
             className={`block w-full truncate px-3 py-1.5 text-left text-sm ${
-              c.id === channelId ? 'rounded-full bg-bone font-semibold text-brand' : 'text-body hover:bg-bone'
+              c.id === channelId ? 'rounded-lg bg-bone font-semibold text-brand' : 'text-body hover:bg-bone'
             }`}
           >
             # {c.name}
@@ -287,7 +287,7 @@ export default function Channels() {
           <select
             value={channelId ?? ''}
             onChange={(e) => navigate(`/channels/${e.target.value}`)}
-            className="max-w-[55%] rounded-full border border-hairline px-2 py-1 text-sm lg:hidden"
+            className="max-w-[55%] rounded-lg border border-hairline px-2 py-1 text-sm lg:hidden"
           >
             {channels.map((c) => (
               <option key={c.id} value={c.id}># {c.name}</option>
@@ -330,9 +330,9 @@ export default function Channels() {
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder={`#${current?.name ?? ''} 에 메시지 (@이름 으로 멘션)`}
-            className="flex-1 rounded-full border border-hairline px-3 py-2 text-sm outline-none focus:border-brand"
+            className="flex-1 rounded-lg border border-hairline px-3 py-2 text-sm outline-none focus:border-brand"
           />
-          <button className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+          <button className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
             전송
           </button>
         </form>
@@ -460,7 +460,7 @@ function MessageRow({
 
         <button
           onClick={onOpenThread}
-          className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs text-ash hover:text-brand"
+          className="flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs text-ash hover:text-brand"
         >
           <MessageSquare size={13} className="shrink-0" /> 답글{replyCount > 0 ? ` ${replyCount}` : ''}
         </button>
@@ -582,9 +582,9 @@ function ThreadPanel({
           value={reply}
           onChange={(e) => setReply(e.target.value)}
           placeholder="답글 입력 (@이름 으로 멘션)"
-          className="flex-1 rounded-full border border-hairline px-3 py-2 text-sm outline-none focus:border-brand"
+          className="flex-1 rounded-lg border border-hairline px-3 py-2 text-sm outline-none focus:border-brand"
         />
-        <button className="rounded-full bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
+        <button className="rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
           답글
         </button>
       </form>

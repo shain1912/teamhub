@@ -136,7 +136,7 @@ export default function Checklists() {
             <input type="checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} />
             내 항목만
           </label>
-          <button onClick={createList} className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
+          <button onClick={createList} className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
             + 새 체크리스트
           </button>
         </div>
@@ -190,7 +190,7 @@ export default function Checklists() {
                           <select
                             value={i.assignee_id ?? ''}
                             onChange={(e) => setAssignee(i, e.target.value)}
-                            className="rounded-full border border-hairline bg-card px-1 py-0.5 text-[11px] text-charcoal"
+                            className="rounded-lg border border-hairline bg-card px-1 py-0.5 text-[11px] text-charcoal"
                             title="담당자"
                           >
                             <option value="">담당자 없음</option>
@@ -251,9 +251,9 @@ export default function Checklists() {
                   onChange={(e) => setNewItem((m) => ({ ...m, [l.id]: e.target.value }))}
                   onKeyDown={(e) => e.key === 'Enter' && addItem(l.id)}
                   placeholder="항목 추가"
-                  className="flex-1 rounded-full border border-hairline px-2 py-1 text-sm"
+                  className="flex-1 rounded-lg border border-hairline px-2 py-1 text-sm"
                 />
-                <button onClick={() => addItem(l.id)} className="rounded-full border border-hairline px-2 text-sm hover:bg-bone">
+                <button onClick={() => addItem(l.id)} className="rounded-lg border border-hairline px-2 text-sm hover:bg-bone">
                   +
                 </button>
               </div>

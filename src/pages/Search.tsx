@@ -141,7 +141,7 @@ export default function Search() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="메시지, 티켓, 파일, 공지, 채널 검색 (2자 이상)"
-            className="w-full rounded-full border border-hairline py-2.5 pl-9 pr-9 text-sm outline-none focus:border-brand"
+            className="w-full rounded-lg border border-hairline py-2.5 pl-9 pr-9 text-sm outline-none focus:border-brand"
           />
           {q && (
             <button

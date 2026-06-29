@@ -182,12 +182,12 @@ export default function Announcements() {
               <h2 className="flex items-center gap-2 text-base font-bold text-ink">
                 <History size={18} className="text-brand" /> 최근 공지
               </h2>
-              <div className="flex items-center gap-1 rounded-full border border-hairline bg-card p-1 text-sm shadow-raised">
+              <div className="flex items-center gap-1 rounded-lg border border-hairline bg-card p-1 text-sm shadow-raised">
                 {(['latest', 'popular'] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setTab(t)}
-                    className={`rounded-full px-3 py-1 font-semibold transition ${
+                    className={`rounded-md px-3 py-1 font-semibold transition ${
                       tab === t ? 'bg-brand text-white' : 'text-mute hover:text-ink'
                     }`}
                   >

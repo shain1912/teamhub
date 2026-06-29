@@ -107,15 +107,15 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5 text-sm">
           {/* 클라 선택 / 생성 */}
           <div className="flex flex-wrap items-center gap-2">
-            <select value={sel} onChange={(e) => setSel(e.target.value)} className="rounded-full border border-hairline px-3 py-1.5">
+            <select value={sel} onChange={(e) => setSel(e.target.value)} className="rounded-lg border border-hairline px-3 py-1.5">
               {clients.length === 0 && <option value="">클라이언트 없음</option>}
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
             <span className="text-ash">또는</span>
-            <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="새 클라이언트 이름" className="flex-1 rounded-full border border-hairline px-3 py-1.5" />
-            <button onClick={createClient} className="rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark">+ 생성</button>
+            <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="새 클라이언트 이름" className="flex-1 rounded-lg border border-hairline px-3 py-1.5" />
+            <button onClick={createClient} className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark">+ 생성</button>
           </div>
 
           {selClient && (
@@ -162,17 +162,17 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
               <form onSubmit={invite} className="space-y-2 rounded-xl border border-hairline bg-bone p-3">
                 <div className="text-xs font-semibold text-mute">「{selClient.name}」 게스트 초대</div>
                 <div className="flex flex-wrap gap-2">
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="게스트 이메일" className="min-w-0 flex-1 rounded-full border border-hairline px-3 py-1.5" />
-                  <input type="number" min={1} max={365} value={days} onChange={(e) => setDays(Number(e.target.value))} className="w-20 rounded-full border border-hairline px-2 py-1.5" title="만료(일)" />
-                  <button disabled={busy} className="rounded-full bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark disabled:opacity-50">
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="게스트 이메일" className="min-w-0 flex-1 rounded-lg border border-hairline px-3 py-1.5" />
+                  <input type="number" min={1} max={365} value={days} onChange={(e) => setDays(Number(e.target.value))} className="w-20 rounded-lg border border-hairline px-2 py-1.5" title="만료(일)" />
+                  <button disabled={busy} className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark disabled:opacity-50">
                     {busy ? '…' : '초대'}
                   </button>
                 </div>
                 {msg && <p className="text-xs text-success">{msg}</p>}
                 {link && (
                   <div className="flex gap-1">
-                    <input readOnly value={link} className="min-w-0 flex-1 rounded-full border border-hairline px-3 py-1.5 font-mono text-[11px]" />
-                    <button type="button" onClick={() => navigator.clipboard.writeText(link)} className="rounded-full border border-hairline px-3 text-xs hover:bg-card">복사</button>
+                    <input readOnly value={link} className="min-w-0 flex-1 rounded-lg border border-hairline px-3 py-1.5 font-mono text-[11px]" />
+                    <button type="button" onClick={() => navigator.clipboard.writeText(link)} className="rounded-lg border border-hairline px-3 text-xs hover:bg-card">복사</button>
                   </div>
                 )}
               </form>
@@ -198,7 +198,7 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
                       <select
                         value={g.client_id ?? ''}
                         onChange={(e) => guestUpdate(g.id, { client_id: e.target.value || null })}
-                        className="rounded-full border border-hairline px-2 py-1 text-xs"
+                        className="rounded-lg border border-hairline px-2 py-1 text-xs"
                         title="클라이언트 재배정"
                       >
                         <option value="">미배정</option>
@@ -206,10 +206,10 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
                           <option key={c.id} value={c.id}>{c.name}</option>
                         ))}
                       </select>
-                      <button onClick={() => guestUpdate(g.id, { expires_days: 30 })} className="rounded-full border border-hairline px-2 py-1 text-[11px] hover:bg-bone" title="만료 30일 연장">
+                      <button onClick={() => guestUpdate(g.id, { expires_days: 30 })} className="rounded-lg border border-hairline px-2 py-1 text-[11px] hover:bg-bone" title="만료 30일 연장">
                         +30일
                       </button>
-                      <button onClick={() => guestUpdate(g.id, { block: true })} className="rounded-full border border-hairline px-2 py-1 text-[11px] text-danger hover:bg-danger-soft" title="즉시 차단">
+                      <button onClick={() => guestUpdate(g.id, { block: true })} className="rounded-lg border border-hairline px-2 py-1 text-[11px] text-danger hover:bg-danger-soft" title="즉시 차단">
                         차단
                       </button>
                     </div>

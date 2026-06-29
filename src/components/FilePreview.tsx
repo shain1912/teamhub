@@ -97,13 +97,13 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
           <button
             onClick={openExternal}
             disabled={!url}
-            className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10 disabled:opacity-40"
+            className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10 disabled:opacity-40"
           >
             새 탭으로 열기 / 다운로드
           </button>
           <button
             onClick={onClose}
-            className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10"
+            className="rounded-lg border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10"
             aria-label="닫기"
           >
             <X size={16} />
@@ -157,7 +157,7 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
                 <p className="mb-3">이 형식은 미리보기를 지원하지 않습니다.</p>
                 <button
                   onClick={openExternal}
-                  className="rounded-full bg-card px-4 py-2 text-sm font-semibold text-ink hover:bg-bone"
+                  className="rounded-lg bg-card px-4 py-2 text-sm font-semibold text-ink hover:bg-bone"
                 >
                   새 탭에서 다운로드
                 </button>
