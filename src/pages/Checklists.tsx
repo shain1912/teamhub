@@ -140,14 +140,15 @@ export default function Checklists() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {/* Padlet식 masonry — CSS columns 로 카드 높이에 맞춰 촘촘히 (여백 최소화) */}
+      <div className="columns-1 gap-4 md:columns-2 xl:columns-3 [&>*]:mb-4">
         {lists.map((l) => {
           const allIts = items[l.id] ?? []
           const its = mineOnly ? allIts.filter((i) => i.assignee_id === myId) : allIts
           if (mineOnly && its.length === 0) return null
           const done = its.filter((i) => i.is_done).length
           return (
-            <div key={l.id} className="rounded-xl border border-hairline bg-card p-4">
+            <div key={l.id} className="mb-4 break-inside-avoid rounded-xl border border-hairline bg-card p-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-ink">{l.title}</h2>
                 <div className="flex items-center gap-2">
