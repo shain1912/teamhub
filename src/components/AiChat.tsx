@@ -103,7 +103,7 @@ export default function AiChat() {
       {/* 플로팅 버튼 */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-overlay transition hover:bg-brand-dark"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-overlay transition hover:bg-brand-dark dark:shadow-glow"
         aria-label="AI 비서 열기"
         title="AI 비서"
       >
@@ -112,7 +112,7 @@ export default function AiChat() {
 
       {/* 패널 */}
       {open && (
-        <div className="fixed bottom-24 right-5 z-50 flex h-[32rem] max-h-[calc(100vh-7rem)] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-hairline bg-white shadow-2xl">
+        <div className="fixed bottom-24 right-5 z-50 flex h-[32rem] max-h-[calc(100vh-7rem)] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-hairline bg-card shadow-2xl">
           <div className="flex items-center gap-2 border-b border-hairline px-4 py-3">
             <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand text-white"><Sparkles size={15} /></span>
             <div className="flex-1">

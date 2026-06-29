@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { AtSign, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../store/auth'
 import { isSupabaseConfigured } from '../lib/supabase'
+import ThemeToggle from '../components/ThemeToggle'
 
 type Mode = 'login' | 'signup'
 
@@ -46,7 +47,10 @@ export default function Login() {
   }
 
   return (
-    <div className="grid min-h-full place-items-center bg-canvas px-4 py-10">
+    <div className="relative grid min-h-full place-items-center bg-canvas px-4 py-10">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-sm">
         {/* 표지 — 인디고 로고 타일 + 타이틀 */}
         <div className="mb-8 flex flex-col items-center text-center">

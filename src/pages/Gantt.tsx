@@ -262,7 +262,7 @@ export default function Gantt() {
         </button>
         <button
           onClick={deleteProject}
-          className="ml-auto rounded-full border border-hairline px-3 py-1 text-sm text-mute hover:border-red-300 hover:text-red-500"
+          className="ml-auto rounded-full border border-hairline px-3 py-1 text-sm text-mute hover:border-danger hover:text-danger"
           disabled={!projectId}
           title="프로젝트 삭제"
         >
@@ -270,7 +270,7 @@ export default function Gantt() {
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-hairline bg-white">
+      <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-hairline bg-card">
         <div className="inline-block min-w-full">
           {/* 날짜 헤더 */}
           <div className="flex border-b border-hairline bg-bone" ref={headerRef}>
@@ -291,7 +291,7 @@ export default function Gantt() {
           {/* 본문: 라벨 열 + 타임라인(+의존선 SVG 오버레이) */}
           <div className="flex">
             {/* 라벨 열 */}
-            <div className="sticky left-0 z-10 w-64 shrink-0 border-r border-hairline bg-white">
+            <div className="sticky left-0 z-10 w-64 shrink-0 border-r border-hairline bg-card">
               {tasks.map((t) => (
                 <div
                   key={t.id}
@@ -351,15 +351,15 @@ export default function Gantt() {
                       markerHeight="6"
                       orient="auto-start-reverse"
                     >
-                      <path d="M 0 0 L 10 5 L 0 10 z" fill="#575757" />
+                      <path d="M 0 0 L 10 5 L 0 10 z" className="fill-charcoal" />
                     </marker>
                   </defs>
                   {connectors.map((c) => (
                     <path
                       key={c.id}
+                      className="stroke-charcoal"
                       d={c.d}
                       fill="none"
-                      stroke="#575757"
                       strokeWidth={1.5}
                       markerEnd="url(#gantt-arrow)"
                     />
@@ -384,7 +384,7 @@ export default function Gantt() {
               onClick={() => setEditorTask(null)}
             >
               <div
-                className="w-full max-w-sm space-y-3 rounded-2xl border border-hairline bg-white p-5"
+                className="w-full max-w-sm space-y-3 rounded-2xl border border-hairline bg-card p-5"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between">
@@ -469,7 +469,7 @@ export default function Gantt() {
                       return (
                         <span key={d.id} className="inline-flex items-center gap-1 rounded-full bg-bone px-2 py-0.5 text-[11px] text-mute">
                           <ArrowLeft size={11} className="shrink-0" /> {pre?.title ?? '(삭제됨)'}
-                          <button onClick={() => removeDependency(d)} className="text-ash hover:text-red-500" aria-label="의존 제거">
+                          <button onClick={() => removeDependency(d)} className="text-ash hover:text-danger" aria-label="의존 제거">
                             <X size={11} />
                           </button>
                         </span>
@@ -499,7 +499,7 @@ export default function Gantt() {
                       deleteTask(t)
                       setEditorTask(null)
                     }}
-                    className="flex items-center gap-1 rounded-full border border-hairline px-3 py-1.5 text-xs text-red-500 hover:bg-red-50"
+                    className="flex items-center gap-1 rounded-full border border-hairline px-3 py-1.5 text-xs text-danger hover:bg-danger-soft"
                   >
                     <Trash2 size={13} /> 삭제
                   </button>

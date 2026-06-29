@@ -167,7 +167,7 @@ export default function Search() {
 
         {/* 빈 상태 */}
         {!loading && debounced.length >= 2 && total === 0 && (
-          <div className="rounded-xl border border-hairline bg-white p-8 text-center text-sm text-ash">
+          <div className="rounded-xl border border-hairline bg-card p-8 text-center text-sm text-ash">
             “{debounced}” 에 대한 결과가 없습니다.
           </div>
         )}
@@ -268,7 +268,7 @@ function Section({
         {title}
         <span className="rounded-full bg-bone px-2 py-0.5 font-mono text-xs font-normal text-ash">{count}</span>
       </h2>
-      <div className="divide-y divide-hairline overflow-hidden rounded-xl border border-hairline bg-white">{children}</div>
+      <div className="divide-y divide-hairline overflow-hidden rounded-xl border border-hairline bg-card">{children}</div>
     </section>
   )
 }

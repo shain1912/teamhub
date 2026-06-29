@@ -153,7 +153,7 @@ export default function Announcements() {
                 <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/5" />
                 <div className="pointer-events-none absolute -bottom-20 right-10 h-48 w-48 rounded-full bg-white/5" />
                 <div className="relative">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-mint px-3 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-mint px-3 py-1 text-xs font-bold uppercase tracking-wider text-white dark:text-canvas">
                     <Megaphone size={13} /> 주요 공지
                   </span>
                   <h2 className="mt-4 max-w-2xl text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">
@@ -165,7 +165,7 @@ export default function Announcements() {
                   <div className="mt-6 flex flex-wrap items-center gap-4">
                     <button
                       onClick={scrollToList}
-                      className="flex items-center gap-2 rounded-lg bg-mint px-4 py-2.5 text-sm font-bold text-white shadow-raised transition hover:bg-mint-ink"
+                      className="flex items-center gap-2 rounded-lg bg-mint px-4 py-2.5 text-sm font-bold text-white shadow-raised transition hover:bg-mint-ink dark:text-canvas"
                     >
                       전문 보기 <ArrowRight size={16} />
                     </button>

@@ -24,7 +24,7 @@ export default function App() {
   }, [init])
 
   if (loading) {
-    return <div className="grid h-full place-items-center text-slate-400">불러오는 중…</div>
+    return <div className="grid h-full place-items-center text-ash">불러오는 중…</div>
   }
 
   if (!session) return <Login />

@@ -19,7 +19,7 @@ const STATUS_LABEL: Record<TicketStatus, string> = {
 
 const STATUS_CHIP: Record<TicketStatus, string> = {
   open: 'bg-bone text-charcoal',
-  in_progress: 'bg-blue-100 text-blue-700',
+  in_progress: 'bg-info-soft text-info-ink',
   done: 'bg-success/10 text-success',
   closed: 'bg-bone text-mute',
 }
@@ -42,9 +42,9 @@ function dueClass(iso: string | null): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return 'text-ash'
   const now = new Date()
-  if (d < now) return 'text-red-600 font-medium'
+  if (d < now) return 'text-danger font-medium'
   const soon = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 3)
-  if (d < soon) return 'text-amber-600 font-medium'
+  if (d < soon) return 'text-amber-600 dark:text-amber-400 font-medium'
   return 'text-mute'
 }
 
@@ -57,7 +57,7 @@ interface SectionCardProps {
 
 function SectionCard({ title, count, emptyText, children }: SectionCardProps) {
   return (
-    <div className="flex flex-col rounded-xl border border-hairline bg-white p-4">
+    <div className="flex flex-col rounded-xl border border-hairline bg-card p-4">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-semibold text-ink">{title}</h2>
         <span className="rounded-full bg-bone px-2 py-0.5 font-mono text-xs font-semibold text-charcoal">{count}</span>
@@ -245,7 +245,7 @@ export default function MyWork() {
   if (!me?.id) {
     return (
       <div className="h-full overflow-y-auto bg-canvas p-6">
-        <div className="rounded-xl border border-hairline bg-white p-6 text-sm text-charcoal">
+        <div className="rounded-xl border border-hairline bg-card p-6 text-sm text-charcoal">
           로그인 정보를 불러올 수 없습니다. 다시 로그인해 주세요.
         </div>
       </div>

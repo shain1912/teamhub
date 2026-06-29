@@ -282,7 +282,7 @@ export default function Channels() {
           uploadFiles(e.dataTransfer.files)
         }}
       >
-        <div className="flex items-center gap-2 border-b border-hairline bg-white px-4 py-2">
+        <div className="flex items-center gap-2 border-b border-hairline bg-card px-4 py-2">
           {/* 모바일: 채널 선택 드롭다운 */}
           <select
             value={channelId ?? ''}
@@ -299,7 +299,7 @@ export default function Channels() {
           </button>
         </div>
 
-        <div className={`relative flex-1 overflow-y-auto bg-white px-4 py-3 ${dragOver ? 'bg-brand/5' : ''}`}>
+        <div className={`relative flex-1 overflow-y-auto bg-card px-4 py-3 ${dragOver ? 'bg-brand/5' : ''}`}>
           {dragOver && (
             <div className="pointer-events-none absolute inset-2 grid place-items-center rounded-xl border-2 border-dashed border-brand text-brand">
               여기에 파일을 놓아 업로드
@@ -321,7 +321,7 @@ export default function Channels() {
           <div ref={endRef} />
         </div>
 
-        <form onSubmit={send} className="flex items-center gap-2 border-t border-hairline bg-white p-3 pr-[4.75rem] lg:pr-3">
+        <form onSubmit={send} className="flex items-center gap-2 border-t border-hairline bg-card p-3 pr-[4.75rem] lg:pr-3">
           <label className="flex cursor-pointer items-center rounded-full border border-hairline px-2 py-2 text-sm text-ash hover:bg-bone" title="파일 첨부">
             <Paperclip size={16} />
             <input type="file" multiple hidden onChange={(e) => uploadFiles(e.target.files)} />
@@ -423,7 +423,7 @@ function MessageRow({
               key={emoji}
               onClick={() => onToggleReaction(emoji)}
               className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs ${
-                mine ? 'border-brand bg-brand/10 text-brand' : 'border-hairline bg-white hover:bg-bone'
+                mine ? 'border-brand bg-brand/10 text-brand' : 'border-hairline bg-card hover:bg-bone'
               }`}
             >
               <span>{emoji}</span>
@@ -441,7 +441,7 @@ function MessageRow({
             <SmilePlus size={14} />
           </button>
           {picker && (
-            <div className="absolute z-10 mt-1 flex gap-1 rounded-xl border border-hairline bg-white p-1">
+            <div className="absolute z-10 mt-1 flex gap-1 rounded-xl border border-hairline bg-card p-1">
               {quickEmojis.map((emoji) => (
                 <button
                   key={emoji}
@@ -512,7 +512,7 @@ function ThreadPanel({
   }
 
   return (
-    <div className="flex w-80 shrink-0 flex-col border-l border-hairline bg-white">
+    <div className="flex w-80 shrink-0 flex-col border-l border-hairline bg-card">
       <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
         <span className="text-sm font-semibold text-ink">스레드</span>
         <button onClick={onClose} className="rounded-full px-1.5 text-ash hover:bg-bone" aria-label="닫기">
@@ -552,7 +552,7 @@ function ThreadPanel({
                       key={emoji}
                       onClick={() => onToggleReaction(m.id, emoji)}
                       className={`flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-xs ${
-                        mine ? 'border-brand bg-brand/10 text-brand' : 'border-hairline bg-white hover:bg-bone'
+                        mine ? 'border-brand bg-brand/10 text-brand' : 'border-hairline bg-card hover:bg-bone'
                       }`}
                     >
                       <span>{emoji}</span>
@@ -615,7 +615,7 @@ function FileCard({ file, onOpen }: { file: FileRow; onOpen: () => void }) {
   }, [file.storage_path, previewable])
 
   return (
-    <div className="rounded-xl border border-hairline bg-white p-2">
+    <div className="rounded-xl border border-hairline bg-card p-2">
       <button onClick={onOpen} className="flex w-full items-center gap-1.5 text-left font-mono text-sm font-medium text-body hover:text-brand" title={file.name}>
         <FileText size={14} className="shrink-0" />
         <span className="truncate">{file.name}</span>

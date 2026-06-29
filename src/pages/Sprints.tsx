@@ -18,7 +18,7 @@ const STATUS_LABEL: Record<string, string> = {
 }
 const STATUS_BADGE: Record<string, string> = {
   planned: 'rounded-full font-mono bg-bone text-ink',
-  active: 'rounded-full font-mono bg-green-100 text-green-700',
+  active: 'rounded-full font-mono bg-mint-soft text-mint-ink',
   completed: 'rounded-full font-mono bg-bone text-ash',
 }
 const COLS: { key: Ticket['status']; label: string }[] = [
@@ -149,7 +149,7 @@ export default function Sprints() {
   return (
     <div className="flex h-full flex-col lg:flex-row">
       {/* 스프린트 목록 */}
-      <div className="max-h-44 w-full shrink-0 overflow-y-auto border-b border-hairline bg-white p-3 lg:max-h-none lg:w-60 lg:border-b-0 lg:border-r">
+      <div className="max-h-44 w-full shrink-0 overflow-y-auto border-b border-hairline bg-card p-3 lg:max-h-none lg:w-60 lg:border-b-0 lg:border-r">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-mute">스프린트</h2>
           <button onClick={() => setShowForm((v) => !v)} className="flex items-center gap-1 text-xs font-semibold text-brand hover:underline">
@@ -264,7 +264,7 @@ export default function Sprints() {
             </div>
 
             {editing ? (
-              <form onSubmit={saveEdit} className="mb-4 grid max-w-md gap-2 rounded-xl border border-hairline bg-white p-4">
+              <form onSubmit={saveEdit} className="mb-4 grid max-w-md gap-2 rounded-xl border border-hairline bg-card p-4">
                 <input
                   required
                   placeholder="스프린트 이름"
@@ -328,7 +328,7 @@ export default function Sprints() {
                     </div>
                     <div className="space-y-2">
                       {list.map((t) => (
-                        <div key={t.id} className="rounded-xl border border-hairline bg-white p-2">
+                        <div key={t.id} className="rounded-xl border border-hairline bg-card p-2">
                           <div className="text-sm font-medium text-ink">{t.title}</div>
                           <div className="mt-1 flex items-center gap-2 text-[10px] text-ash">
                             {t.story_points != null && (
@@ -336,7 +336,7 @@ export default function Sprints() {
                                 {t.story_points}sp
                               </span>
                             )}
-                            <button onClick={() => moveTicket(t.id, null)} className="hover:text-red-500">
+                            <button onClick={() => moveTicket(t.id, null)} className="hover:text-danger">
                               백로그로
                             </button>
                           </div>
@@ -352,7 +352,7 @@ export default function Sprints() {
             <h2 className="mb-2 mt-6 text-sm font-semibold text-mute">백로그 <span className="font-mono">({backlog.length})</span></h2>
             <div className="space-y-1">
               {backlog.map((t) => (
-                <div key={t.id} className="flex items-center gap-2 rounded-xl border border-hairline bg-white px-3 py-1.5">
+                <div key={t.id} className="flex items-center gap-2 rounded-xl border border-hairline bg-card px-3 py-1.5">
                   <span className="flex-1 truncate text-sm">{t.title}</span>
                   {t.story_points != null && (
                     <span className="rounded-full bg-bone px-1 font-mono text-[10px] font-semibold text-charcoal">
@@ -479,7 +479,7 @@ function SprintStats({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] })
           <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-mute">Top Priority</div>
           <div className="space-y-1.5">
             {topTickets.map((t) => (
-              <div key={t.id} className="flex items-center gap-3 rounded-xl border border-hairline bg-white px-3 py-2">
+              <div key={t.id} className="flex items-center gap-3 rounded-xl border border-hairline bg-card px-3 py-2">
                 <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${PRIORITY_CHIP[t.priority]}`}>
                   <Flag size={15} />
                 </span>
@@ -515,7 +515,7 @@ function Burndown({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] }) {
 
   if (days.length < 2 || total === 0) {
     return (
-      <div className="rounded-xl border border-hairline bg-white p-4 text-sm text-ash">
+      <div className="rounded-xl border border-hairline bg-card p-4 text-sm text-ash">
         번다운: 스프린트 기간과 스토리포인트(또는 티켓)가 있어야 표시됩니다. (현재 총 {total} 단위)
       </div>
     )
@@ -545,30 +545,30 @@ function Burndown({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] }) {
     .join(' ')
 
   return (
-    <div className="rounded-xl border border-hairline bg-white p-4">
+    <div className="rounded-xl border border-hairline bg-card p-4">
       <div className="mb-1 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-ink">번다운</h3>
         <span className="font-mono text-xs text-ash">총 {total} 단위 · {n}일</span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
         {/* 축 */}
-        <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke="#e2e8f0" />
-        <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke="#e2e8f0" />
+        <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} className="stroke-hairline" />
+        <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} className="stroke-hairline" />
         {/* 이상선 */}
-        <polyline points={idealPts} fill="none" stroke="#bbbbbb" strokeDasharray="4 4" strokeWidth={2} />
+        <polyline points={idealPts} fill="none" className="stroke-stone" strokeDasharray="4 4" strokeWidth={2} />
         {/* 실제선 */}
-        {actualPts && <polyline points={actualPts} fill="none" stroke="#4a154b" strokeWidth={2} />}
+        {actualPts && <polyline points={actualPts} fill="none" className="stroke-brand" strokeWidth={2} />}
         {/* 시작/끝 라벨 */}
-        <text x={PAD} y={H - 8} fontSize="9" fill="#94a3b8">
+        <text x={PAD} y={H - 8} fontSize="9" className="fill-ash">
           {sprint.start_date}
         </text>
-        <text x={W - PAD} y={H - 8} fontSize="9" fill="#94a3b8" textAnchor="end">
+        <text x={W - PAD} y={H - 8} fontSize="9" className="fill-ash" textAnchor="end">
           {sprint.end_date}
         </text>
-        <text x={6} y={y(total) + 3} fontSize="9" fill="#94a3b8">
+        <text x={6} y={y(total) + 3} fontSize="9" className="fill-ash">
           {total}
         </text>
-        <text x={12} y={y(0) + 3} fontSize="9" fill="#94a3b8">
+        <text x={12} y={y(0) + 3} fontSize="9" className="fill-ash">
           0
         </text>
       </svg>

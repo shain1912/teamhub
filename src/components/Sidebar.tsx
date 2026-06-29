@@ -109,7 +109,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                     className={({ isActive }) =>
                       `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
                         collapsed ? 'md:justify-center md:px-0' : ''
-                      } ${isActive ? 'bg-mint text-white shadow-sm' : 'text-charcoal hover:bg-black/5 hover:text-ink'}`
+                      } ${isActive ? 'bg-mint text-white shadow-sm dark:text-canvas dark:shadow-glow-mint' : 'text-charcoal hover:bg-black/5 hover:text-ink'}`
                     }
                   >
                     {({ isActive }) => (
@@ -146,7 +146,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
               <div className="flex items-center gap-1.5">
                 <span className="truncate text-sm font-semibold text-ink">{name}</span>
-                {isGuest && <span className="rounded bg-mint px-1 py-0.5 text-[9px] font-bold text-white">게스트</span>}
+                {isGuest && <span className="rounded bg-mint px-1 py-0.5 text-[9px] font-bold text-white dark:text-canvas">게스트</span>}
               </div>
               <span className="flex items-center gap-1 text-[11px] text-mint-ink">
                 <span className="h-1.5 w-1.5 rounded-full bg-mint" /> 온라인

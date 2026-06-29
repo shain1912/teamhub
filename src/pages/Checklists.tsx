@@ -149,7 +149,7 @@ export default function Checklists() {
           if (mineOnly && its.length === 0) return null
           const done = its.filter((i) => i.is_done).length
           return (
-            <div key={l.id} className="rounded-xl border border-hairline bg-white p-4">
+            <div key={l.id} className="rounded-xl border border-hairline bg-card p-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-ink">{l.title}</h2>
                 <div className="flex items-center gap-2">
@@ -158,7 +158,7 @@ export default function Checklists() {
                   </span>
                   <button
                     onClick={() => deleteList(l)}
-                    className="text-ash hover:text-red-500"
+                    className="text-ash hover:text-danger"
                     title="체크리스트 삭제"
                   >
                     <Trash2 size={14} />
@@ -180,7 +180,7 @@ export default function Checklists() {
                     <li
                       key={i.id}
                       className={`flex items-start gap-2 rounded-lg px-1.5 py-1 text-sm ${
-                        dueOverdue ? 'bg-red-50 ring-1 ring-red-200' : ''
+                        dueOverdue ? 'bg-danger-soft ring-1 ring-danger' : ''
                       }`}
                     >
                       <input type="checkbox" checked={i.is_done} onChange={() => toggle(i)} className="mt-1" />
@@ -190,7 +190,7 @@ export default function Checklists() {
                           <select
                             value={i.assignee_id ?? ''}
                             onChange={(e) => setAssignee(i, e.target.value)}
-                            className="rounded-full border border-hairline bg-white px-1 py-0.5 text-[11px] text-charcoal"
+                            className="rounded-full border border-hairline bg-card px-1 py-0.5 text-[11px] text-charcoal"
                             title="담당자"
                           >
                             <option value="">담당자 없음</option>
@@ -204,7 +204,7 @@ export default function Checklists() {
                           <button
                             onClick={() => setDueDate(i)}
                             className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                              dueOverdue ? 'bg-red-100 font-semibold text-red-700' : i.due_date ? 'bg-amber-100 text-amber-700' : 'text-ash hover:text-brand'
+                              dueOverdue ? 'bg-danger-soft font-semibold text-danger-ink' : i.due_date ? 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300' : 'text-ash hover:text-brand'
                             }`}
                             title="마감일"
                           >
@@ -215,7 +215,7 @@ export default function Checklists() {
                             <button
                               onClick={() => setFollowUp(i)}
                               className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 font-mono text-[10px] ${
-                                followOverdue ? 'bg-red-100 text-red-700' : 'bg-bone text-mute'
+                                followOverdue ? 'bg-danger-soft text-danger-ink' : 'bg-bone text-mute'
                               }`}
                               title="팔로업"
                             >
@@ -234,7 +234,7 @@ export default function Checklists() {
                       </div>
                       <button
                         onClick={() => deleteItem(i)}
-                        className="mt-0.5 text-ash hover:text-red-500"
+                        className="mt-0.5 text-ash hover:text-danger"
                         title="항목 삭제"
                       >
                         <Trash2 size={12} />

@@ -21,8 +21,8 @@ const COLUMNS: { key: TicketStatus; label: string; bar: string }[] = [
 
 // 미니멀 카드: 타입별 아이콘 타일 (보더 대신 아이콘으로 분류)
 const TYPE_META: Record<TicketType, { Icon: typeof Bug; tile: string }> = {
-  epic: { Icon: Flag, tile: 'bg-purple-100 text-purple-700' },
-  story: { Icon: BookText, tile: 'bg-emerald-100 text-emerald-700' },
+  epic: { Icon: Flag, tile: 'bg-brand/15 text-brand' },
+  story: { Icon: BookText, tile: 'bg-mint-soft text-mint-ink' },
   task: { Icon: ListTodo, tile: 'bg-info-soft text-info-ink' },
   bug: { Icon: Bug, tile: 'bg-danger-soft text-danger-ink' },
   subtask: { Icon: GitBranch, tile: 'bg-bone text-charcoal' },
@@ -52,10 +52,10 @@ const TYPE_LABEL: Record<TicketType, string> = {
 }
 
 const TYPE_BADGE: Record<TicketType, string> = {
-  epic: 'rounded-full font-mono lowercase bg-purple-100 text-purple-700',
-  story: 'rounded-full font-mono lowercase bg-emerald-100 text-emerald-700',
-  task: 'rounded-full font-mono lowercase bg-blue-100 text-blue-700',
-  bug: 'rounded-full font-mono lowercase bg-red-100 text-red-700',
+  epic: 'rounded-full font-mono lowercase bg-brand/15 text-brand',
+  story: 'rounded-full font-mono lowercase bg-mint-soft text-mint-ink',
+  task: 'rounded-full font-mono lowercase bg-info-soft text-info-ink',
+  bug: 'rounded-full font-mono lowercase bg-danger-soft text-danger-ink',
   subtask: 'rounded-full font-mono lowercase bg-bone text-charcoal',
 }
 
@@ -311,7 +311,7 @@ export default function Tickets() {
         </div>
 
         {open && (
-          <form onSubmit={create} className="mb-4 grid gap-2 rounded-xl border border-hairline bg-white p-4 md:grid-cols-2">
+          <form onSubmit={create} className="mb-4 grid gap-2 rounded-xl border border-hairline bg-card p-4 md:grid-cols-2">
             <input
               required
               placeholder="제목"
@@ -557,7 +557,7 @@ export default function Tickets() {
                 <button
                   type="button"
                   onClick={() => setOpen(true)}
-                  className="mt-2 flex items-center justify-center gap-1 rounded-xl border border-dashed border-hairline px-2 py-2 text-xs font-medium text-mute transition hover:border-stone hover:bg-white"
+                  className="mt-2 flex items-center justify-center gap-1 rounded-xl border border-dashed border-hairline px-2 py-2 text-xs font-medium text-mute transition hover:border-stone hover:bg-card"
                 >
                   <Plus size={14} /> 티켓 추가
                 </button>
@@ -676,7 +676,7 @@ function DetailPanel({
   const parent = ticket.parent_ticket_id ? allTickets.find((t) => t.id === ticket.parent_ticket_id) : null
 
   return (
-    <div className="fixed inset-0 z-40 flex w-full flex-col border-l border-hairline bg-white lg:static lg:z-auto lg:w-[26rem]">
+    <div className="fixed inset-0 z-40 flex w-full flex-col border-l border-hairline bg-card lg:static lg:z-auto lg:w-[26rem]">
       <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
         <span className={`px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[ticket.type]}`}>
           {TYPE_LABEL[ticket.type]}

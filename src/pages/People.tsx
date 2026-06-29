@@ -62,7 +62,7 @@ function PeopleList() {
             <button
               key={p.id}
               onClick={() => navigate(`/people/${p.id}`)}
-              className="flex items-center gap-3 rounded-xl border border-hairline bg-white p-4 text-left transition hover:border-brand"
+              className="flex items-center gap-3 rounded-xl border border-hairline bg-card p-4 text-left transition hover:border-brand"
             >
               <Avatar profile={p} />
               <div className="min-w-0">
@@ -124,12 +124,12 @@ function PersonDetail({ userId }: { userId: string }) {
       {loading ? (
         <p className="text-sm text-ash">불러오는 중…</p>
       ) : !profile ? (
-        <div className="rounded-xl border border-hairline bg-white p-6 text-sm text-charcoal">
+        <div className="rounded-xl border border-hairline bg-card p-6 text-sm text-charcoal">
           해당 팀원을 찾을 수 없습니다.
         </div>
       ) : (
         <>
-          <div className="mb-5 flex items-center gap-4 rounded-xl border border-hairline bg-white p-4">
+          <div className="mb-5 flex items-center gap-4 rounded-xl border border-hairline bg-card p-4">
             <Avatar profile={profile} size="h-14 w-14 text-lg" />
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-2xl font-bold text-ink">{profile.full_name ?? '(이름 없음)'}</h1>

@@ -98,7 +98,7 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/30 p-4" onClick={onClose}>
-      <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-2xl border border-hairline bg-white" onClick={(e) => e.stopPropagation()}>
+      <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-2xl border border-hairline bg-card" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
           <h3 className="font-semibold text-ink">클라이언트 / 게스트 관리</h3>
           <button onClick={onClose} className="text-ash hover:text-ink" aria-label="닫기"><X size={18} /></button>
@@ -172,7 +172,7 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
                 {link && (
                   <div className="flex gap-1">
                     <input readOnly value={link} className="min-w-0 flex-1 rounded-full border border-hairline px-3 py-1.5 font-mono text-[11px]" />
-                    <button type="button" onClick={() => navigator.clipboard.writeText(link)} className="rounded-full border border-hairline px-3 text-xs hover:bg-white">복사</button>
+                    <button type="button" onClick={() => navigator.clipboard.writeText(link)} className="rounded-full border border-hairline px-3 text-xs hover:bg-card">복사</button>
                   </div>
                 )}
               </form>
@@ -191,7 +191,7 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
                     <div key={g.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-hairline px-2 py-1.5">
                       <span className="flex min-w-0 flex-1 items-center gap-1.5 truncate">
                         <span className="truncate">{g.full_name || g.email}</span>
-                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] ${active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] ${active ? 'bg-mint-soft text-mint-ink' : 'bg-danger-soft text-danger-ink'}`}>
                           {active ? (g.expires_at ? `~${new Date(g.expires_at).toLocaleDateString()}` : '무기한') : '차단됨'}
                         </span>
                       </span>
@@ -209,7 +209,7 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
                       <button onClick={() => guestUpdate(g.id, { expires_days: 30 })} className="rounded-full border border-hairline px-2 py-1 text-[11px] hover:bg-bone" title="만료 30일 연장">
                         +30일
                       </button>
-                      <button onClick={() => guestUpdate(g.id, { block: true })} className="rounded-full border border-hairline px-2 py-1 text-[11px] text-red-500 hover:bg-red-50" title="즉시 차단">
+                      <button onClick={() => guestUpdate(g.id, { block: true })} className="rounded-full border border-hairline px-2 py-1 text-[11px] text-danger hover:bg-danger-soft" title="즉시 차단">
                         차단
                       </button>
                     </div>

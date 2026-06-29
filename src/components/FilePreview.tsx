@@ -79,7 +79,7 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col bg-ink/70 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex flex-col bg-black/70 backdrop-blur-sm"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -135,7 +135,7 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
               />
             )}
             {kind === 'pdf' && (
-              <iframe src={url} title={file.name} className="h-full w-full rounded-xl border border-hairline bg-white" />
+              <iframe src={url} title={file.name} className="h-full w-full rounded-xl border border-hairline bg-card" />
             )}
             {kind === 'video' && (
               <video src={url} controls className="max-h-full max-w-full rounded-xl">
@@ -148,7 +148,7 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
               </audio>
             )}
             {kind === 'text' && (
-              <pre className="h-full w-full overflow-auto whitespace-pre-wrap break-words rounded-xl bg-ink p-4 font-mono text-xs text-white/90">
+              <pre className="h-full w-full overflow-auto whitespace-pre-wrap break-words rounded-xl bg-black p-4 font-mono text-xs text-white/90">
                 {text ?? ''}
               </pre>
             )}
@@ -157,7 +157,7 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
                 <p className="mb-3">이 형식은 미리보기를 지원하지 않습니다.</p>
                 <button
                   onClick={openExternal}
-                  className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-bone"
+                  className="rounded-full bg-card px-4 py-2 text-sm font-semibold text-ink hover:bg-bone"
                 >
                   새 탭에서 다운로드
                 </button>

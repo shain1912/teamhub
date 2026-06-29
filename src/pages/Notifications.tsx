@@ -101,7 +101,7 @@ export default function Notifications() {
             <button
               key={n.id}
               onClick={() => openItem(n)}
-              className={`flex w-full items-start gap-3 rounded-xl border border-hairline bg-white p-4 text-left transition hover:border-brand ${
+              className={`flex w-full items-start gap-3 rounded-xl border border-hairline bg-card p-4 text-left transition hover:border-brand ${
                 n.is_read ? 'opacity-60' : 'border-brand/40 bg-brand/5'
               }`}
             >

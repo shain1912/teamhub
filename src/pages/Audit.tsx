@@ -84,7 +84,7 @@ export default function Audit() {
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="rounded-full border border-hairline bg-white px-2 py-1 text-sm text-body"
+            className="rounded-full border border-hairline bg-card px-2 py-1 text-sm text-body"
           >
             <option value="">모든 action</option>
             {actionOptions.map((a) => (
@@ -96,7 +96,7 @@ export default function Audit() {
           <select
             value={entityFilter}
             onChange={(e) => setEntityFilter(e.target.value)}
-            className="rounded-full border border-hairline bg-white px-2 py-1 text-sm text-body"
+            className="rounded-full border border-hairline bg-card px-2 py-1 text-sm text-body"
           >
             <option value="">모든 entity</option>
             {entityOptions.map((t) => (
@@ -108,7 +108,7 @@ export default function Audit() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-hairline bg-white">
+      <div className="overflow-hidden rounded-xl border border-hairline bg-card">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-hairline bg-bone font-mono text-[11px] uppercase tracking-wider text-mute">
             <tr>
