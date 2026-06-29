@@ -1,79 +1,79 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ── 테마 토큰 (RGB 트리플릿: alpha 지원) ── */
+/* ── 테마 토큰 (확정 Stitch 팔레트 / RGB 트리플릿: alpha 지원) ── */
 @layer base {
   :root {
-    /* Light — Indigo Synthesis */
-    --brand: 74 21 75;          /* #4a154b */
-    --brand-dark: 53 15 54;     /* #350f36 */
-    --brand-soft: 110 58 108;   /* #6e3a6c */
-    --brand-tint: 243 234 243;  /* #f3eaf3 */
-    --mint: 43 172 118;         /* #2bac76 */
-    --mint-soft: 230 246 238;   /* #e6f6ee */
-    --mint-ink: 0 113 74;       /* #00714a */
-    --info: 59 130 246;         /* #3b82f6 */
-    --info-soft: 231 240 254;   /* #e7f0fe */
-    --info-ink: 30 64 175;      /* #1e40af */
-    --danger: 186 26 26;        /* #ba1a1a */
-    --danger-soft: 255 226 224; /* #ffe2e0 */
+    /* Light — magenta primary + teal secondary on lavender-white (Material-3) */
+    --brand: 183 0 79;          /* #b7004f primary */
+    --brand-dark: 147 0 63;     /* #93003f hover(진하게) */
+    --brand-soft: 255 217 223;  /* #ffd9df soft pink chip */
+    --brand-tint: 255 233 239;  /* #ffe9ef */
+    --mint: 0 105 112;          /* #006970 secondary(teal) */
+    --mint-soft: 205 247 244;   /* #cdf7f4 */
+    --mint-ink: 0 79 84;        /* #004f54 */
+    --info: 112 0 255;          /* #7000ff tertiary(purple) */
+    --info-soft: 233 221 255;   /* #e9ddff */
+    --info-ink: 79 0 179;       /* #4f00b3 */
+    --danger: 186 26 26;        /* #ba1a1a error */
+    --danger-soft: 255 218 214; /* #ffdad6 */
     --danger-ink: 147 0 10;     /* #93000a */
-    --canvas: 248 249 250;      /* #f8f9fa */
-    --bone: 238 240 242;        /* #eef0f2 */
-    --card: 255 255 255;        /* #ffffff */
-    --ink: 25 28 29;            /* #191c1d */
-    --body: 58 63 66;           /* #3a3f42 */
-    --charcoal: 79 84 90;       /* #4f545a */
-    --mute: 107 113 119;        /* #6b7177 */
-    --ash: 138 144 151;         /* #8a9097 */
-    --stone: 194 199 204;       /* #c2c7cc */
-    --hairline: rgba(20, 23, 30, 0.10);
-    color-scheme: light; /* 네이티브 컨트롤(달력·셀렉트) 라이트 */
+    --canvas: 251 248 255;      /* #fbf8ff background */
+    --bone: 238 236 252;        /* #eeecfc surface-container */
+    --card: 255 255 255;        /* #ffffff surface-lowest */
+    --ink: 26 27 38;            /* #1a1b26 on-surface */
+    --body: 58 59 70;           /* #3a3b46 */
+    --charcoal: 75 64 69;       /* #4b4045 */
+    --mute: 91 63 68;           /* #5b3f44 on-surface-variant */
+    --ash: 143 111 116;         /* #8f6f74 outline */
+    --stone: 196 169 175;       /* #c4a9af */
+    --hairline: rgba(26, 27, 38, 0.10);
+    color-scheme: light;
   }
 
   .dark {
-    /* Dark — Neon (hot-pink + cyan on near-black) */
-    --brand: 255 45 120;        /* #ff2d78 hot pink (primary) */
-    --brand-dark: 255 92 151;   /* #ff5c97 hover(밝게) */
-    --brand-soft: 140 0 56;     /* #8c0038 */
+    /* Dark — neon pink + cyan on near-black */
+    --brand: 255 45 120;        /* #ff2d78 */
+    --brand-dark: 255 92 151;   /* #ff5c97 */
+    --brand-soft: 80 8 40;      /* #500828 */
     --brand-tint: 26 0 16;      /* #1a0010 */
-    --mint: 0 255 204;          /* #00ffcc cyan (accent) */
+    --mint: 0 255 204;          /* #00ffcc */
     --mint-soft: 8 48 42;       /* #08302a */
     --mint-ink: 94 234 212;     /* #5eead4 */
-    --info: 96 165 250;         /* #60a5fa */
-    --info-soft: 23 37 67;      /* #172543 */
-    --info-ink: 147 197 253;    /* #93c5fd */
+    --info: 167 139 250;        /* #a78bfa purple */
+    --info-soft: 40 30 70;      /* #281e46 */
+    --info-ink: 196 181 253;    /* #c4b5fd */
     --danger: 248 113 113;      /* #f87171 */
     --danger-soft: 60 22 26;    /* #3c161a */
     --danger-ink: 252 165 165;  /* #fca5a5 */
-    --canvas: 10 10 18;         /* #0a0a12 near-black */
-    --bone: 20 20 34;           /* #141422 */
-    --card: 22 22 38;           /* #161626 */
+    --canvas: 10 10 18;         /* #0a0a12 */
+    --bone: 26 26 42;           /* #1a1a2a */
+    --card: 15 15 26;           /* #0f0f1a surface */
     --ink: 232 224 240;         /* #e8e0f0 */
-    --body: 206 202 220;
-    --charcoal: 184 180 200;
-    --mute: 164 166 186;        /* #a4a6ba — 보조 텍스트 대비↑ */
-    --ash: 146 149 170;         /* #9295aa — 타임스탬프/플레이스홀더 가독↑ */
-    --stone: 112 115 138;       /* #70738a — 약한 텍스트도 읽히게 */
+    --body: 206 200 220;
+    --charcoal: 184 178 200;
+    --mute: 160 152 176;        /* #a098b0 on-surface-variant */
+    --ash: 130 124 146;
+    --stone: 90 80 104;         /* #5a5068 outline */
     --hairline: rgba(255, 255, 255, 0.10);
-    color-scheme: dark; /* 네이티브 컨트롤(달력·셀렉트) 다크 */
+    color-scheme: dark;
   }
 
   html, body, #root { height: 100%; }
   body {
     background-color: rgb(var(--canvas));
     color: rgb(var(--ink));
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
   h1, h2, h3 {
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Space Grotesk', 'Geist', ui-sans-serif, system-ui, sans-serif;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 }
 

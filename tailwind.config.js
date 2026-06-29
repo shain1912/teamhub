@@ -27,9 +27,10 @@ export default {
         hairline: 'var(--hairline)', // 보더 (rgba 직접)
       },
       fontFamily: {
-        display: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        // 확정 Stitch: Geist(본문) · Space Grotesk(제목) · Space Mono(ID/라벨)
+        display: ['"Space Grotesk"', 'Geist', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['Geist', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"Space Mono"', 'ui-monospace', 'monospace'],
       },
       // borderRadius 는 Tailwind 표준 스케일 사용 (Stitch 정렬: lg=8px 버튼, xl=12px 카드)
       // 이전 커스텀(lg=16px·xl=24px)이 과하게 둥글어 제거함.
