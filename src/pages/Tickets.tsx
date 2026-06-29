@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronRight, Trash2, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronRight, Plus, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type {
@@ -64,6 +64,13 @@ function nameOf(map: Map<string, Profile>, id: string | null): string {
   if (!id) return '미지정'
   const p = map.get(id)
   return p?.full_name ?? p?.email ?? '미지정'
+}
+
+function initialsOf(map: Map<string, Profile>, id: string | null): string {
+  if (!id) return ''
+  const name = nameOf(map, id)
+  if (name === '미지정') return ''
+  return name.trim().charAt(0).toUpperCase()
 }
 
 function parseLabels(raw: string): string[] {
@@ -474,11 +481,25 @@ export default function Tickets() {
                         <span className={`px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[t.type]}`}>
                           {TYPE_LABEL[t.type]}
                         </span>
-                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${PRIO_CHIP[t.priority]}`}>
+                        <span
+                          className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${PRIO_CHIP[t.priority]}`}
+                        >
+                          {t.priority === 'urgent' && <AlertTriangle size={12} />}
                           {PRIO_LABEL[t.priority]}
                         </span>
                       </div>
-                      <div className="mt-1 text-sm font-medium text-ink">{t.title}</div>
+                      <div className="mt-1 flex items-start gap-1">
+                        {(t.status === 'done' || t.status === 'closed') && (
+                          <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-mint" />
+                        )}
+                        <div
+                          className={`text-sm font-medium ${
+                            t.status === 'done' || t.status === 'closed' ? 'text-mute line-through' : 'text-ink'
+                          }`}
+                        >
+                          {t.title}
+                        </div>
+                      </div>
                       {(t.labels ?? []).length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1">
                           {t.labels.map((l) => (
@@ -488,8 +509,15 @@ export default function Tickets() {
                           ))}
                         </div>
                       )}
-                      <div className="mt-1.5 text-[11px] text-ash">
-                        {nameOf(profileMap, t.assignee_id)}
+                      <div className="mt-1.5 flex items-center gap-1.5">
+                        {t.assignee_id ? (
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand/10 text-[10px] font-semibold text-brand">
+                            {initialsOf(profileMap, t.assignee_id)}
+                          </span>
+                        ) : (
+                          <span className="h-5 w-5 shrink-0 rounded-full bg-bone" />
+                        )}
+                        <span className="text-[11px] text-ash">{nameOf(profileMap, t.assignee_id)}</span>
                       </div>
                       <div className="mt-2 flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
                         {COLUMNS.filter((c) => c.key !== t.status).map((c) => (
@@ -506,6 +534,13 @@ export default function Tickets() {
                   ))}
                   {list.length === 0 && <div className="px-1 py-2 text-[11px] text-ash">없음</div>}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(true)}
+                  className="mt-2 flex items-center justify-center gap-1 rounded-xl border border-dashed border-hairline px-2 py-2 text-xs font-medium text-mute transition hover:border-stone hover:bg-white"
+                >
+                  <Plus size={14} /> 티켓 추가
+                </button>
               </div>
             )
           })}

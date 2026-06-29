@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { X, Pencil, Zap, CalendarDays, Target, Plus } from 'lucide-react'
+import { X, Pencil, Zap, CalendarDays, Target, Plus, TrendingUp, AlertCircle, Flag } from 'lucide-react'
 import {
   parseISO,
   eachDayOfInterval,
@@ -376,7 +376,22 @@ export default function Sprints() {
   )
 }
 
-// 스프린트 대시보드 — 원형 진행률 링 + stat 카드 (Stitch)
+// 우선순위 정렬·표시 (urgent > high > medium > low)
+const PRIORITY_RANK: Record<Ticket['priority'], number> = { urgent: 3, high: 2, medium: 1, low: 0 }
+const PRIORITY_LABEL: Record<Ticket['priority'], string> = {
+  urgent: '긴급',
+  high: '높음',
+  medium: '보통',
+  low: '낮음',
+}
+const PRIORITY_CHIP: Record<Ticket['priority'], string> = {
+  urgent: 'bg-danger-soft text-danger-ink',
+  high: 'bg-mint-soft text-mint-ink',
+  medium: 'bg-bone text-charcoal',
+  low: 'bg-bone text-ash',
+}
+
+// 스프린트 대시보드 — 인디고 진행률 히어로 + 통계 카드 (Stitch v2)
 function SprintStats({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] }) {
   const total = tickets.reduce((s, t) => s + units(t), 0)
   const done = tickets.reduce((s, t) => s + (isDone(t) ? units(t) : 0), 0)
@@ -389,45 +404,99 @@ function SprintStats({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] })
     if (isValid(end)) remainingDays = Math.max(0, differenceInCalendarDays(end, new Date()))
   }
 
-  // 링 기하
-  const R = 52
-  const C = 2 * Math.PI * R
-  const dash = (pct / 100) * C
+  // 지연 건수: 마감일이 지났는데 아직 완료되지 않은 티켓
+  const now = new Date()
+  const overdue = tickets.filter((t) => {
+    if (isDone(t) || !t.due_date) return false
+    const due = parseISO(t.due_date)
+    return isValid(due) && differenceInCalendarDays(due, now) < 0
+  }).length
+
+  // Top Priority — 우선순위 상위 3개
+  const topTickets = [...tickets]
+    .sort((a, b) => PRIORITY_RANK[b.priority] - PRIORITY_RANK[a.priority])
+    .slice(0, 3)
 
   return (
-    <div className="mb-4 grid gap-3 sm:grid-cols-3">
-      {/* 진행률 링 카드 */}
-      <div className="flex items-center justify-between rounded-xl border border-hairline bg-card p-5 shadow-raised sm:col-span-1">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-mute">전체 진행률</div>
-          <div className="mt-1 text-4xl font-extrabold text-brand">{pct}%</div>
-          <div className="mt-1 text-xs text-ash">{done} / {total} 포인트 완료</div>
-        </div>
-        <div className="relative h-[120px] w-[120px] shrink-0">
-          <svg width="120" height="120" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r={R} fill="none" stroke="#eef0f2" strokeWidth="10" />
-            <circle
-              cx="60" cy="60" r={R} fill="none" stroke="#4a154b" strokeWidth="10" strokeLinecap="round"
-              strokeDasharray={`${dash} ${C}`} transform="rotate(-90 60 60)"
-            />
+    <div className="mb-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* 인디고 진행률 히어로 카드 */}
+        <div className="relative overflow-hidden rounded-xl bg-brand p-5 text-white shadow-raised sm:col-span-2">
+          {/* 흐린 장식 링 */}
+          <svg
+            aria-hidden
+            className="pointer-events-none absolute -right-8 -top-6 text-white opacity-10"
+            width="180" height="180" viewBox="0 0 120 120"
+          >
+            <circle cx="60" cy="60" r="48" fill="none" stroke="currentColor" strokeWidth="14" />
           </svg>
-          <Zap size={26} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-brand" />
+          <Zap size={20} className="absolute right-5 top-5 text-mint" />
+          <div className="relative">
+            <div className="text-xs font-semibold uppercase tracking-wider text-white/70">전체 진행률</div>
+            <div className="mt-1 flex items-end gap-3">
+              <span className="text-5xl font-extrabold leading-none">{pct}%</span>
+              <span className="mb-1 text-xs text-white/70">{done} / {total} 포인트 완료</span>
+            </div>
+            <div className="mt-5 h-2.5 w-full overflow-hidden rounded-full bg-white/20">
+              <div className="h-full rounded-full bg-mint transition-all" style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* 남은 일수 */}
+        <div className="rounded-xl border border-hairline bg-card p-5 shadow-raised">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-mute">
+            <CalendarDays size={14} /> 남은 일수
+          </div>
+          <div className="mt-1 text-3xl font-extrabold text-ink">
+            {remainingDays != null ? remainingDays : '—'}
+            {remainingDays != null && <span className="text-base font-medium text-ash"> 일</span>}
+          </div>
+          {overdue > 0 && (
+            <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-danger-soft px-2 py-0.5 text-[11px] font-semibold text-danger-ink">
+              <AlertCircle size={12} /> 지연 {overdue}건
+            </span>
+          )}
+        </div>
+
+        {/* 벨로시티 */}
+        <div className="rounded-xl border border-hairline bg-card p-5 shadow-raised">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-mute">
+            <Target size={14} /> 벨로시티
+          </div>
+          <div className="mt-1 text-3xl font-extrabold text-ink">
+            {done}<span className="text-base font-medium text-ash"> pts</span>
+          </div>
+          <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-mint-soft px-2 py-0.5 text-[11px] font-semibold text-mint-ink">
+            <TrendingUp size={12} /> 목표 {total} pts
+          </span>
         </div>
       </div>
 
-      {/* 남은 일수 */}
-      <div className="rounded-xl border border-hairline bg-card p-5 shadow-raised">
-        <CalendarDays size={22} className="text-mint" />
-        <div className="mt-3 text-xs font-medium text-mute">남은 일수</div>
-        <div className="mt-0.5 text-3xl font-bold text-ink">{remainingDays != null ? remainingDays : '—'}</div>
-      </div>
-
-      {/* 작업량 */}
-      <div className="rounded-xl border border-hairline bg-card p-5 shadow-raised">
-        <Target size={22} className="text-brand" />
-        <div className="mt-3 text-xs font-medium text-mute">스프린트 작업량</div>
-        <div className="mt-0.5 text-3xl font-bold text-ink">{total}<span className="text-base font-medium text-ash"> 단위</span></div>
-      </div>
+      {/* Top Priority */}
+      {topTickets.length > 0 && (
+        <div className="mt-3 rounded-xl border border-hairline bg-card p-4 shadow-raised">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-mute">Top Priority</div>
+          <div className="space-y-1.5">
+            {topTickets.map((t) => (
+              <div key={t.id} className="flex items-center gap-3 rounded-xl border border-hairline bg-white px-3 py-2">
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${PRIORITY_CHIP[t.priority]}`}>
+                  <Flag size={15} />
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{t.title}</span>
+                {t.story_points != null && (
+                  <span className="hidden rounded-full bg-bone px-1.5 font-mono text-[10px] font-semibold text-charcoal sm:inline">
+                    {t.story_points}sp
+                  </span>
+                )}
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${PRIORITY_CHIP[t.priority]}`}>
+                  {PRIORITY_LABEL[t.priority]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
