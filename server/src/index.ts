@@ -13,6 +13,7 @@
  * .env 에 SUPABASE_URL(또는 VITE_SUPABASE_URL), SUPABASE_SERVICE_ROLE_KEY 필요.
  */
 import { config } from 'dotenv'
+import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
@@ -644,16 +645,10 @@ server.tool('delete_checklist', '체크리스트(및 항목)를 삭제한다.', 
 const useHttp = process.env.MCP_TRANSPORT === 'http' || !!process.env.PORT
 
 if (useHttp) {
-  // 원격 다중 사용자: Bearer 토큰으로 게이트한다.
-  // service_role 키는 이 서버에만 있고, 직원은 토큰만 받는다.
-  const AUTH_TOKEN = process.env.MCP_AUTH_TOKEN
-  if (!AUTH_TOKEN) {
-    console.error(
-      '[teamhub-mcp] HTTP 모드에는 MCP_AUTH_TOKEN 이 필요합니다. ' +
-        '긴 랜덤 문자열을 환경변수로 설정하세요.',
-    )
-    process.exit(1)
-  }
+  // 원격 다중 사용자 인증:
+  //  1) 사용자별 PAT — 앱 "MCP 연결"에서 발급(mcp_tokens, SHA-256 해시 검증). 권장.
+  //  2) MCP_AUTH_TOKEN(선택) — 공용 관리/서비스 토큰. 설정 시 그대로 동작.
+  const AUTH_TOKEN = process.env.MCP_AUTH_TOKEN || ''
 
   const app = express()
   app.use(
@@ -669,17 +664,48 @@ if (useHttp) {
     res.json({ ok: true, name: 'teamhub-mcp' })
   })
 
-  // 인증 게이트 — /mcp 만 보호
-  app.use('/mcp', (req, res, next) => {
+  // 인증 게이트 — /mcp 만 보호 (사용자별 PAT 또는 공용 AUTH_TOKEN)
+  const denyMcp = (res: express.Response) =>
+    res
+      .status(401)
+      .json({ jsonrpc: '2.0', error: { code: -32001, message: 'Unauthorized' }, id: null })
+
+  app.use('/mcp', async (req, res, next) => {
     const header = req.headers.authorization ?? ''
     const token = header.startsWith('Bearer ') ? header.slice(7) : ''
-    if (token !== AUTH_TOKEN) {
-      res
-        .status(401)
-        .json({ jsonrpc: '2.0', error: { code: -32001, message: 'Unauthorized' }, id: null })
+    if (!token) {
+      denyMcp(res)
       return
     }
-    next()
+    // 1) 공용 관리/서비스 토큰
+    if (AUTH_TOKEN && token === AUTH_TOKEN) {
+      next()
+      return
+    }
+    // 2) 사용자별 PAT — SHA-256 해시로 조회
+    try {
+      const hash = createHash('sha256').update(token).digest('hex')
+      const { data } = await db
+        .from('mcp_tokens')
+        .select('id, revoked')
+        .eq('token_hash', hash)
+        .maybeSingle()
+      if (!data || (data as { revoked: boolean }).revoked) {
+        denyMcp(res)
+        return
+      }
+      // 마지막 사용시각 갱신(베스트에포트)
+      db.from('mcp_tokens')
+        .update({ last_used_at: new Date().toISOString() })
+        .eq('id', (data as { id: string }).id)
+        .then(
+          () => {},
+          () => {},
+        )
+      next()
+    } catch {
+      denyMcp(res)
+    }
   })
 
   // 무상태(stateless): 요청마다 새 서버+전송을 만들어 동시 사용자 충돌을 막는다.

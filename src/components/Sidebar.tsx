@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../store/auth'
 import ClientsManager from './ClientsManager'
+import McpConnect from './McpConnect'
 
 type Item = { to: string; label: string; icon: typeof Home }
 
@@ -38,6 +39,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
   const { profile, signOut } = useAuth()
   const isGuest = profile?.role === 'guest'
   const [invite, setInvite] = useState(false)
+  const [mcpOpen, setMcpOpen] = useState(false)
 
   const groups: { label: string; items: Item[] }[] = isGuest
     ? [{ label: '메뉴', items: [...COMM.filter((n) => n.to === '/channels'), ...MAIN.filter((n) => n.to === '/tickets')] }]
@@ -130,15 +132,22 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
         </nav>
 
         {!isGuest && (
-          <button
-            onClick={() => setInvite(true)}
-            className={`mx-3 mb-2 rounded-lg border border-hairline py-1.5 text-xs font-medium text-mute transition hover:border-ink/20 hover:text-ink ${
-              collapsed ? 'md:hidden' : ''
-            }`}
-            title="클라이언트/게스트 관리"
-          >
-            클라이언트 · 게스트
-          </button>
+          <div className={`mx-3 mb-2 flex gap-2 ${collapsed ? 'md:hidden' : ''}`}>
+            <button
+              onClick={() => setInvite(true)}
+              className="flex-1 rounded-lg border border-hairline py-1.5 text-xs font-medium text-mute transition hover:border-ink/20 hover:text-ink"
+              title="클라이언트/게스트 관리"
+            >
+              클라이언트·게스트
+            </button>
+            <button
+              onClick={() => setMcpOpen(true)}
+              className="flex-1 rounded-lg border border-hairline py-1.5 text-xs font-medium text-mute transition hover:border-ink/20 hover:text-ink"
+              title="MCP 연결 (Claude·에이전트)"
+            >
+              MCP 연결
+            </button>
+          </div>
         )}
 
         {/* 유저 프로필 카드 */}
@@ -169,6 +178,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
       </aside>
 
       {invite && <ClientsManager onClose={() => setInvite(false)} />}
+      {mcpOpen && <McpConnect onClose={() => setMcpOpen(false)} />}
     </>
   )
 }
