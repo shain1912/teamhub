@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle2, ChevronRight, Plus, Trash2, X, Bug, Flag, BookText, ListTodo, GitBranch } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronRight, Plus, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type {
@@ -12,21 +12,13 @@ import type {
   Sprint,
 } from '../lib/types'
 
-const COLUMNS: { key: TicketStatus; label: string; bar: string }[] = [
-  { key: 'open', label: '열림', bar: 'bg-stone' },
-  { key: 'in_progress', label: '진행 중', bar: 'bg-mint' },
-  { key: 'done', label: '완료', bar: 'bg-brand' },
-  { key: 'closed', label: '종료', bar: 'bg-ash' },
+// 컬럼: 상태 점(dot) + 진행중 좌측 액센트 (Stitch 데스크탑 충실)
+const COLUMNS: { key: TicketStatus; label: string; dot: string; accent: string }[] = [
+  { key: 'open', label: '열림', dot: 'bg-info', accent: '' },
+  { key: 'in_progress', label: '진행 중', dot: 'bg-mint', accent: 'border-l-2 border-l-mint' },
+  { key: 'done', label: '완료', dot: 'bg-brand', accent: '' },
+  { key: 'closed', label: '종료', dot: 'bg-ash', accent: '' },
 ]
-
-// 미니멀 카드: 타입별 아이콘 타일 (보더 대신 아이콘으로 분류)
-const TYPE_META: Record<TicketType, { Icon: typeof Bug; tile: string }> = {
-  epic: { Icon: Flag, tile: 'bg-brand/15 text-brand' },
-  story: { Icon: BookText, tile: 'bg-mint-soft text-mint-ink' },
-  task: { Icon: ListTodo, tile: 'bg-info-soft text-info-ink' },
-  bug: { Icon: Bug, tile: 'bg-danger-soft text-danger-ink' },
-  subtask: { Icon: GitBranch, tile: 'bg-bone text-charcoal' },
-}
 
 const PRIO_LABEL: Record<TicketPriority, string> = {
   low: '낮음',
@@ -35,12 +27,12 @@ const PRIO_LABEL: Record<TicketPriority, string> = {
   urgent: '긴급',
 }
 
-// 우선순위 칩 — Stitch 컬러(낮음 회색·보통 블루·높음 민트·긴급 레드)
-const PRIO_CHIP: Record<TicketPriority, string> = {
-  low: 'bg-bone text-charcoal',
-  medium: 'bg-info-soft text-info-ink',
-  high: 'bg-mint-soft text-mint-ink',
-  urgent: 'bg-danger-soft text-danger-ink',
+// 우선순위 칩 — 아웃라인(테두리+컬러 텍스트) 스타일 (Stitch 카드 칩)
+const PRIO_OUTLINE: Record<TicketPriority, string> = {
+  low: 'border-stone/60 text-mute',
+  medium: 'border-info/50 text-info',
+  high: 'border-mint/60 text-mint-ink',
+  urgent: 'border-danger/50 text-danger',
 }
 
 const TYPE_LABEL: Record<TicketType, string> = {
@@ -73,6 +65,17 @@ function initialsOf(map: Map<string, Profile>, id: string | null): string {
   const name = nameOf(map, id)
   if (name === '미지정') return ''
   return name.trim().charAt(0).toUpperCase()
+}
+
+function relTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  const h = Math.floor(m / 60)
+  const d = Math.floor(h / 24)
+  if (d > 0) return `${d}일 전`
+  if (h > 0) return `${h}시간 전`
+  if (m > 0) return `${m}분 전`
+  return '방금'
 }
 
 function parseLabels(raw: string): string[] {
@@ -460,10 +463,10 @@ export default function Tickets() {
                   isDropTarget ? 'bg-brand/10 ring-2 ring-brand' : ''
                 }`}
               >
-                <div className="flex items-center gap-2 px-1 py-1.5 text-xs font-bold text-ink">
-                  <span className={`h-3.5 w-1 rounded-full ${col.bar}`} />
+                <div className="flex items-center gap-2 px-1.5 py-1.5 text-xs font-bold uppercase tracking-wide text-ink">
+                  <span className={`h-2 w-2 rounded-full ${col.dot}`} />
                   {col.label}
-                  <span className="rounded-full bg-bone px-1.5 text-[10px] font-semibold text-mute">{list.length}</span>
+                  <span className="ml-auto rounded bg-bone px-1.5 py-0.5 font-mono text-[10px] font-semibold text-mute">{list.length}</span>
                 </div>
                 <div className="space-y-2 overflow-y-auto">
                   {list.map((t) => (
@@ -475,61 +478,59 @@ export default function Tickets() {
                         e.dataTransfer.effectAllowed = 'move'
                       }}
                       onClick={() => setSelectedId(t.id)}
-                      className={`group cursor-pointer rounded-xl bg-card p-3 shadow-raised transition hover:shadow-overlay active:cursor-grabbing ${
+                      className={`group cursor-pointer rounded-lg bg-card p-3 shadow-raised transition hover:shadow-overlay active:cursor-grabbing ${col.accent} ${
                         selectedId === t.id ? 'ring-2 ring-brand' : ''
                       }`}
                     >
                       {(() => {
                         const done = t.status === 'done' || t.status === 'closed'
-                        const TI = TYPE_META[t.type].Icon
                         return (
                           <>
-                            <div className="flex items-start gap-2.5">
-                              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${TYPE_META[t.type].tile}`}>
-                                <TI size={17} />
+                            {/* #ID + 아웃라인 우선순위 칩 */}
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-mono text-[11px] font-semibold text-ash">
+                                #{t.id.slice(0, 6).toUpperCase()}
                               </span>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-start justify-between gap-2">
-                                  <h3
-                                    className={`min-w-0 text-sm font-semibold leading-snug ${
-                                      done ? 'text-mute line-through' : 'text-ink'
-                                    }`}
-                                  >
-                                    {done && <CheckCircle2 size={13} className="mr-1 inline-block align-[-2px] text-mint" />}
-                                    {t.title}
-                                  </h3>
-                                  <span
-                                    className={`inline-flex shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${PRIO_CHIP[t.priority]}`}
-                                  >
-                                    {t.priority === 'urgent' && <AlertTriangle size={11} />}
-                                    {PRIO_LABEL[t.priority]}
-                                  </span>
-                                </div>
-                                <div className="mt-0.5 truncate text-[11px] text-ash">
-                                  #{t.id.slice(0, 6)} · {TYPE_LABEL[t.type]}
-                                </div>
-                              </div>
+                              <span
+                                className={`inline-flex shrink-0 items-center gap-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIO_OUTLINE[t.priority]}`}
+                              >
+                                {t.priority === 'urgent' && <AlertTriangle size={10} />}
+                                {PRIO_LABEL[t.priority]}
+                              </span>
                             </div>
+
+                            {/* 제목 */}
+                            <h3 className={`mt-2 text-sm font-semibold leading-snug ${done ? 'text-mute line-through' : 'text-ink'}`}>
+                              {done && <CheckCircle2 size={13} className="mr-1 inline-block align-[-2px] text-mint" />}
+                              {t.title}
+                            </h3>
+
+                            {/* 설명 발췌 */}
+                            {t.description && (
+                              <p className="mt-1.5 line-clamp-2 text-[12px] leading-relaxed text-mute">{t.description}</p>
+                            )}
 
                             {(t.labels ?? []).length > 0 && (
                               <div className="mt-2 flex flex-wrap gap-1">
                                 {t.labels.map((l) => (
-                                  <span key={l} className="rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-charcoal">
+                                  <span key={l} className="rounded bg-bone px-1.5 py-0.5 text-[10px] text-charcoal">
                                     {l}
                                   </span>
                                 ))}
                               </div>
                             )}
 
-                            <div className="mt-2.5 flex items-center gap-1.5">
+                            {/* 푸터: 아바타 + 이름 + 상대시간 */}
+                            <div className="mt-3 flex items-center gap-2 border-t border-hairline pt-2.5">
                               {t.assignee_id ? (
-                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-[10px] font-semibold text-brand">
+                                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-[10px] font-semibold text-brand">
                                   {initialsOf(profileMap, t.assignee_id)}
                                 </span>
                               ) : (
                                 <span className="h-6 w-6 shrink-0 rounded-full bg-bone" />
                               )}
-                              <span className="truncate text-[11px] text-ash">{nameOf(profileMap, t.assignee_id)}</span>
+                              <span className="truncate text-[11px] text-mute">{nameOf(profileMap, t.assignee_id)}</span>
+                              <span className="ml-auto shrink-0 font-mono text-[11px] text-ash">{relTime(t.created_at)}</span>
                             </div>
 
                             {/* 이동 (호버 시 노출) */}
