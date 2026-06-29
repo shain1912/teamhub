@@ -146,9 +146,9 @@ export default function Sprints() {
   const backlog = useMemo(() => tickets.filter((t) => !t.sprint_id), [tickets])
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full flex-col lg:flex-row">
       {/* 스프린트 목록 */}
-      <div className="w-60 shrink-0 overflow-y-auto border-r border-hairline bg-white p-3">
+      <div className="max-h-44 w-full shrink-0 overflow-y-auto border-b border-hairline bg-white p-3 lg:max-h-none lg:w-60 lg:border-b-0 lg:border-r">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-mute">스프린트</h2>
           <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-brand hover:underline">
@@ -233,7 +233,7 @@ export default function Sprints() {
       </div>
 
       {/* 본문 */}
-      <div className="min-w-0 flex-1 overflow-y-auto p-6">
+      <div className="min-w-0 flex-1 overflow-y-auto p-4 lg:p-6">
         {!selected ? (
           <p className="text-sm text-ash">왼쪽에서 스프린트를 선택하거나 새로 만드세요.</p>
         ) : (
@@ -311,11 +311,11 @@ export default function Sprints() {
             <h2 className="mb-2 mt-6 text-sm font-semibold text-mute">
               스프린트 보드 <span className="font-mono">({sprintTickets.length})</span>
             </h2>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="flex gap-3 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
               {COLS.map((c) => {
                 const list = sprintTickets.filter((t) => t.status === c.key)
                 return (
-                  <div key={c.key} className="rounded-xl bg-bone p-2">
+                  <div key={c.key} className="w-[70%] shrink-0 rounded-xl bg-bone p-2 sm:w-[44%] lg:w-auto lg:shrink">
                     <div className="px-1 py-1 text-xs font-semibold text-mute">
                       {c.label} <span className="font-mono text-ash">({list.length})</span>
                     </div>

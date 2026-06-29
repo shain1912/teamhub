@@ -248,8 +248,8 @@ export default function Channels() {
 
   return (
     <div className="flex h-full">
-      {/* 채널 목록 */}
-      <div className="w-48 shrink-0 border-r border-hairline bg-canvas">
+      {/* 채널 목록 (데스크탑) */}
+      <div className="hidden w-48 shrink-0 border-r border-hairline bg-canvas lg:block">
         <div className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-ash">
           채널
           <button onClick={createChannel} className="text-brand hover:underline">+ 추가</button>
@@ -281,7 +281,22 @@ export default function Channels() {
           uploadFiles(e.dataTransfer.files)
         }}
       >
-        <div className="border-b border-hairline bg-white px-4 py-2 font-semibold text-ink"># {current?.name ?? '채널 선택'}</div>
+        <div className="flex items-center gap-2 border-b border-hairline bg-white px-4 py-2">
+          {/* 모바일: 채널 선택 드롭다운 */}
+          <select
+            value={channelId ?? ''}
+            onChange={(e) => navigate(`/channels/${e.target.value}`)}
+            className="max-w-[55%] rounded-full border border-hairline px-2 py-1 text-sm lg:hidden"
+          >
+            {channels.map((c) => (
+              <option key={c.id} value={c.id}># {c.name}</option>
+            ))}
+          </select>
+          <span className="hidden font-semibold text-ink lg:inline"># {current?.name ?? '채널 선택'}</span>
+          <button onClick={createChannel} className="ml-auto text-xs font-semibold text-brand lg:hidden">
+            + 채널
+          </button>
+        </div>
 
         <div className={`relative flex-1 overflow-y-auto bg-white px-4 py-3 ${dragOver ? 'bg-brand/5' : ''}`}>
           {dragOver && (
@@ -305,7 +320,7 @@ export default function Channels() {
           <div ref={endRef} />
         </div>
 
-        <form onSubmit={send} className="flex items-center gap-2 border-t border-hairline bg-white p-3">
+        <form onSubmit={send} className="flex items-center gap-2 border-t border-hairline bg-white p-3 pr-[4.75rem] lg:pr-3">
           <label className="cursor-pointer rounded-full border border-hairline px-2 py-2 text-sm hover:bg-bone" title="파일 첨부">
             📎
             <input type="file" multiple hidden onChange={(e) => uploadFiles(e.target.files)} />

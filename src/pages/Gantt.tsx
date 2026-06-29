@@ -243,9 +243,9 @@ export default function Gantt() {
   }, [deps])
 
   return (
-    <div className="flex h-full flex-col p-6">
-      <div className="mb-4 flex items-center gap-3">
-        <h1 className="text-xl font-bold">간트차트</h1>
+    <div className="flex h-full flex-col p-4 lg:p-6">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <h1 className="whitespace-nowrap text-xl font-bold">간트차트</h1>
         <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="rounded-full border border-hairline px-2 py-1 text-sm">
           {projects.map((p) => (
             <option key={p.id} value={p.id}>

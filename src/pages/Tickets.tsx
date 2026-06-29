@@ -240,7 +240,7 @@ export default function Tickets() {
 
   return (
     <div className="flex h-full">
-      <div className="flex min-w-0 flex-1 flex-col p-6">
+      <div className="flex min-w-0 flex-1 flex-col p-4 lg:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h1 className="font-display text-xl font-bold text-ink">티켓</h1>
           <button
@@ -412,7 +412,7 @@ export default function Tickets() {
           </form>
         )}
 
-        <div className="grid min-h-0 flex-1 grid-cols-4 gap-3">
+        <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
           {COLUMNS.map((col) => {
             const list = filtered.filter((t) => t.status === col.key)
             const isDropTarget = dragOverCol === col.key
@@ -438,7 +438,7 @@ export default function Tickets() {
                   const t = tickets.find((x) => x.id === id)
                   if (t && t.status !== col.key) move(t, col.key)
                 }}
-                className={`flex min-h-0 flex-col rounded-xl bg-bone p-2 transition ${
+                className={`flex min-h-0 w-[78%] shrink-0 flex-col rounded-xl bg-bone p-2 transition sm:w-[44%] lg:w-auto lg:shrink ${
                   isDropTarget ? 'bg-brand/10 ring-2 ring-brand' : ''
                 }`}
               >
@@ -612,7 +612,7 @@ function DetailPanel({
   const parent = ticket.parent_ticket_id ? allTickets.find((t) => t.id === ticket.parent_ticket_id) : null
 
   return (
-    <div className="flex w-[26rem] shrink-0 flex-col border-l border-hairline bg-white">
+    <div className="fixed inset-0 z-40 flex w-full flex-col border-l border-hairline bg-white lg:static lg:z-auto lg:w-[26rem]">
       <div className="flex items-center justify-between border-b border-hairline px-4 py-3">
         <span className={`px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[ticket.type]}`}>
           {TYPE_LABEL[ticket.type]}
