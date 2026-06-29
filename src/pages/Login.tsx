@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AtSign, Lock, ArrowRight } from 'lucide-react'
+import { AtSign, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../store/auth'
 import { isSupabaseConfigured } from '../lib/supabase'
 
@@ -13,6 +13,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [showPw, setShowPw] = useState(false)
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
@@ -120,7 +121,7 @@ export default function Login() {
                 <div className="flex items-center rounded-lg border border-hairline bg-card px-3 transition focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
                   <Lock size={16} className="shrink-0 text-ash" />
                   <input
-                    type="password"
+                    type={showPw ? 'text' : 'password'}
                     required
                     minLength={6}
                     value={password}
@@ -128,6 +129,14 @@ export default function Login() {
                     placeholder={mode === 'signup' ? '6자 이상' : '••••••••'}
                     className="w-full bg-transparent px-2 py-2.5 text-sm text-ink outline-none placeholder:text-ash"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    className="shrink-0 text-ash transition hover:text-mute"
+                    aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 표시'}
+                  >
+                    {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
               <button
