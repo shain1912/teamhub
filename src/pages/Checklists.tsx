@@ -118,11 +118,9 @@ export default function Checklists() {
     loadItems(item.checklist_id)
   }
 
-  async function setDueDate(item: ChecklistItem) {
-    const current = item.due_date ? item.due_date.slice(0, 10) : ''
-    const v = prompt('마감일 (YYYY-MM-DD)', current)
-    if (v === null) return
-    const ts = v.trim() ? new Date(v.trim() + 'T00:00:00').toISOString() : null
+  // 사람용 달력 UI에서 고른 날짜를 저장 (AI/MCP는 동일 due_date 컬럼을 API로 직접 사용 — 영향 없음)
+  async function setDueDateValue(item: ChecklistItem, val: string) {
+    const ts = val ? new Date(val + 'T00:00:00').toISOString() : null
     await supabase.from('checklist_items').update({ due_date: ts }).eq('id', item.id)
     loadItems(item.checklist_id)
   }
@@ -201,15 +199,25 @@ export default function Checklists() {
                             ))}
                           </select>
 
-                          <button
-                            onClick={() => setDueDate(i)}
-                            className={`rounded-full px-1.5 py-0.5 text-[10px] ${
-                              dueOverdue ? 'bg-danger-soft font-semibold text-danger-ink' : i.due_date ? 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300' : 'text-ash hover:text-brand'
+                          <label
+                            className={`flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] ${
+                              dueOverdue
+                                ? 'bg-danger-soft font-semibold text-danger-ink'
+                                : i.due_date
+                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
+                                : 'border border-hairline text-ash hover:text-brand'
                             }`}
-                            title="마감일"
+                            title="마감일 선택"
                           >
-                            {i.due_date ? <span className="flex items-center gap-1 font-mono"><Calendar size={11} className="shrink-0" /> {fmtDate(i.due_date)}</span> : '+ 마감일'}
-                          </button>
+                            <Calendar size={11} className="shrink-0" />
+                            <input
+                              type="date"
+                              value={i.due_date ? i.due_date.slice(0, 10) : ''}
+                              onChange={(e) => setDueDateValue(i, e.target.value)}
+                              className="w-[6.5rem] cursor-pointer bg-transparent font-mono text-[10px] outline-none"
+                              aria-label="마감일"
+                            />
+                          </label>
 
                           {i.follow_up_at ? (
                             <button

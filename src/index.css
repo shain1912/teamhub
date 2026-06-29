@@ -31,6 +31,7 @@
     --ash: 138 144 151;         /* #8a9097 */
     --stone: 194 199 204;       /* #c2c7cc */
     --hairline: rgba(20, 23, 30, 0.10);
+    color-scheme: light; /* 네이티브 컨트롤(달력·셀렉트) 라이트 */
   }
 
   .dark {
@@ -58,6 +59,7 @@
     --ash: 116 118 140;
     --stone: 74 76 96;
     --hairline: rgba(255, 255, 255, 0.10);
+    color-scheme: dark; /* 네이티브 컨트롤(달력·셀렉트) 다크 */
   }
 
   html, body, #root { height: 100%; }
