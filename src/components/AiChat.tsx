@@ -39,6 +39,13 @@ export default function AiChat() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [lines, busy])
 
+  // 사이드바 'AI 비서' 버튼 등에서 전역 이벤트로 열기
+  useEffect(() => {
+    const open = () => setOpen(true)
+    window.addEventListener('teamhub:open-ai', open)
+    return () => window.removeEventListener('teamhub:open-ai', open)
+  }, [])
+
   async function send() {
     const text = input.trim()
     if (!text || busy) return

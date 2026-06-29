@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle2, ChevronRight, Plus, Trash2, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronRight, Link2, ListTree, Plus, Tag, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type {
@@ -259,58 +259,72 @@ export default function Tickets() {
 
   const selected = useMemo(() => tickets.find((t) => t.id === selectedId) ?? null, [tickets, selectedId])
 
+  const activeSprint = useMemo(() => sprints.find((s) => s.status === 'active') ?? null, [sprints])
+
   return (
     <div className="flex h-full">
       <div className="flex min-w-0 flex-1 flex-col p-4 lg:p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="font-display text-xl font-bold text-ink">티켓</h1>
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
-          >
-            + 새 티켓
-          </button>
-        </div>
-
-        {/* 필터 바 */}
-        <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-xs font-semibold text-ash">필터</span>
-          <select
-            value={assigneeFilter}
-            onChange={(e) => setAssigneeFilter(e.target.value)}
-            className="rounded-lg border border-hairline px-2 py-1 text-sm"
-          >
-            <option value="">담당자: 전체</option>
-            <option value="__none__">미지정</option>
-            {profiles.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.full_name ?? p.email ?? p.id}
-              </option>
-            ))}
-          </select>
-          <select
-            value={labelFilter}
-            onChange={(e) => setLabelFilter(e.target.value)}
-            className="rounded-lg border border-hairline px-2 py-1 text-sm"
-          >
-            <option value="">라벨: 전체</option>
-            {labelOptions.map((l) => (
-              <option key={l} value={l}>
-                {l}
-              </option>
-            ))}
-          </select>
-          {(labelFilter || assigneeFilter) && (
-            <button
-              onClick={() => {
-                setLabelFilter('')
-                setAssigneeFilter('')
-              }}
-              className="rounded-lg border border-hairline px-2 py-1 text-xs text-mute hover:bg-bone"
+        {/* 페이지 헤더 — 큰 제목 + 컨텍스트 칩(font-mono) + 우측 필터/버튼 */}
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-ink">티켓</h1>
+            <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+              {activeSprint ? (
+                <span className="rounded-md border border-hairline bg-bone px-2 py-0.5 font-mono lowercase tracking-tight text-mint-ink">
+                  {activeSprint.name}
+                </span>
+              ) : (
+                <span className="rounded-md border border-hairline bg-bone px-2 py-0.5 font-mono lowercase tracking-tight text-ash">
+                  no_active_sprint
+                </span>
+              )}
+              <span className="font-mono uppercase tracking-wide text-ash">{filtered.length} TICKETS</span>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={assigneeFilter}
+              onChange={(e) => setAssigneeFilter(e.target.value)}
+              className="rounded-lg border border-hairline bg-card px-2.5 py-1.5 text-sm text-ink"
             >
-              초기화
+              <option value="">담당자: 전체</option>
+              <option value="__none__">미지정</option>
+              {profiles.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.full_name ?? p.email ?? p.id}
+                </option>
+              ))}
+            </select>
+            <select
+              value={labelFilter}
+              onChange={(e) => setLabelFilter(e.target.value)}
+              className="rounded-lg border border-hairline bg-card px-2.5 py-1.5 text-sm text-ink"
+            >
+              <option value="">라벨: 전체</option>
+              {labelOptions.map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+            </select>
+            {(labelFilter || assigneeFilter) && (
+              <button
+                onClick={() => {
+                  setLabelFilter('')
+                  setAssigneeFilter('')
+                }}
+                className="rounded-lg border border-hairline px-2.5 py-1.5 text-xs text-mute hover:bg-bone"
+              >
+                초기화
+              </button>
+            )}
+            <button
+              onClick={() => setOpen((v) => !v)}
+              className="flex items-center gap-1.5 rounded-lg bg-brand px-3.5 py-1.5 text-sm font-semibold text-white shadow-raised hover:bg-brand-dark"
+            >
+              <Plus size={15} /> 새 티켓
             </button>
-          )}
+          </div>
         </div>
 
         {open && (
@@ -433,7 +447,7 @@ export default function Tickets() {
           </form>
         )}
 
-        <div className="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
+        <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
           {COLUMNS.map((col) => {
             const list = filtered.filter((t) => t.status === col.key)
             const isDropTarget = dragOverCol === col.key
@@ -459,109 +473,151 @@ export default function Tickets() {
                   const t = tickets.find((x) => x.id === id)
                   if (t && t.status !== col.key) move(t, col.key)
                 }}
-                className={`flex min-h-0 w-[78%] shrink-0 flex-col rounded-xl bg-bone p-2 transition sm:w-[44%] lg:w-auto lg:shrink ${
-                  isDropTarget ? 'bg-brand/10 ring-2 ring-brand' : ''
+                className={`flex min-h-0 w-[80%] shrink-0 flex-col rounded-xl transition sm:w-[46%] lg:w-auto lg:shrink ${
+                  isDropTarget ? 'bg-brand/10 ring-2 ring-brand' : 'bg-bone/40'
                 }`}
               >
-                <div className="flex items-center gap-2 px-1.5 py-1.5 text-xs font-bold uppercase tracking-wide text-ink">
+                {/* 컬럼 헤더: 상태 점 + 대문자 모노 라벨 + 카운트 배지 */}
+                <div className="flex items-center gap-2 px-3 pt-3 pb-2">
                   <span className={`h-2 w-2 rounded-full ${col.dot}`} />
-                  {col.label}
-                  <span className="ml-auto rounded bg-bone px-1.5 py-0.5 font-mono text-[10px] font-semibold text-mute">{list.length}</span>
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-charcoal">
+                    {col.label}
+                  </span>
+                  <span className="ml-auto rounded-md bg-card px-1.5 py-0.5 font-mono text-[10px] font-semibold text-mute shadow-raised">
+                    {String(list.length).padStart(2, '0')}
+                  </span>
                 </div>
-                <div className="space-y-2 overflow-y-auto">
-                  {list.map((t) => (
-                    <div
-                      key={t.id}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('text/plain', t.id)
-                        e.dataTransfer.effectAllowed = 'move'
-                      }}
-                      onClick={() => setSelectedId(t.id)}
-                      className={`group cursor-pointer rounded-lg bg-card p-3 shadow-raised transition hover:shadow-overlay active:cursor-grabbing ${col.accent} ${
-                        selectedId === t.id ? 'ring-2 ring-brand' : ''
-                      }`}
-                    >
-                      {(() => {
-                        const done = t.status === 'done' || t.status === 'closed'
-                        return (
-                          <>
-                            {/* #ID + 아웃라인 우선순위 칩 */}
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="font-mono text-[11px] font-semibold text-ash">
-                                #{t.id.slice(0, 6).toUpperCase()}
+
+                <div className="min-h-0 space-y-3 overflow-y-auto px-2.5 pb-2">
+                  {list.map((t) => {
+                    const done = t.status === 'done' || t.status === 'closed'
+                    const subs = tickets.filter((x) => x.parent_ticket_id === t.id)
+                    const subDone = subs.filter((x) => x.status === 'done' || x.status === 'closed').length
+                    const pct = subs.length > 0 ? Math.round((subDone / subs.length) * 100) : 0
+                    const hasParent = !!t.parent_ticket_id
+                    return (
+                      <div
+                        key={t.id}
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData('text/plain', t.id)
+                          e.dataTransfer.effectAllowed = 'move'
+                        }}
+                        onClick={() => setSelectedId(t.id)}
+                        className={`group relative cursor-pointer overflow-hidden rounded-lg border border-hairline bg-card p-4 shadow-raised transition hover:shadow-overlay active:cursor-grabbing ${col.accent} ${
+                          selectedId === t.id ? 'ring-2 ring-brand' : ''
+                        } ${done ? 'opacity-70' : ''}`}
+                      >
+                        {/* #ID + 아웃라인 우선순위 칩 */}
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-mono text-[11px] font-semibold tracking-tight text-ash">
+                            #{t.id.slice(0, 6).toUpperCase()}
+                          </span>
+                          <span
+                            className={`inline-flex shrink-0 items-center gap-0.5 rounded border px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wide ${PRIO_OUTLINE[t.priority]}`}
+                          >
+                            {t.priority === 'urgent' && <AlertTriangle size={10} />}
+                            {PRIO_LABEL[t.priority]}
+                          </span>
+                        </div>
+
+                        {/* 제목 */}
+                        <h3 className={`mt-3 text-[15px] font-bold leading-snug ${done ? 'text-mute line-through' : 'text-ink'}`}>
+                          {done && <CheckCircle2 size={14} className="mr-1 inline-block align-[-2px] text-mint" />}
+                          {t.title}
+                        </h3>
+
+                        {/* 설명 발췌 (2줄) */}
+                        {t.description && (
+                          <p className="mt-2 line-clamp-2 text-[12px] leading-relaxed text-mute">{t.description}</p>
+                        )}
+
+                        {(t.labels ?? []).length > 0 && (
+                          <div className="mt-2.5 flex flex-wrap gap-1">
+                            {t.labels.map((l) => (
+                              <span key={l} className="rounded bg-bone px-1.5 py-0.5 font-mono text-[10px] text-charcoal">
+                                {l}
                               </span>
-                              <span
-                                className={`inline-flex shrink-0 items-center gap-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIO_OUTLINE[t.priority]}`}
-                              >
-                                {t.priority === 'urgent' && <AlertTriangle size={10} />}
-                                {PRIO_LABEL[t.priority]}
-                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* 진행중 카드: 가는 진행바 (서브태스크 완료율) */}
+                        {col.key === 'in_progress' && subs.length > 0 && (
+                          <div className="mt-3">
+                            <div className="mb-1 flex items-center justify-between font-mono text-[10px] uppercase tracking-wide text-ash">
+                              <span>진행</span>
+                              <span>{pct}%</span>
                             </div>
-
-                            {/* 제목 */}
-                            <h3 className={`mt-2 text-sm font-semibold leading-snug ${done ? 'text-mute line-through' : 'text-ink'}`}>
-                              {done && <CheckCircle2 size={13} className="mr-1 inline-block align-[-2px] text-mint" />}
-                              {t.title}
-                            </h3>
-
-                            {/* 설명 발췌 */}
-                            {t.description && (
-                              <p className="mt-1.5 line-clamp-2 text-[12px] leading-relaxed text-mute">{t.description}</p>
-                            )}
-
-                            {(t.labels ?? []).length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-1">
-                                {t.labels.map((l) => (
-                                  <span key={l} className="rounded bg-bone px-1.5 py-0.5 text-[10px] text-charcoal">
-                                    {l}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* 푸터: 아바타 + 이름 + 상대시간 */}
-                            <div className="mt-3 flex items-center gap-2 border-t border-hairline pt-2.5">
-                              {t.assignee_id ? (
-                                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-[10px] font-semibold text-brand">
-                                  {initialsOf(profileMap, t.assignee_id)}
-                                </span>
-                              ) : (
-                                <span className="h-6 w-6 shrink-0 rounded-full bg-bone" />
-                              )}
-                              <span className="truncate text-[11px] text-mute">{nameOf(profileMap, t.assignee_id)}</span>
-                              <span className="ml-auto shrink-0 font-mono text-[11px] text-ash">{relTime(t.created_at)}</span>
+                            <div className="h-1 w-full overflow-hidden rounded-full bg-bone">
+                              <div className="h-full rounded-full bg-mint" style={{ width: `${pct}%` }} />
                             </div>
+                          </div>
+                        )}
 
-                            {/* 이동 (호버 시 노출) */}
-                            <div
-                              className="mt-2 flex flex-wrap gap-1 opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
-                              onClick={(e) => e.stopPropagation()}
+                        {/* 푸터: 담당자 아바타 + 상대시간 + 우측 액션 아이콘 */}
+                        <div className="mt-3.5 flex items-center gap-2 border-t border-hairline pt-3">
+                          {t.assignee_id ? (
+                            <span
+                              title={nameOf(profileMap, t.assignee_id)}
+                              className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-[10px] font-semibold text-brand"
                             >
-                              {COLUMNS.filter((c) => c.key !== t.status).map((c) => (
-                                <button
-                                  key={c.key}
-                                  onClick={() => move(t, c.key)}
-                                  className="flex items-center gap-0.5 rounded-md bg-bone px-1.5 py-0.5 text-[10px] text-mute hover:bg-stone/40"
-                                >
-                                  <ChevronRight size={10} /> {c.label}
-                                </button>
-                              ))}
-                            </div>
-                          </>
-                        )
-                      })()}
+                              {initialsOf(profileMap, t.assignee_id)}
+                            </span>
+                          ) : (
+                            <span title="미지정" className="h-6 w-6 shrink-0 rounded-full border border-dashed border-hairline bg-bone" />
+                          )}
+                          <span className="shrink-0 font-mono text-[11px] text-ash">{relTime(t.created_at)}</span>
+                          <div className="ml-auto flex items-center gap-2.5 text-ash">
+                            {(t.labels ?? []).length > 0 && (
+                              <span className="flex items-center gap-0.5" title={`라벨 ${t.labels.length}`}>
+                                <Tag size={12} />
+                                <span className="font-mono text-[10px]">{t.labels.length}</span>
+                              </span>
+                            )}
+                            {subs.length > 0 && (
+                              <span className="flex items-center gap-0.5" title={`서브태스크 ${subDone}/${subs.length}`}>
+                                <ListTree size={12} />
+                                <span className="font-mono text-[10px]">
+                                  {subDone}/{subs.length}
+                                </span>
+                              </span>
+                            )}
+                            {hasParent && <Link2 size={12} aria-label="상위 티켓 연결" />}
+                          </div>
+                        </div>
+
+                        {/* 이동 (호버 시 노출) */}
+                        <div
+                          className="mt-2.5 flex flex-wrap gap-1 opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {COLUMNS.filter((c) => c.key !== t.status).map((c) => (
+                            <button
+                              key={c.key}
+                              onClick={() => move(t, c.key)}
+                              className="flex items-center gap-0.5 rounded-md bg-bone px-1.5 py-0.5 text-[10px] text-mute hover:bg-stone/40"
+                            >
+                              <ChevronRight size={10} /> {c.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {list.length === 0 && (
+                    <div className="rounded-lg border border-dashed border-hairline px-3 py-6 text-center font-mono text-[10px] uppercase tracking-wide text-ash">
+                      empty
                     </div>
-                  ))}
-                  {list.length === 0 && <div className="px-1 py-2 text-[11px] text-ash">없음</div>}
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setOpen(true)}
+                    className="flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-hairline px-2 py-2.5 text-xs font-medium text-mute transition hover:border-stone hover:bg-card"
+                  >
+                    <Plus size={14} /> 티켓 추가
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setOpen(true)}
-                  className="mt-2 flex items-center justify-center gap-1 rounded-xl border border-dashed border-hairline px-2 py-2 text-xs font-medium text-mute transition hover:border-stone hover:bg-card"
-                >
-                  <Plus size={14} /> 티켓 추가
-                </button>
               </div>
             )
           })}

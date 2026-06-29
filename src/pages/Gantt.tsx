@@ -1,20 +1,29 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { differenceInCalendarDays, format, addDays, max, min, parseISO } from 'date-fns'
-import { Pencil, X, Trash2, ArrowLeft } from 'lucide-react'
+import {
+  Pencil,
+  X,
+  Trash2,
+  ArrowLeft,
+  Plus,
+  FolderPlus,
+  CheckCircle2,
+  AlertTriangle,
+  ListFilter,
+  TrendingUp,
+} from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
-import type { Project, GanttTask, GanttDependency } from '../lib/types'
+import type { Project, GanttTask, GanttDependency, Profile } from '../lib/types'
 
-const DAY_PX = 28
-const ROW_H = 33 // border-b adds 1px; bar row content is 32px
-const LABEL_W = 192 // w-48
-const BAR_TOP = 6 // top-1.5
-const BAR_H = 20 // h-5
-const STATUS_COLOR: Record<GanttTask['status'], string> = {
-  todo: 'bg-ash',
-  doing: 'bg-brand',
-  done: 'bg-success',
-}
+// ── 타임라인 기하 (Stitch 비율: 넉넉한 행/열) ──
+const DAY_PX = 88
+const ROW_H = 76
+const LABEL_W = 320 // w-80
+const BAR_H = 30
+const BAR_TOP = (ROW_H - BAR_H) / 2
+
+type Variant = 'done' | 'doing' | 'todo' | 'overdue'
 
 export default function Gantt() {
   const profile = useAuth((s) => s.profile)
@@ -22,8 +31,8 @@ export default function Gantt() {
   const [projectId, setProjectId] = useState<string>('')
   const [tasks, setTasks] = useState<GanttTask[]>([])
   const [deps, setDeps] = useState<GanttDependency[]>([])
+  const [profiles, setProfiles] = useState<Profile[]>([])
   const [editorTask, setEditorTask] = useState<string | null>(null) // 편집 모달 대상 작업 id
-  const headerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     supabase
@@ -35,6 +44,14 @@ export default function Gantt() {
         setProjects(list)
         if (list[0]) setProjectId((p) => p || list[0].id)
       })
+  }, [])
+
+  // 담당자 아바타/역할 표시용 프로필 (읽기 전용, 데이터 보존엔 영향 없음)
+  useEffect(() => {
+    supabase
+      .from('profiles')
+      .select('*')
+      .then(({ data }) => setProfiles((data as Profile[]) ?? []))
   }, [])
 
   useEffect(() => {
@@ -181,6 +198,12 @@ export default function Gantt() {
 
   const days = Array.from({ length: totalDays }, (_, i) => addDays(rangeStart, i))
 
+  const profileById = useMemo(() => {
+    const m = new Map<string, Profile>()
+    profiles.forEach((p) => m.set(p.id, p))
+    return m
+  }, [profiles])
+
   // index of each task within the rendered list, for y-coordinate computation
   const taskIndex = useMemo(() => {
     const m = new Map<string, number>()
@@ -194,6 +217,17 @@ export default function Gantt() {
     return m
   }, [tasks])
 
+  // 오늘(시간 무시) — 지연 판정·TODAY 라인 계산에 사용
+  const today = useMemo(() => parseISO(format(new Date(), 'yyyy-MM-dd')), [])
+
+  function variantOf(t: GanttTask): Variant {
+    if (t.status === 'done' || t.progress >= 100) return 'done'
+    const overdue = differenceInCalendarDays(parseISO(t.end_date), today) < 0
+    if (overdue) return 'overdue'
+    if (t.status === 'doing' || t.progress > 0) return 'doing'
+    return 'todo'
+  }
+
   // Geometry helpers in the timeline coordinate space (x=0 at the first day column).
   function barLeft(t: GanttTask) {
     return differenceInCalendarDays(parseISO(t.start_date), rangeStart) * DAY_PX
@@ -201,17 +235,31 @@ export default function Gantt() {
   function barSpan(t: GanttTask) {
     return differenceInCalendarDays(parseISO(t.end_date), parseISO(t.start_date)) + 1
   }
+  function barWidth(t: GanttTask) {
+    return Math.max(barSpan(t) * DAY_PX - 8, 40)
+  }
   function barRight(t: GanttTask) {
-    return barLeft(t) + barSpan(t) * DAY_PX - 4
+    return barLeft(t) + barWidth(t)
   }
   function rowCenterY(taskId: string) {
     const i = taskIndex.get(taskId)
     if (i === undefined) return 0
-    return i * ROW_H + BAR_TOP + BAR_H / 2
+    return i * ROW_H + ROW_H / 2
   }
 
   const timelineWidth = totalDays * DAY_PX
   const timelineHeight = tasks.length * ROW_H
+
+  // TODAY 세로 라인 위치
+  const todayOffset = differenceInCalendarDays(today, rangeStart)
+  const todayX = todayOffset * DAY_PX + DAY_PX / 2
+  const todayInRange = todayOffset >= 0 && todayOffset < totalDays
+
+  // 전체 완료율(평균 진행률) — 헤더 도넛
+  const completion = useMemo(() => {
+    if (tasks.length === 0) return 0
+    return Math.round(tasks.reduce((s, t) => s + t.progress, 0) / tasks.length)
+  }, [tasks])
 
   // Build the SVG connector paths: from predecessor's end -> successor's start.
   const connectors = useMemo(() => {
@@ -243,100 +291,195 @@ export default function Gantt() {
     return m
   }, [deps])
 
+  const projectName = projects.find((p) => p.id === projectId)?.name
+
+  // 완료율 도넛 기하
+  const R = 16
+  const C = 2 * Math.PI * R
+  const dash = (C * completion) / 100
+
   return (
-    <div className="flex h-full flex-col p-4 lg:p-6">
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <h1 className="whitespace-nowrap text-xl font-bold">간트차트</h1>
-        <select value={projectId} onChange={(e) => setProjectId(e.target.value)} className="rounded-lg border border-hairline px-2 py-1 text-sm">
+    <div className="relative flex h-full flex-col overflow-hidden p-4 lg:p-6">
+      {/* 우하단 장식 블롭 (라이트=연한 라벤더 위 흐린 색면) */}
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-80 w-80 rounded-full bg-mint/15 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-16 right-40 h-60 w-60 rounded-full bg-brand/10 blur-3xl" />
+
+      {/* ── 헤더: eyebrow + 큰 제목 + 완료율 카드 ── */}
+      <header className="relative z-10 mb-4 flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="font-mono text-xs font-bold uppercase tracking-[0.22em] text-brand">활성 로드맵</p>
+          <h1 className="mt-1 truncate font-display text-3xl font-bold text-ink">{projectName ?? '간트차트'}</h1>
+        </div>
+
+        <div className="flex items-center gap-4 rounded-xl border border-hairline bg-card px-4 py-3 shadow-raised">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-widest text-mute">COMPLETION</p>
+            <p className="font-display text-2xl font-bold text-brand">{completion}%</p>
+          </div>
+          <div className="relative h-11 w-11">
+            <svg viewBox="0 0 40 40" className="h-11 w-11 -rotate-90">
+              <circle cx="20" cy="20" r={R} fill="none" strokeWidth="4" style={{ stroke: 'rgb(var(--brand) / 0.15)' }} />
+              <circle
+                cx="20"
+                cy="20"
+                r={R}
+                fill="none"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray={`${dash} ${C}`}
+                style={{ stroke: 'rgb(var(--brand))' }}
+              />
+            </svg>
+            <TrendingUp size={14} className="absolute inset-0 m-auto text-brand" />
+          </div>
+        </div>
+      </header>
+
+      {/* ── 컨트롤: 프로젝트 선택 + 생성/삭제 ── */}
+      <div className="relative z-10 mb-4 flex flex-wrap items-center gap-2">
+        <select
+          value={projectId}
+          onChange={(e) => setProjectId(e.target.value)}
+          className="rounded-lg border border-hairline bg-card px-3 py-1.5 text-sm text-ink"
+        >
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
             </option>
           ))}
         </select>
-        <button onClick={createProject} className="rounded-lg border border-hairline px-3 py-1 text-sm hover:bg-bone">
-          + 프로젝트
+        <button
+          onClick={createProject}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card px-3 py-1.5 text-sm text-body hover:bg-bone"
+        >
+          <FolderPlus size={15} /> 프로젝트
         </button>
-        <button onClick={addTask} className="rounded-lg bg-brand px-3 py-1 text-sm font-semibold text-white hover:bg-brand-dark" disabled={!projectId}>
-          + 작업
+        <button
+          onClick={addTask}
+          disabled={!projectId}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-40"
+        >
+          <Plus size={15} /> 작업 추가
         </button>
         <button
           onClick={deleteProject}
-          className="ml-auto rounded-lg border border-hairline px-3 py-1 text-sm text-mute hover:border-danger hover:text-danger"
           disabled={!projectId}
           title="프로젝트 삭제"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-hairline bg-card px-3 py-1.5 text-sm text-mute hover:border-danger hover:text-danger disabled:opacity-40"
         >
-          프로젝트 삭제
+          <Trash2 size={15} /> 프로젝트 삭제
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-hairline bg-card">
+      {/* ── 간트 테이블 ── */}
+      <div className="relative z-10 min-h-0 flex-1 overflow-auto rounded-xl border border-hairline bg-card shadow-raised">
         <div className="inline-block min-w-full">
-          {/* 날짜 헤더 */}
-          <div className="flex border-b border-hairline bg-bone" ref={headerRef}>
-            <div className="sticky left-0 z-20 w-64 shrink-0 border-r border-hairline bg-bone px-3 py-2 text-xs font-semibold text-mute">
-              작업
+          {/* 헤더 행: 좌측 라벨 컬럼 + 날짜 컬럼 */}
+          <div className="sticky top-0 z-30 flex border-b border-hairline bg-bone">
+            <div
+              className="sticky left-0 z-10 flex shrink-0 items-center justify-between border-r border-hairline bg-bone px-4 py-3"
+              style={{ width: LABEL_W }}
+            >
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-mute">작업 & 담당자</span>
+              <ListFilter size={15} className="text-ash" />
             </div>
             {days.map((d, i) => (
               <div
                 key={i}
                 style={{ width: DAY_PX }}
-                className="shrink-0 border-r border-hairline py-2 text-center font-mono text-[10px] text-ash"
+                className="shrink-0 border-r border-hairline py-3 text-center font-mono text-[10px] uppercase tracking-wider text-ash"
               >
-                {format(d, 'd')}
+                {format(d, 'MMM d')}
               </div>
             ))}
           </div>
 
-          {/* 본문: 라벨 열 + 타임라인(+의존선 SVG 오버레이) */}
+          {/* 본문: 라벨 열 + 타임라인 */}
           <div className="flex">
-            {/* 라벨 열 */}
-            <div className="sticky left-0 z-10 w-64 shrink-0 border-r border-hairline bg-card">
-              {tasks.map((t) => (
-                <div
-                  key={t.id}
-                  className="flex items-center gap-1 border-b border-hairline px-3 text-sm text-body"
-                  style={{ height: ROW_H }}
-                >
-                  <button
-                    onClick={() => setEditorTask(t.id)}
-                    title={t.title}
-                    className="min-w-0 flex-1 truncate text-left hover:text-brand"
+            {/* 라벨 열 — 상태점 + 작업명 + 담당자 아바타/역할 */}
+            <div className="sticky left-0 z-20 shrink-0 border-r border-hairline bg-card" style={{ width: LABEL_W }}>
+              {tasks.map((t) => {
+                const v = variantOf(t)
+                const a = t.assignee_id ? profileById.get(t.assignee_id) : undefined
+                const dotColor =
+                  v === 'done' ? 'bg-mint' : v === 'doing' ? 'bg-brand' : v === 'overdue' ? 'bg-danger' : 'bg-info'
+                return (
+                  <div
+                    key={t.id}
+                    className={`group flex items-center gap-3 border-b border-hairline px-4 ${
+                      v === 'overdue' ? 'bg-danger-soft/40' : ''
+                    }`}
+                    style={{ height: ROW_H }}
                   >
-                    {t.title}
-                  </button>
-                  <span className="shrink-0 font-mono text-[10px] text-ash">{t.progress}%</span>
-                  <button
-                    onClick={() => setEditorTask(t.id)}
-                    className="shrink-0 text-ash hover:text-brand"
-                    title="작업 수정"
-                  >
-                    <Pencil size={13} />
-                  </button>
-                </div>
-              ))}
+                    {/* 상태 점 / 지연 경고 */}
+                    {v === 'overdue' ? (
+                      <AlertTriangle size={14} className="shrink-0 text-danger" />
+                    ) : (
+                      <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dotColor}`} />
+                    )}
+
+                    {/* 작업명 + 담당자 */}
+                    <div className="min-w-0 flex-1">
+                      <button
+                        onClick={() => setEditorTask(t.id)}
+                        title={t.title}
+                        className={`block w-full truncate text-left text-sm font-semibold hover:text-brand ${
+                          v === 'overdue' ? 'text-danger-ink' : 'text-ink'
+                        }`}
+                      >
+                        {t.title}
+                      </button>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <Avatar profile={a} />
+                        <span className="truncate font-mono text-[10px] uppercase tracking-wide text-ash">
+                          {v === 'overdue' && <span className="text-danger">지연 · </span>}
+                          {a ? shortName(a) : '미배정'}
+                          {a?.role ? ` · ${a.role}` : ''}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => setEditorTask(t.id)}
+                      className="shrink-0 text-ash opacity-0 transition hover:text-brand group-hover:opacity-100"
+                      title="작업 수정"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  </div>
+                )
+              })}
               {tasks.length === 0 && <div className="p-6 text-sm text-ash">작업을 추가하세요.</div>}
             </div>
 
             {/* 타임라인 */}
-            <div className="relative" style={{ width: timelineWidth, minWidth: timelineWidth }}>
-              {/* 작업 막대 행 */}
-              {tasks.map((t) => (
-                <div key={t.id} className="relative border-b border-hairline" style={{ height: ROW_H }}>
-                  <div
-                    className={`absolute h-5 rounded ${STATUS_COLOR[t.status]} text-[10px] text-white`}
-                    style={{ top: BAR_TOP, left: barLeft(t), width: barSpan(t) * DAY_PX - 4 }}
-                    title={`${t.start_date} ~ ${t.end_date}`}
-                  >
-                    <span className="px-1 font-mono leading-5">{t.progress}%</span>
-                  </div>
-                </div>
+            <div
+              className="relative"
+              style={{ width: timelineWidth, minWidth: timelineWidth, minHeight: Math.max(timelineHeight, 120) }}
+            >
+              {/* 세로 그리드 라인 */}
+              {days.map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute bottom-0 top-0 border-r border-hairline"
+                  style={{ left: i * DAY_PX, width: DAY_PX }}
+                />
               ))}
+
+              {/* TODAY 세로 라인 */}
+              {todayInRange && (
+                <div className="pointer-events-none absolute bottom-0 top-0 z-20" style={{ left: todayX }}>
+                  <div className="absolute inset-y-0 w-px" style={{ background: 'rgb(var(--brand))' }} />
+                  <span className="absolute -left-px top-0 rounded-b-md bg-brand px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-wider text-white">
+                    TODAY
+                  </span>
+                </div>
+              )}
 
               {/* 의존선 SVG 오버레이 */}
               {connectors.length > 0 && (
                 <svg
-                  className="pointer-events-none absolute left-0 top-0"
+                  className="pointer-events-none absolute left-0 top-0 z-10"
                   width={timelineWidth}
                   height={timelineHeight}
                   style={{ overflow: 'visible' }}
@@ -351,13 +494,13 @@ export default function Gantt() {
                       markerHeight="6"
                       orient="auto-start-reverse"
                     >
-                      <path d="M 0 0 L 10 5 L 0 10 z" className="fill-charcoal" />
+                      <path d="M 0 0 L 10 5 L 0 10 z" className="fill-ash" />
                     </marker>
                   </defs>
                   {connectors.map((c) => (
                     <path
                       key={c.id}
-                      className="stroke-charcoal"
+                      className="stroke-ash"
                       d={c.d}
                       fill="none"
                       strokeWidth={1.5}
@@ -366,6 +509,20 @@ export default function Gantt() {
                   ))}
                 </svg>
               )}
+
+              {/* 작업 막대 행 */}
+              {tasks.map((t) => {
+                const v = variantOf(t)
+                return (
+                  <div
+                    key={t.id}
+                    className={`relative border-b border-hairline ${v === 'overdue' ? 'bg-danger-soft/30' : ''}`}
+                    style={{ height: ROW_H }}
+                  >
+                    <Bar variant={v} task={t} left={barLeft(t)} width={barWidth(t)} onOpen={() => setEditorTask(t.id)} />
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -388,7 +545,7 @@ export default function Gantt() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-ink">작업 수정</h3>
+                  <h3 className="font-display font-semibold text-ink">작업 수정</h3>
                   <button onClick={() => setEditorTask(null)} className="text-ash hover:text-ink" aria-label="닫기">
                     <X size={18} />
                   </button>
@@ -461,6 +618,17 @@ export default function Gantt() {
                   </select>
                 </div>
 
+                {/* 종료일 ±1일 빠른 조정 (기존 bump 핸들러 유지) */}
+                <div className="flex items-center gap-2 text-xs text-mute">
+                  <span>기간 조정</span>
+                  <button onClick={() => bump(t, -1)} className="rounded border border-hairline px-2 py-0.5 hover:bg-bone">
+                    종료 −1일
+                  </button>
+                  <button onClick={() => bump(t, 1)} className="rounded border border-hairline px-2 py-0.5 hover:bg-bone">
+                    종료 +1일
+                  </button>
+                </div>
+
                 <div>
                   <div className="mb-1 text-xs text-mute">선행 작업(의존)</div>
                   <div className="mb-1 flex flex-wrap gap-1">
@@ -515,5 +683,90 @@ export default function Gantt() {
           )
         })()}
     </div>
+  )
+}
+
+// ── 담당자 이름 약식: "홍길동" -> "홍길동", 영문 "Lee Chen" -> "L. Chen" ──
+function shortName(p: Profile): string {
+  const base = (p.full_name ?? p.email ?? '?').trim()
+  const parts = base.split(/\s+/)
+  if (parts.length >= 2 && /^[A-Za-z]/.test(parts[0])) {
+    return `${parts[0][0].toUpperCase()}. ${parts[parts.length - 1]}`
+  }
+  return base
+}
+
+function Avatar({ profile }: { profile?: Profile }) {
+  if (profile?.avatar_url) {
+    return <img src={profile.avatar_url} alt="" className="h-5 w-5 shrink-0 rounded-full object-cover" />
+  }
+  const ch = (profile?.full_name ?? profile?.email ?? '?').trim().charAt(0).toUpperCase() || '?'
+  return (
+    <div className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-bone font-mono text-[9px] font-bold text-charcoal">
+      {ch}
+    </div>
+  )
+}
+
+// ── 타임라인 막대: 완료=mint / 진행=brand(진행률 2톤) / 지연=점선 danger / 대기=brand 옅게 ──
+function Bar({
+  variant,
+  task,
+  left,
+  width,
+  onOpen,
+}: {
+  variant: Variant
+  task: GanttTask
+  left: number
+  width: number
+  onOpen: () => void
+}) {
+  const base =
+    'absolute z-10 flex items-center gap-1.5 overflow-hidden rounded-lg px-2 text-left transition hover:brightness-105'
+  const style = { top: BAR_TOP, left, width, height: BAR_H }
+  const title = `${task.title} · ${task.start_date} ~ ${task.end_date} · ${task.progress}%`
+
+  if (variant === 'done') {
+    return (
+      <button
+        onClick={onOpen}
+        title={title}
+        style={style}
+        className={`${base} border border-mint/40 bg-mint-soft text-mint-ink`}
+      >
+        <CheckCircle2 size={14} className="shrink-0" />
+        <span className="truncate font-mono text-[11px] font-bold uppercase tracking-wide">100% 완료</span>
+      </button>
+    )
+  }
+
+  if (variant === 'overdue') {
+    return (
+      <button
+        onClick={onOpen}
+        title={title}
+        style={style}
+        className={`${base} border-2 border-dashed border-danger bg-danger-soft/70 text-danger-ink`}
+      >
+        <AlertTriangle size={14} className="shrink-0" />
+        <span className="truncate font-mono text-[11px] font-bold uppercase tracking-wide">
+          지연 · {task.progress}%
+        </span>
+      </button>
+    )
+  }
+
+  // doing / todo — brand 막대 위에 미진행 구간을 옅게 덮어 진행률 2톤 표현
+  const remaining = Math.max(0, 100 - task.progress)
+  return (
+    <button onClick={onOpen} title={title} style={style} className={`${base} bg-brand text-white`}>
+      {remaining > 0 && (
+        <div className="absolute inset-y-0 right-0 bg-white/25" style={{ width: `${remaining}%` }} />
+      )}
+      <span className="relative truncate font-mono text-[11px] font-bold uppercase tracking-wide">
+        {task.progress > 0 ? `${task.progress}% 진행` : '대기'}
+      </span>
+    </button>
   )
 }
