@@ -16,3 +16,4 @@ dist-ssr
 .agents/
 .claude/skills/frontend-design
 .stitch/
+design/
