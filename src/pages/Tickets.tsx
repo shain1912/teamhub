@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle2, ChevronRight, Plus, Trash2, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronRight, Plus, Trash2, X, Bug, Flag, BookText, ListTodo, GitBranch } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type {
@@ -19,11 +19,13 @@ const COLUMNS: { key: TicketStatus; label: string; bar: string }[] = [
   { key: 'closed', label: '종료', bar: 'bg-ash' },
 ]
 
-const PRIO: Record<TicketPriority, string> = {
-  low: 'border-l-slate-300',
-  medium: 'border-l-blue-400',
-  high: 'border-l-mint',
-  urgent: 'border-l-red-500',
+// 미니멀 카드: 타입별 아이콘 타일 (보더 대신 아이콘으로 분류)
+const TYPE_META: Record<TicketType, { Icon: typeof Bug; tile: string }> = {
+  epic: { Icon: Flag, tile: 'bg-purple-100 text-purple-700' },
+  story: { Icon: BookText, tile: 'bg-emerald-100 text-emerald-700' },
+  task: { Icon: ListTodo, tile: 'bg-info-soft text-info-ink' },
+  bug: { Icon: Bug, tile: 'bg-danger-soft text-danger-ink' },
+  subtask: { Icon: GitBranch, tile: 'bg-bone text-charcoal' },
 }
 
 const PRIO_LABEL: Record<TicketPriority, string> = {
@@ -473,63 +475,81 @@ export default function Tickets() {
                         e.dataTransfer.effectAllowed = 'move'
                       }}
                       onClick={() => setSelectedId(t.id)}
-                      className={`cursor-pointer rounded-xl border border-hairline border-l-4 bg-white p-2 hover:border-stone active:cursor-grabbing ${PRIO[t.priority]} ${
+                      className={`group cursor-pointer rounded-xl bg-card p-3 shadow-raised transition hover:shadow-overlay active:cursor-grabbing ${
                         selectedId === t.id ? 'ring-2 ring-brand' : ''
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-1">
-                        <span className={`px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[t.type]}`}>
-                          {TYPE_LABEL[t.type]}
-                        </span>
-                        <span
-                          className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${PRIO_CHIP[t.priority]}`}
-                        >
-                          {t.priority === 'urgent' && <AlertTriangle size={12} />}
-                          {PRIO_LABEL[t.priority]}
-                        </span>
-                      </div>
-                      <div className="mt-1 flex items-start gap-1">
-                        {(t.status === 'done' || t.status === 'closed') && (
-                          <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-mint" />
-                        )}
-                        <div
-                          className={`text-sm font-medium ${
-                            t.status === 'done' || t.status === 'closed' ? 'text-mute line-through' : 'text-ink'
-                          }`}
-                        >
-                          {t.title}
-                        </div>
-                      </div>
-                      {(t.labels ?? []).length > 0 && (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {t.labels.map((l) => (
-                            <span key={l} className="rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-charcoal">
-                              {l}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      <div className="mt-1.5 flex items-center gap-1.5">
-                        {t.assignee_id ? (
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand/10 text-[10px] font-semibold text-brand">
-                            {initialsOf(profileMap, t.assignee_id)}
-                          </span>
-                        ) : (
-                          <span className="h-5 w-5 shrink-0 rounded-full bg-bone" />
-                        )}
-                        <span className="text-[11px] text-ash">{nameOf(profileMap, t.assignee_id)}</span>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1" onClick={(e) => e.stopPropagation()}>
-                        {COLUMNS.filter((c) => c.key !== t.status).map((c) => (
-                          <button
-                            key={c.key}
-                            onClick={() => move(t, c.key)}
-                            className="flex items-center gap-0.5 rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-mute hover:bg-stone/40"
-                          >
-                            <ChevronRight size={10} /> {c.label}
-                          </button>
-                        ))}
-                      </div>
+                      {(() => {
+                        const done = t.status === 'done' || t.status === 'closed'
+                        const TI = TYPE_META[t.type].Icon
+                        return (
+                          <>
+                            <div className="flex items-start gap-2.5">
+                              <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${TYPE_META[t.type].tile}`}>
+                                <TI size={17} />
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-2">
+                                  <h3
+                                    className={`min-w-0 text-sm font-semibold leading-snug ${
+                                      done ? 'text-mute line-through' : 'text-ink'
+                                    }`}
+                                  >
+                                    {done && <CheckCircle2 size={13} className="mr-1 inline-block align-[-2px] text-mint" />}
+                                    {t.title}
+                                  </h3>
+                                  <span
+                                    className={`inline-flex shrink-0 items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${PRIO_CHIP[t.priority]}`}
+                                  >
+                                    {t.priority === 'urgent' && <AlertTriangle size={11} />}
+                                    {PRIO_LABEL[t.priority]}
+                                  </span>
+                                </div>
+                                <div className="mt-0.5 truncate text-[11px] text-ash">
+                                  #{t.id.slice(0, 6)} · {TYPE_LABEL[t.type]}
+                                </div>
+                              </div>
+                            </div>
+
+                            {(t.labels ?? []).length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {t.labels.map((l) => (
+                                  <span key={l} className="rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-charcoal">
+                                    {l}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="mt-2.5 flex items-center gap-1.5">
+                              {t.assignee_id ? (
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand/10 text-[10px] font-semibold text-brand">
+                                  {initialsOf(profileMap, t.assignee_id)}
+                                </span>
+                              ) : (
+                                <span className="h-6 w-6 shrink-0 rounded-full bg-bone" />
+                              )}
+                              <span className="truncate text-[11px] text-ash">{nameOf(profileMap, t.assignee_id)}</span>
+                            </div>
+
+                            {/* 이동 (호버 시 노출) */}
+                            <div
+                              className="mt-2 flex flex-wrap gap-1 opacity-100 transition lg:opacity-0 lg:group-hover:opacity-100"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {COLUMNS.filter((c) => c.key !== t.status).map((c) => (
+                                <button
+                                  key={c.key}
+                                  onClick={() => move(t, c.key)}
+                                  className="flex items-center gap-0.5 rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-mute hover:bg-stone/40"
+                                >
+                                  <ChevronRight size={10} /> {c.label}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )
+                      })()}
                     </div>
                   ))}
                   {list.length === 0 && <div className="px-1 py-2 text-[11px] text-ash">없음</div>}
