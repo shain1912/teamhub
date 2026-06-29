@@ -7,7 +7,7 @@ function initial(): Theme {
   try {
     const t = localStorage.getItem('theme')
     if (t === 'dark' || t === 'light') return t
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    return 'light' // 디폴트 라이트 (시스템 설정 무시)
   } catch {
     return 'light'
   }

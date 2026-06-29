@@ -27,7 +27,7 @@ export async function createNotification(opts: CreateNotificationOpts): Promise<
   })
   if (error) {
     // 알림 실패가 본 작업을 막지 않도록 콘솔 경고만 남긴다.
-    console.warn('[TeamHub] createNotification 실패:', error.message)
+    console.warn('[TeamKode] createNotification 실패:', error.message)
   }
 }
 

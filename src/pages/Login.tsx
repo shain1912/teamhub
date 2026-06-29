@@ -63,7 +63,7 @@ export default function Login() {
               <path d="M12 7.4 12 10.6M10 11.8 6.2 14.6M14 11.8l3.8 2.8" />
             </svg>
           </div>
-          <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-ink">TeamHub</h1>
+          <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-ink">TeamKode</h1>
           <p className="mt-2 text-sm leading-relaxed text-mute">
             팀과 클라이언트가 한곳에서 — 동기화된 협업 워크스페이스.
           </p>

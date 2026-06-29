@@ -3,14 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TeamHub</title>
+    <title>TeamKode</title>
     <!-- 테마 무플래시: React 마운트 전에 .dark 적용 -->
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('theme')
-          if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-          if (t === 'dark') document.documentElement.classList.add('dark')
+          // 디폴트 라이트 — 사용자가 명시적으로 다크를 선택(localStorage)한 경우만 다크
+          if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark')
         } catch (e) {}
       })()
     </script>

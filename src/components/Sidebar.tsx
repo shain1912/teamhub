@@ -76,7 +76,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             </svg>
           </span>
           <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
-            <div className="truncate font-display text-base font-bold leading-tight text-ink">TeamHub</div>
+            <div className="truncate font-display text-base font-bold leading-tight text-ink">TeamKode</div>
             <div className="truncate font-mono text-[10px] uppercase tracking-wider text-ash">워크스페이스</div>
           </div>
           <button
