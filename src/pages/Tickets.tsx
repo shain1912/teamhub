@@ -21,7 +21,7 @@ const COLUMNS: { key: TicketStatus; label: string }[] = [
 const PRIO: Record<TicketPriority, string> = {
   low: 'border-l-slate-300',
   medium: 'border-l-blue-400',
-  high: 'border-l-amber-400',
+  high: 'border-l-mint',
   urgent: 'border-l-red-500',
 }
 

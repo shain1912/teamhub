@@ -15,3 +15,4 @@ dist-ssr
 # 외부 벤더링 스킬(개발 도구) — 레포에 넣지 않음. DESIGN.md는 추적함.
 .agents/
 .claude/skills/frontend-design
+.stitch/

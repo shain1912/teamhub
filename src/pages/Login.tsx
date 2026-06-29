@@ -44,23 +44,28 @@ export default function Login() {
   }
 
   return (
-    <div className="grid h-full place-items-center bg-canvas px-4">
+    <div className="grid min-h-full place-items-center bg-canvas px-4 py-10">
       <div className="w-full max-w-sm">
-        {/* 표지 */}
-        <div className="mb-7">
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-brand" />
-            <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-mute">internal workspace</span>
+        {/* 표지 — 인디고 로고 타일 + 타이틀 */}
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="grid h-16 w-16 place-items-center rounded-2xl bg-brand text-white shadow-raised">
+            <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <circle cx="12" cy="5" r="2" />
+              <circle cx="5" cy="16" r="2" />
+              <circle cx="19" cy="16" r="2" />
+              <circle cx="12" cy="13" r="2.4" fill="currentColor" stroke="none" />
+              <path d="M12 7.4 12 10.6M10 11.8 6.2 14.6M14 11.8l3.8 2.8" />
+            </svg>
           </div>
-          <h1 className="mt-3 font-display text-6xl font-extrabold leading-[0.95] tracking-tight text-ink">
-            TeamHub
-          </h1>
-          <p className="mt-3 text-body">팀과 클라이언트가 한곳에서 일하는 협업 워크스페이스.</p>
+          <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-ink">TeamHub</h1>
+          <p className="mt-2 text-sm leading-relaxed text-mute">
+            팀과 클라이언트가 한곳에서 — 동기화된 협업 워크스페이스.
+          </p>
         </div>
 
-        <div className="rounded-2xl border border-hairline bg-white p-6">
+        <div className="rounded-2xl border border-hairline bg-card p-6 shadow-raised sm:p-7">
           {/* 로그인 / 회원가입 탭 */}
-          <div className="mb-5 flex gap-1 rounded-full bg-bone p-1">
+          <div className="mb-6 flex gap-1 rounded-lg bg-bone p-1">
             {(['login', 'signup'] as Mode[]).map((m) => (
               <button
                 key={m}
@@ -69,8 +74,8 @@ export default function Login() {
                   setError(null)
                   setNotice(null)
                 }}
-                className={`flex-1 rounded-full py-1.5 text-sm font-semibold transition ${
-                  mode === m ? 'bg-white text-ink shadow-sm' : 'text-mute hover:text-ink'
+                className={`flex-1 rounded-md py-1.5 text-sm font-semibold transition ${
+                  mode === m ? 'bg-card text-brand shadow-sm' : 'text-mute hover:text-ink'
                 }`}
               >
                 {m === 'login' ? '로그인' : '회원가입'}
@@ -79,59 +84,76 @@ export default function Login() {
           </div>
 
           {!isSupabaseConfigured && (
-            <p className="mb-4 rounded-xl bg-brand/10 p-3 text-xs text-brand-dark">
+            <p className="mb-4 rounded-lg bg-danger-soft p-3 text-xs text-danger-ink">
               Supabase 환경변수가 비어 있습니다. <code className="font-mono">.env</code>를 채운 뒤 새로고침하세요.
             </p>
           )}
 
           {notice ? (
-            <p className="rounded-xl bg-success/10 p-4 text-sm text-success">{notice}</p>
+            <p className="rounded-lg bg-mint-soft p-4 text-sm text-mint-ink">{notice}</p>
           ) : (
-            <form onSubmit={submit} className="space-y-3">
+            <form onSubmit={submit} className="space-y-4">
               <div>
-                <label className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-mute">이메일</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@kodekorea.kr"
-                  className="w-full rounded-full border border-hairline bg-white px-4 py-2.5 text-sm text-ink outline-none transition focus:border-ink"
-                />
+                <label className="mb-1.5 block text-sm font-semibold text-ink">이메일</label>
+                <div className="flex items-center rounded-lg border border-hairline bg-card px-3 transition focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                  <span className="text-ash">@</span>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@kodekorea.kr"
+                    className="w-full bg-transparent px-2 py-2.5 text-sm text-ink outline-none placeholder:text-ash"
+                  />
+                </div>
               </div>
               <div>
-                <label className="mb-1 block font-mono text-[11px] uppercase tracking-wider text-mute">비밀번호</label>
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={mode === 'signup' ? '6자 이상' : '••••••••'}
-                  className="w-full rounded-full border border-hairline bg-white px-4 py-2.5 text-sm text-ink outline-none transition focus:border-ink"
-                />
+                <div className="mb-1.5 flex items-center justify-between">
+                  <label className="block text-sm font-semibold text-ink">비밀번호</label>
+                  {mode === 'login' && (
+                    <button type="button" onClick={magicLink} disabled={busy} className="text-xs font-semibold text-mint transition hover:text-mint-ink">
+                      비밀번호 없이 로그인
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center rounded-lg border border-hairline bg-card px-3 transition focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
+                  <span className="text-ash">🔒</span>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={mode === 'signup' ? '6자 이상' : '••••••••'}
+                    className="w-full bg-transparent px-2 py-2.5 text-sm text-ink outline-none placeholder:text-ash"
+                  />
+                </div>
               </div>
               <button
                 disabled={busy}
-                className="w-full rounded-full bg-brand py-2.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand py-3 text-sm font-semibold text-white shadow-raised transition hover:bg-brand-dark disabled:opacity-50"
               >
                 {busy ? '처리 중…' : mode === 'login' ? '로그인' : '가입하고 시작하기'}
+                {!busy && <span aria-hidden>→</span>}
               </button>
-              {error && <p className="text-xs text-brand-dark">{error}</p>}
+              {error && <p className="text-xs font-medium text-danger">{error}</p>}
             </form>
-          )}
-
-          {/* 보조: 매직링크 */}
-          {!notice && (
-            <div className="mt-4 border-t border-hairline pt-4 text-center">
-              <button onClick={magicLink} disabled={busy} className="text-xs text-mute transition hover:text-brand">
-                비밀번호 없이 — 매직링크로 받기
-              </button>
-            </div>
           )}
         </div>
 
-        <p className="mt-4 text-center font-mono text-[11px] text-ash">TeamHub · Supabase · Render</p>
+        <p className="mt-6 text-center text-xs text-ash">
+          {mode === 'login' ? '워크스페이스가 없으신가요? ' : '이미 계정이 있으신가요? '}
+          <button
+            onClick={() => {
+              setMode(mode === 'login' ? 'signup' : 'login')
+              setError(null)
+              setNotice(null)
+            }}
+            className="font-semibold text-brand hover:underline"
+          >
+            {mode === 'login' ? '새 워크스페이스 만들기' : '로그인'}
+          </button>
+        </p>
       </div>
     </div>
   )

@@ -425,7 +425,7 @@ function Burndown({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] }) {
         {/* 이상선 */}
         <polyline points={idealPts} fill="none" stroke="#bbbbbb" strokeDasharray="4 4" strokeWidth={2} />
         {/* 실제선 */}
-        {actualPts && <polyline points={actualPts} fill="none" stroke="#ea2804" strokeWidth={2} />}
+        {actualPts && <polyline points={actualPts} fill="none" stroke="#4a154b" strokeWidth={2} />}
         {/* 시작/끝 라벨 */}
         <text x={PAD} y={H - 8} fontSize="9" fill="#94a3b8">
           {sprint.start_date}

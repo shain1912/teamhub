@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Announcement } from '../lib/types'
 
-// 오렌지는 도장처럼 — 중요/긴급에만. 일반 공지는 잉크 다크 밴드.
+// 인디고 밴드 — 긴급만 레드. (Indigo Synthesis)
 const STYLE: Record<string, string> = {
-  normal: 'bg-ink text-white',
-  high: 'bg-brand text-white',
-  urgent: 'bg-brand-dark text-white',
+  normal: 'bg-brand text-white',
+  high: 'bg-brand-dark text-white',
+  urgent: 'bg-danger text-white',
 }
 
 // 상단 고정 공지 배너(풀블리드 밴드) — "눈에 띄게" 요구사항.

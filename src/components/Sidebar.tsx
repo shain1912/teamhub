@@ -55,11 +55,11 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
           // 폭: 모바일은 항상 w-56, 데스크탑은 접힘에 따라 w-16/w-56
           'w-56',
           collapsed ? 'md:w-16' : 'md:w-56',
-          'flex shrink-0 flex-col bg-ink text-white',
+          'flex shrink-0 flex-col bg-brand text-white',
         ].join(' ')}
       >
         <div className="flex items-center gap-2 px-4 py-5">
-          <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-brand" />
+          <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-mint" />
           <span
             className={`font-display text-xl font-bold tracking-tight text-white ${
               collapsed ? 'md:hidden' : ''
@@ -104,7 +104,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
               {({ isActive }) => (
                 <>
                   {isActive && (
-                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-brand" />
+                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-mint" />
                   )}
                   <span className="text-base">{n.icon}</span>
                   <span className={collapsed ? 'md:hidden' : ''}>{n.label}</span>
@@ -128,7 +128,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
 
         <div className="border-t border-white/10 px-4 py-3 text-xs">
           <div className={`flex items-center gap-1.5 truncate text-white/80 ${collapsed ? 'md:hidden' : ''}`}>
-            {isGuest && <span className="rounded-full bg-brand/30 px-1.5 py-0.5 text-[9px] font-semibold text-white">게스트</span>}
+            {isGuest && <span className="rounded-full bg-mint px-1.5 py-0.5 text-[9px] font-semibold text-white">게스트</span>}
             <span className="truncate">{profile?.full_name ?? profile?.email ?? '사용자'}</span>
           </div>
           <button
