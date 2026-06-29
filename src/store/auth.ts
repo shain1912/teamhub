@@ -14,6 +14,7 @@ interface AuthState {
     email: string,
     password: string,
   ) => Promise<{ error?: string; needsConfirm?: boolean }>
+  signInGoogle: () => Promise<{ error?: string }>
   signOut: () => Promise<void>
 }
 
@@ -46,6 +47,15 @@ export const useAuth = create<AuthState>((set) => ({
     const { data, error } = await supabase.auth.signUp({ email, password })
     if (error) return { error: error.message }
     return { needsConfirm: !data.session }
+  },
+
+  // 구글 OAuth (Supabase Google provider 활성화 필요)
+  signInGoogle: async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    })
+    return error ? { error: error.message } : {}
   },
 
   // 매직링크 (보조)

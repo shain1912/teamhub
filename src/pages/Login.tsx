@@ -6,21 +6,57 @@ import ThemeToggle from '../components/ThemeToggle'
 
 type Mode = 'login' | 'signup'
 
+const EMAIL_KEY = 'teamkode:email'
+
 export default function Login() {
-  const { signInPassword, signUpPassword, signIn } = useAuth()
+  const { signInPassword, signUpPassword, signIn, signInGoogle } = useAuth()
   const [mode, setMode] = useState<Mode>('login')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(() => {
+    try {
+      return localStorage.getItem(EMAIL_KEY) ?? ''
+    } catch {
+      return ''
+    }
+  })
+  const [remember, setRemember] = useState(() => {
+    try {
+      return localStorage.getItem(EMAIL_KEY) != null
+    } catch {
+      return true
+    }
+  })
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [showPw, setShowPw] = useState(false)
 
+  function persistEmail() {
+    try {
+      if (remember && email) localStorage.setItem(EMAIL_KEY, email)
+      else localStorage.removeItem(EMAIL_KEY)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function googleLogin() {
+    setBusy(true)
+    setError(null)
+    const { error } = await signInGoogle()
+    if (error) {
+      setError(translate(error))
+      setBusy(false)
+    }
+    // 성공 시 구글로 리다이렉트 → 돌아오면 onAuthStateChange 처리
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setBusy(true)
     setError(null)
     setNotice(null)
+    persistEmail()
     if (mode === 'login') {
       const { error } = await signInPassword(email, password)
       if (error) setError(translate(error))
@@ -143,6 +179,24 @@ export default function Login() {
                   </button>
                 </div>
               </div>
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-mute">
+                <input
+                  type="checkbox"
+                  checked={remember}
+                  onChange={(e) => {
+                    setRemember(e.target.checked)
+                    if (!e.target.checked) {
+                      try {
+                        localStorage.removeItem(EMAIL_KEY)
+                      } catch {
+                        /* ignore */
+                      }
+                    }
+                  }}
+                  className="accent-brand"
+                />
+                아이디(이메일) 저장
+              </label>
               <button
                 disabled={busy}
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand py-3 text-sm font-semibold text-white shadow-raised transition hover:bg-brand-dark disabled:opacity-50"
@@ -152,6 +206,28 @@ export default function Login() {
               </button>
               {error && <p className="text-xs font-medium text-danger">{error}</p>}
             </form>
+          )}
+
+          {/* 소셜 로그인 */}
+          {!notice && (
+            <>
+              <div className="my-4 flex items-center gap-3 text-[11px] text-ash">
+                <span className="h-px flex-1 bg-hairline" />또는<span className="h-px flex-1 bg-hairline" />
+              </div>
+              <button
+                onClick={googleLogin}
+                disabled={busy}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-hairline bg-card py-2.5 text-sm font-semibold text-ink transition hover:bg-bone disabled:opacity-50"
+              >
+                <svg viewBox="0 0 48 48" className="h-4 w-4" aria-hidden>
+                  <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.2 17.6 9.5 24 9.5z" />
+                  <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.1 5.4-4.6 7.1l7.1 5.5C43.3 37.6 46.1 31.7 46.1 24.6z" />
+                  <path fill="#FBBC05" d="M10.4 28.3c-.5-1.4-.8-2.9-.8-4.3s.3-3 .8-4.3l-7.8-6.1C1 16.9 0 20.3 0 24s1 7.1 2.6 10.4l7.8-6.1z" />
+                  <path fill="#34A853" d="M24 48c6.2 0 11.5-2.1 15.3-5.6l-7.1-5.5c-2 1.3-4.6 2.1-8.2 2.1-6.4 0-11.7-3.7-13.6-9.3l-7.8 6.1C6.5 42.6 14.6 48 24 48z" />
+                </svg>
+                Google로 계속하기
+              </button>
+            </>
           )}
         </div>
 
