@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, MessageCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../store/auth'
+import { getOrCreateDmChannel } from '../lib/dm'
 import type { Profile } from '../lib/types'
 import { WorkBoard } from './MyWork'
 
@@ -81,8 +83,19 @@ function PeopleList() {
 /** 팀원 상세 */
 function PersonDetail({ userId }: { userId: string }) {
   const navigate = useNavigate()
+  const me = useAuth((s) => s.profile)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+
+  async function dm() {
+    if (!me?.id || !profile) return
+    try {
+      const cid = await getOrCreateDmChannel(me.id, profile.id)
+      navigate(`/dm/${cid}`)
+    } catch (e: any) {
+      alert('DM 시작 실패: ' + (e?.message ?? e))
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -118,13 +131,21 @@ function PersonDetail({ userId }: { userId: string }) {
         <>
           <div className="mb-5 flex items-center gap-4 rounded-xl border border-hairline bg-white p-4">
             <Avatar profile={profile} size="h-14 w-14 text-lg" />
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <h1 className="truncate text-2xl font-bold text-ink">{profile.full_name ?? '(이름 없음)'}</h1>
               <div className="truncate text-sm text-mute">{profile.email ?? '-'}</div>
               <span className="mt-1 inline-block rounded-full bg-bone px-2 py-0.5 text-[11px] text-charcoal">
                 {profile.role}
               </span>
             </div>
+            {me?.id && me.role !== 'guest' && profile.id !== me.id && profile.role !== 'guest' && (
+              <button
+                onClick={dm}
+                className="flex shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white transition hover:bg-brand-dark"
+              >
+                <MessageCircle size={16} /> 메시지
+              </button>
+            )}
           </div>
 
           <WorkBoard userId={profile.id} />

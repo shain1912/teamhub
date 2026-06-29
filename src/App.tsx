@@ -6,6 +6,7 @@ import Layout from './components/Layout'
 import MyWork from './pages/MyWork'
 import People from './pages/People'
 import Channels from './pages/Channels'
+import DirectMessages from './pages/DirectMessages'
 import Announcements from './pages/Announcements'
 import Tickets from './pages/Tickets'
 import Sprints from './pages/Sprints'
@@ -39,6 +40,8 @@ export default function App() {
         <Route path="/people/:userId" element={<People />} />
         <Route path="/channels" element={<Channels />} />
         <Route path="/channels/:channelId" element={<Channels />} />
+        <Route path="/dm" element={<DirectMessages />} />
+        <Route path="/dm/:channelId" element={<DirectMessages />} />
         <Route path="/announcements" element={<Announcements />} />
         <Route path="/tickets" element={<Tickets />} />
         <Route path="/sprints" element={<Sprints />} />

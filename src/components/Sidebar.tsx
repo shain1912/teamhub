@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
-  Home, MessageSquare, Megaphone, Ticket, Rocket, BarChart3,
+  Home, MessageSquare, MessageCircle, Megaphone, Ticket, Rocket, BarChart3,
   CheckSquare, Users, Search, Clock, ChevronsLeft, ChevronsRight, X, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../store/auth'
@@ -10,6 +10,7 @@ import ClientsManager from './ClientsManager'
 const NAV = [
   { to: '/me', label: '내 작업', icon: Home },
   { to: '/channels', label: '채널', icon: MessageSquare },
+  { to: '/dm', label: '메시지', icon: MessageCircle },
   { to: '/announcements', label: '공지', icon: Megaphone },
   { to: '/tickets', label: '티켓', icon: Ticket },
   { to: '/sprints', label: '스프린트', icon: Rocket },
