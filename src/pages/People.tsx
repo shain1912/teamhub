@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { ChevronLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { Profile } from '../lib/types'
 import { WorkBoard } from './MyWork'
@@ -103,8 +104,8 @@ function PersonDetail({ userId }: { userId: string }) {
 
   return (
     <div className="h-full overflow-y-auto bg-canvas p-6">
-      <button onClick={() => navigate('/people')} className="mb-4 text-sm text-mute hover:text-brand">
-        ← 팀원 목록
+      <button onClick={() => navigate('/people')} className="mb-4 flex items-center gap-1 text-sm text-mute hover:text-brand">
+        <ChevronLeft size={16} /> 팀원 목록
       </button>
 
       {loading ? (

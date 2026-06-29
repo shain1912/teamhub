@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Search as SearchIcon, X, Hash, MessageSquare, Ticket as TicketIcon, FileText, Megaphone, type LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { Announcement, Channel, FileRow, Message, Ticket } from '../lib/types'
 
@@ -134,7 +135,7 @@ export default function Search() {
         <h1 className="mb-4 text-xl font-bold">검색</h1>
 
         <div className="relative mb-6">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ash">🔍</span>
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ash"><SearchIcon size={16} /></span>
           <input
             autoFocus
             value={q}
@@ -148,7 +149,7 @@ export default function Search() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-ash hover:text-charcoal"
               title="지우기"
             >
-              ✕
+              <X size={16} />
             </button>
           )}
         </div>
@@ -174,7 +175,7 @@ export default function Search() {
         <div className="space-y-6">
           {/* 채널 */}
           {results.channels.length > 0 && (
-            <Section title="채널" icon="💬" count={results.channels.length}>
+            <Section title="채널" icon={Hash} count={results.channels.length}>
               {results.channels.map((c) => (
                 <ResultRow key={c.id} onClick={() => navigate(`/channels/${c.id}`)}>
                   <div className="truncate font-medium text-ink"># {c.name}</div>
@@ -186,7 +187,7 @@ export default function Search() {
 
           {/* 메시지 */}
           {results.messages.length > 0 && (
-            <Section title="메시지" icon="🗨️" count={results.messages.length}>
+            <Section title="메시지" icon={MessageSquare} count={results.messages.length}>
               {results.messages.map((m) => (
                 <ResultRow key={m.id} onClick={() => navigate(`/channels/${m.channel_id}`)}>
                   <div className="line-clamp-2 whitespace-pre-wrap text-sm text-body">{m.body}</div>
@@ -200,7 +201,7 @@ export default function Search() {
 
           {/* 티켓 */}
           {results.tickets.length > 0 && (
-            <Section title="티켓" icon="🎫" count={results.tickets.length}>
+            <Section title="티켓" icon={TicketIcon} count={results.tickets.length}>
               {results.tickets.map((t) => (
                 <ResultRow key={t.id} onClick={() => navigate('/tickets')}>
                   <div className="flex items-center gap-2">
@@ -217,10 +218,13 @@ export default function Search() {
 
           {/* 파일 */}
           {results.files.length > 0 && (
-            <Section title="파일" icon="📄" count={results.files.length}>
+            <Section title="파일" icon={FileText} count={results.files.length}>
               {results.files.map((f) => (
                 <ResultRow key={f.id} onClick={() => openFile(f)}>
-                  <div className="truncate font-mono font-medium text-ink">📄 {f.name}</div>
+                  <div className="flex items-center gap-1.5 truncate font-mono font-medium text-ink">
+                    <FileText size={14} className="shrink-0" />
+                    <span className="truncate">{f.name}</span>
+                  </div>
                   <div className="font-mono text-xs text-ash">
                     {f.mime_type ?? '파일'} · {new Date(f.created_at).toLocaleString()}
                   </div>
@@ -231,7 +235,7 @@ export default function Search() {
 
           {/* 공지 */}
           {results.announcements.length > 0 && (
-            <Section title="공지" icon="📢" count={results.announcements.length}>
+            <Section title="공지" icon={Megaphone} count={results.announcements.length}>
               {results.announcements.map((a) => (
                 <ResultRow key={a.id} onClick={() => navigate('/announcements')}>
                   <div className="truncate font-medium text-ink">{a.title}</div>
@@ -248,19 +252,19 @@ export default function Search() {
 
 function Section({
   title,
-  icon,
+  icon: Icon,
   count,
   children,
 }: {
   title: string
-  icon: string
+  icon: LucideIcon
   count: number
   children: React.ReactNode
 }) {
   return (
     <section>
       <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-mute">
-        <span>{icon}</span>
+        <Icon size={15} />
         {title}
         <span className="rounded-full bg-bone px-2 py-0.5 font-mono text-xs font-normal text-ash">{count}</span>
       </h2>

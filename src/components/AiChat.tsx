@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Sparkles, X, Check, AlertTriangle, Send } from 'lucide-react'
 import { useAuth } from '../store/auth'
 import { glmChat, isGlmConfigured, type GlmMessage } from '../lib/glm'
 import { AI_TOOLS, executeAiTool, loadAiContext } from '../lib/aiTools'
@@ -102,18 +103,18 @@ export default function AiChat() {
       {/* 플로팅 버튼 */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-2xl text-white shadow-lg transition hover:bg-brand-dark"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-overlay transition hover:bg-brand-dark"
         aria-label="AI 비서 열기"
         title="AI 비서"
       >
-        {open ? '✕' : '✨'}
+        {open ? <X size={22} /> : <Sparkles size={22} />}
       </button>
 
       {/* 패널 */}
       {open && (
         <div className="fixed bottom-24 right-5 z-50 flex h-[32rem] max-h-[calc(100vh-7rem)] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-hairline bg-white shadow-2xl">
           <div className="flex items-center gap-2 border-b border-hairline px-4 py-3">
-            <span className="text-lg">✨</span>
+            <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand text-white"><Sparkles size={15} /></span>
             <div className="flex-1">
               <div className="text-sm font-bold text-ink">AI 비서</div>
               <div className="text-[11px] text-ash">티켓·스프린트·간트·체크리스트를 만들어줘요</div>
@@ -158,11 +159,12 @@ export default function AiChat() {
                     {l.actions.map((a, j) => (
                       <div
                         key={j}
-                        className={`rounded-lg px-2 py-1 text-[11px] ${
-                          a.ok ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-[11px] ${
+                          a.ok ? 'bg-mint-soft text-mint-ink' : 'bg-danger-soft text-danger-ink'
                         }`}
                       >
-                        {a.ok ? '✅' : '⚠️'} {a.summary}
+                        {a.ok ? <Check size={12} className="shrink-0" /> : <AlertTriangle size={12} className="shrink-0" />}
+                        <span>{a.summary}</span>
                       </div>
                     ))}
                   </div>
@@ -188,9 +190,10 @@ export default function AiChat() {
             />
             <button
               disabled={!isGlmConfigured || busy || !input.trim()}
-              className="shrink-0 rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:opacity-40"
+              aria-label="보내기"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand text-white transition hover:bg-brand-dark disabled:opacity-40"
             >
-              보내기
+              <Send size={16} />
             </button>
           </form>
         </div>

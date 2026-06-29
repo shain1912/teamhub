@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { Client, Channel, Project, Profile } from '../lib/types'
 
@@ -100,7 +101,7 @@ export default function ClientsManager({ onClose }: { onClose: () => void }) {
       <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-2xl border border-hairline bg-white" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-hairline px-5 py-3">
           <h3 className="font-semibold text-ink">클라이언트 / 게스트 관리</h3>
-          <button onClick={onClose} className="text-ash hover:text-ink">✕</button>
+          <button onClick={onClose} className="text-ash hover:text-ink" aria-label="닫기"><X size={18} /></button>
         </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5 text-sm">

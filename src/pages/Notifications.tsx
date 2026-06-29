@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { MessageSquare, Ticket, Clock, Megaphone, Bell, type LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type { Notification, NotificationType } from '../lib/types'
 
-const ICON: Record<NotificationType, string> = {
-  mention: '💬',
-  assignment: '🎫',
-  follow_up: '⏰',
-  system: '📣',
+const ICON: Record<NotificationType, LucideIcon> = {
+  mention: MessageSquare,
+  assignment: Ticket,
+  follow_up: Clock,
+  system: Megaphone,
 }
 
 const LABEL: Record<NotificationType, string> = {
@@ -104,7 +105,9 @@ export default function Notifications() {
                 n.is_read ? 'opacity-60' : 'border-brand/40 bg-brand/5'
               }`}
             >
-              <span className="mt-0.5 text-xl">{ICON[n.type] ?? '🔔'}</span>
+              <span className="mt-0.5 text-mute">
+                {(() => { const I = ICON[n.type] ?? Bell; return <I size={20} /> })()}
+              </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="rounded-full bg-bone px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-mute">

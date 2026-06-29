@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { X, Pencil, Zap, CalendarDays, Target, Plus } from 'lucide-react'
 import {
   parseISO,
   eachDayOfInterval,
@@ -151,8 +152,8 @@ export default function Sprints() {
       <div className="max-h-44 w-full shrink-0 overflow-y-auto border-b border-hairline bg-white p-3 lg:max-h-none lg:w-60 lg:border-b-0 lg:border-r">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-mute">스프린트</h2>
-          <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-brand hover:underline">
-            + 새 스프린트
+          <button onClick={() => setShowForm((v) => !v)} className="flex items-center gap-1 text-xs font-semibold text-brand hover:underline">
+            <Plus size={13} /> 새 스프린트
           </button>
         </div>
 
@@ -222,10 +223,10 @@ export default function Sprints() {
             </button>
             <button
               onClick={() => deleteSprint(s)}
-              className="absolute right-1.5 top-1.5 hidden text-ash hover:text-red-500 group-hover:block"
+              className="absolute right-1.5 top-1.5 hidden text-ash hover:text-danger group-hover:block"
               title="스프린트 삭제"
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
         ))}
@@ -256,9 +257,9 @@ export default function Sprints() {
               )}
               <button
                 onClick={() => (editing ? setEditing(false) : startEdit(selected))}
-                className="rounded-full border border-hairline px-2 py-1 text-xs text-mute hover:border-ink/30"
+                className="flex items-center gap-1 rounded-lg border border-hairline px-2.5 py-1.5 text-xs font-medium text-mute hover:border-ink/30"
               >
-                {editing ? '취소' : '✏️ 수정'}
+                {editing ? '취소' : <><Pencil size={12} /> 수정</>}
               </button>
             </div>
 
@@ -302,8 +303,14 @@ export default function Sprints() {
                 </button>
               </form>
             ) : (
-              selected.goal && <p className="mb-4 text-sm text-charcoal">🎯 {selected.goal}</p>
+              selected.goal && (
+                <p className="mb-4 flex items-center gap-1.5 text-sm text-charcoal">
+                  <Target size={15} className="text-brand" /> {selected.goal}
+                </p>
+              )
             )}
+
+            <SprintStats sprint={selected} tickets={sprintTickets} />
 
             <Burndown sprint={selected} tickets={sprintTickets} />
 
@@ -364,6 +371,62 @@ export default function Sprints() {
             </div>
           </>
         )}
+      </div>
+    </div>
+  )
+}
+
+// 스프린트 대시보드 — 원형 진행률 링 + stat 카드 (Stitch)
+function SprintStats({ sprint, tickets }: { sprint: Sprint; tickets: Ticket[] }) {
+  const total = tickets.reduce((s, t) => s + units(t), 0)
+  const done = tickets.reduce((s, t) => s + (isDone(t) ? units(t) : 0), 0)
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0
+
+  // 남은 일수
+  let remainingDays: number | null = null
+  if (sprint.end_date) {
+    const end = parseISO(sprint.end_date)
+    if (isValid(end)) remainingDays = Math.max(0, differenceInCalendarDays(end, new Date()))
+  }
+
+  // 링 기하
+  const R = 52
+  const C = 2 * Math.PI * R
+  const dash = (pct / 100) * C
+
+  return (
+    <div className="mb-4 grid gap-3 sm:grid-cols-3">
+      {/* 진행률 링 카드 */}
+      <div className="flex items-center justify-between rounded-xl border border-hairline bg-card p-5 shadow-raised sm:col-span-1">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wider text-mute">전체 진행률</div>
+          <div className="mt-1 text-4xl font-extrabold text-brand">{pct}%</div>
+          <div className="mt-1 text-xs text-ash">{done} / {total} 포인트 완료</div>
+        </div>
+        <div className="relative h-[120px] w-[120px] shrink-0">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r={R} fill="none" stroke="#eef0f2" strokeWidth="10" />
+            <circle
+              cx="60" cy="60" r={R} fill="none" stroke="#4a154b" strokeWidth="10" strokeLinecap="round"
+              strokeDasharray={`${dash} ${C}`} transform="rotate(-90 60 60)"
+            />
+          </svg>
+          <Zap size={26} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-brand" />
+        </div>
+      </div>
+
+      {/* 남은 일수 */}
+      <div className="rounded-xl border border-hairline bg-card p-5 shadow-raised">
+        <CalendarDays size={22} className="text-mint" />
+        <div className="mt-3 text-xs font-medium text-mute">남은 일수</div>
+        <div className="mt-0.5 text-3xl font-bold text-ink">{remainingDays != null ? remainingDays : '—'}</div>
+      </div>
+
+      {/* 작업량 */}
+      <div className="rounded-xl border border-hairline bg-card p-5 shadow-raised">
+        <Target size={22} className="text-brand" />
+        <div className="mt-3 text-xs font-medium text-mute">스프린트 작업량</div>
+        <div className="mt-0.5 text-3xl font-bold text-ink">{total}<span className="text-base font-medium text-ash"> 단위</span></div>
       </div>
     </div>
   )

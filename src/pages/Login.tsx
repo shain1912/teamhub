@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { AtSign, Lock, ArrowRight } from 'lucide-react'
 import { useAuth } from '../store/auth'
 import { isSupabaseConfigured } from '../lib/supabase'
 
@@ -96,7 +97,7 @@ export default function Login() {
               <div>
                 <label className="mb-1.5 block text-sm font-semibold text-ink">이메일</label>
                 <div className="flex items-center rounded-lg border border-hairline bg-card px-3 transition focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                  <span className="text-ash">@</span>
+                  <AtSign size={16} className="shrink-0 text-ash" />
                   <input
                     type="email"
                     required
@@ -117,7 +118,7 @@ export default function Login() {
                   )}
                 </div>
                 <div className="flex items-center rounded-lg border border-hairline bg-card px-3 transition focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
-                  <span className="text-ash">🔒</span>
+                  <Lock size={16} className="shrink-0 text-ash" />
                   <input
                     type="password"
                     required
@@ -134,7 +135,7 @@ export default function Login() {
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand py-3 text-sm font-semibold text-white shadow-raised transition hover:bg-brand-dark disabled:opacity-50"
               >
                 {busy ? '처리 중…' : mode === 'login' ? '로그인' : '가입하고 시작하기'}
-                {!busy && <span aria-hidden>→</span>}
+                {!busy && <ArrowRight size={16} />}
               </button>
               {error && <p className="text-xs font-medium text-danger">{error}</p>}
             </form>

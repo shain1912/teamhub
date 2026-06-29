@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ChevronRight, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type {
@@ -11,11 +12,11 @@ import type {
   Sprint,
 } from '../lib/types'
 
-const COLUMNS: { key: TicketStatus; label: string }[] = [
-  { key: 'open', label: '열림' },
-  { key: 'in_progress', label: '진행 중' },
-  { key: 'done', label: '완료' },
-  { key: 'closed', label: '종료' },
+const COLUMNS: { key: TicketStatus; label: string; bar: string }[] = [
+  { key: 'open', label: '열림', bar: 'bg-stone' },
+  { key: 'in_progress', label: '진행 중', bar: 'bg-mint' },
+  { key: 'done', label: '완료', bar: 'bg-brand' },
+  { key: 'closed', label: '종료', bar: 'bg-ash' },
 ]
 
 const PRIO: Record<TicketPriority, string> = {
@@ -30,6 +31,14 @@ const PRIO_LABEL: Record<TicketPriority, string> = {
   medium: '보통',
   high: '높음',
   urgent: '긴급',
+}
+
+// 우선순위 칩 — Stitch 컬러(낮음 회색·보통 블루·높음 민트·긴급 레드)
+const PRIO_CHIP: Record<TicketPriority, string> = {
+  low: 'bg-bone text-charcoal',
+  medium: 'bg-info-soft text-info-ink',
+  high: 'bg-mint-soft text-mint-ink',
+  urgent: 'bg-danger-soft text-danger-ink',
 }
 
 const TYPE_LABEL: Record<TicketType, string> = {
@@ -442,8 +451,10 @@ export default function Tickets() {
                   isDropTarget ? 'bg-brand/10 ring-2 ring-brand' : ''
                 }`}
               >
-                <div className="px-1 py-1 text-xs font-semibold text-mute">
-                  {col.label} <span className="font-mono text-ash">({list.length})</span>
+                <div className="flex items-center gap-2 px-1 py-1.5 text-xs font-bold text-ink">
+                  <span className={`h-3.5 w-1 rounded-full ${col.bar}`} />
+                  {col.label}
+                  <span className="rounded-full bg-bone px-1.5 text-[10px] font-semibold text-mute">{list.length}</span>
                 </div>
                 <div className="space-y-2 overflow-y-auto">
                   {list.map((t) => (
@@ -463,11 +474,9 @@ export default function Tickets() {
                         <span className={`px-1.5 py-0.5 text-[10px] font-semibold ${TYPE_BADGE[t.type]}`}>
                           {TYPE_LABEL[t.type]}
                         </span>
-                        {t.story_points != null && (
-                          <span className="rounded-full bg-bone px-1.5 py-0.5 font-mono text-[10px] text-mute">
-                            {t.story_points} SP
-                          </span>
-                        )}
+                        <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${PRIO_CHIP[t.priority]}`}>
+                          {PRIO_LABEL[t.priority]}
+                        </span>
                       </div>
                       <div className="mt-1 text-sm font-medium text-ink">{t.title}</div>
                       {(t.labels ?? []).length > 0 && (
@@ -487,9 +496,9 @@ export default function Tickets() {
                           <button
                             key={c.key}
                             onClick={() => move(t, c.key)}
-                            className="rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-mute hover:bg-stone/40"
+                            className="flex items-center gap-0.5 rounded-full bg-bone px-1.5 py-0.5 text-[10px] text-mute hover:bg-stone/40"
                           >
-                            → {c.label}
+                            <ChevronRight size={10} /> {c.label}
                           </button>
                         ))}
                       </div>
@@ -620,13 +629,13 @@ function DetailPanel({
         <div className="ml-auto flex items-center gap-3">
           <button
             onClick={() => onDelete(ticket)}
-            className="text-xs text-ash hover:text-red-500"
+            className="flex items-center gap-1 text-xs text-ash hover:text-danger"
             title="티켓 삭제"
           >
-            🗑 삭제
+            <Trash2 size={13} /> 삭제
           </button>
           <button onClick={onClose} className="text-ash hover:text-ink" title="닫기">
-            ✕
+            <X size={16} />
           </button>
         </div>
       </div>
@@ -771,8 +780,8 @@ function DetailPanel({
                 className="inline-flex items-center gap-1 rounded-full bg-bone px-1.5 py-0.5 text-[11px] text-charcoal"
               >
                 {l}
-                <button onClick={() => removeLabel(l)} className="text-ash hover:text-red-500" title="삭제">
-                  ✕
+                <button onClick={() => removeLabel(l)} className="text-ash hover:text-danger" title="삭제">
+                  <X size={11} />
                 </button>
               </span>
             ))}

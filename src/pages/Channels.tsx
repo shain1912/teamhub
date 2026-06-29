@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { Paperclip, SmilePlus, MessageSquare, X, FileText } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type { Channel, Message, Reaction, FileRow, Profile } from '../lib/types'
@@ -321,8 +322,8 @@ export default function Channels() {
         </div>
 
         <form onSubmit={send} className="flex items-center gap-2 border-t border-hairline bg-white p-3 pr-[4.75rem] lg:pr-3">
-          <label className="cursor-pointer rounded-full border border-hairline px-2 py-2 text-sm hover:bg-bone" title="파일 첨부">
-            📎
+          <label className="flex cursor-pointer items-center rounded-full border border-hairline px-2 py-2 text-sm text-ash hover:bg-bone" title="파일 첨부">
+            <Paperclip size={16} />
             <input type="file" multiple hidden onChange={(e) => uploadFiles(e.target.files)} />
           </label>
           <input
@@ -434,10 +435,10 @@ function MessageRow({
         <div className="relative">
           <button
             onClick={() => setPicker((v) => !v)}
-            className="rounded-full border border-hairline px-2 py-0.5 text-xs text-ash opacity-0 hover:bg-bone group-hover:opacity-100"
+            className="flex items-center rounded-full border border-hairline px-2 py-0.5 text-xs text-ash opacity-0 hover:bg-bone group-hover:opacity-100"
             title="반응 추가"
           >
-            🙂+
+            <SmilePlus size={14} />
           </button>
           {picker && (
             <div className="absolute z-10 mt-1 flex gap-1 rounded-xl border border-hairline bg-white p-1">
@@ -459,9 +460,9 @@ function MessageRow({
 
         <button
           onClick={onOpenThread}
-          className="rounded-full px-2 py-0.5 text-xs text-ash hover:text-brand"
+          className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs text-ash hover:text-brand"
         >
-          💬 답글{replyCount > 0 ? ` ${replyCount}` : ''}
+          <MessageSquare size={13} className="shrink-0" /> 답글{replyCount > 0 ? ` ${replyCount}` : ''}
         </button>
       </div>
     </div>
@@ -515,7 +516,7 @@ function ThreadPanel({
       <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
         <span className="text-sm font-semibold text-ink">스레드</span>
         <button onClick={onClose} className="rounded-full px-1.5 text-ash hover:bg-bone" aria-label="닫기">
-          ✕
+          <X size={16} />
         </button>
       </div>
 
@@ -615,8 +616,9 @@ function FileCard({ file, onOpen }: { file: FileRow; onOpen: () => void }) {
 
   return (
     <div className="rounded-xl border border-hairline bg-white p-2">
-      <button onClick={onOpen} className="block w-full truncate text-left font-mono text-sm font-medium text-body hover:text-brand" title={file.name}>
-        📄 {file.name}
+      <button onClick={onOpen} className="flex w-full items-center gap-1.5 text-left font-mono text-sm font-medium text-body hover:text-brand" title={file.name}>
+        <FileText size={14} className="shrink-0" />
+        <span className="truncate">{file.name}</span>
       </button>
       {isImage && url && (
         <button onClick={onOpen} className="mt-1 block w-full overflow-hidden rounded-xl border border-hairline">

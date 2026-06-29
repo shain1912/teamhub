@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { differenceInCalendarDays, format, addDays, max, min, parseISO } from 'date-fns'
+import { Pencil, X, Trash2, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type { Project, GanttTask, GanttDependency } from '../lib/types'
@@ -307,10 +308,10 @@ export default function Gantt() {
                   <span className="shrink-0 font-mono text-[10px] text-ash">{t.progress}%</span>
                   <button
                     onClick={() => setEditorTask(t.id)}
-                    className="shrink-0 text-[11px] text-ash hover:text-brand"
+                    className="shrink-0 text-ash hover:text-brand"
                     title="작업 수정"
                   >
-                    ✏️
+                    <Pencil size={13} />
                   </button>
                 </div>
               ))}
@@ -388,8 +389,8 @@ export default function Gantt() {
               >
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-ink">작업 수정</h3>
-                  <button onClick={() => setEditorTask(null)} className="text-ash hover:text-ink">
-                    ✕
+                  <button onClick={() => setEditorTask(null)} className="text-ash hover:text-ink" aria-label="닫기">
+                    <X size={18} />
                   </button>
                 </div>
 
@@ -467,9 +468,9 @@ export default function Gantt() {
                       const pre = taskById.get(d.depends_on_task_id)
                       return (
                         <span key={d.id} className="inline-flex items-center gap-1 rounded-full bg-bone px-2 py-0.5 text-[11px] text-mute">
-                          ← {pre?.title ?? '(삭제됨)'}
-                          <button onClick={() => removeDependency(d)} className="text-ash hover:text-red-500">
-                            ×
+                          <ArrowLeft size={11} className="shrink-0" /> {pre?.title ?? '(삭제됨)'}
+                          <button onClick={() => removeDependency(d)} className="text-ash hover:text-red-500" aria-label="의존 제거">
+                            <X size={11} />
                           </button>
                         </span>
                       )
@@ -498,9 +499,9 @@ export default function Gantt() {
                       deleteTask(t)
                       setEditorTask(null)
                     }}
-                    className="rounded-full border border-hairline px-3 py-1.5 text-xs text-red-500 hover:bg-red-50"
+                    className="flex items-center gap-1 rounded-full border border-hairline px-3 py-1.5 text-xs text-red-500 hover:bg-red-50"
                   >
-                    🗑 삭제
+                    <Trash2 size={13} /> 삭제
                   </button>
                   <button
                     onClick={() => setEditorTask(null)}

@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Bell, MessageSquare, Ticket, Clock, Megaphone, type LucideIcon } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type { Notification, NotificationType } from '../lib/types'
 
-const ICON: Record<NotificationType, string> = {
-  mention: '💬',
-  assignment: '🎫',
-  follow_up: '⏰',
-  system: '📣',
+const ICON: Record<NotificationType, LucideIcon> = {
+  mention: MessageSquare,
+  assignment: Ticket,
+  follow_up: Clock,
+  system: Megaphone,
 }
 
 export default function NotificationBell() {
@@ -77,8 +78,8 @@ export default function NotificationBell() {
   // me 가 없으면 종 아이콘만 노출
   if (!me?.id) {
     return (
-      <span className="text-xl text-ash" aria-label="알림" title="알림">
-        🔔
+      <span className="text-ash" aria-label="알림" title="알림">
+        <Bell size={20} />
       </span>
     )
   }
@@ -87,11 +88,11 @@ export default function NotificationBell() {
     <div ref={wrapRef} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-full px-1.5 py-1 text-xl hover:bg-bone"
+        className="relative grid h-9 w-9 place-items-center rounded-full text-ink hover:bg-bone"
         aria-label="알림"
         title="알림"
       >
-        🔔
+        <Bell size={20} />
         {unread > 0 && (
           <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-[1rem] place-items-center rounded-full bg-brand px-1 font-mono text-[10px] font-bold leading-none text-white">
             {unread > 99 ? '99+' : unread}
@@ -123,7 +124,9 @@ export default function NotificationBell() {
                   n.is_read ? 'opacity-60' : 'bg-brand/5'
                 }`}
               >
-                <span className="mt-0.5 text-base">{ICON[n.type] ?? '🔔'}</span>
+                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-bone text-mute">
+                  {(() => { const I = ICON[n.type] ?? Bell; return <I size={14} /> })()}
+                </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium text-ink">{n.title}</span>
                   {n.body && <span className="block truncate text-xs text-mute">{n.body}</span>}

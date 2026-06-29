@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { FileRow } from '../lib/types'
 
@@ -105,7 +106,7 @@ export default function FilePreview({ file, onClose }: { file: FileRow; onClose:
             className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium hover:bg-white/10"
             aria-label="닫기"
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
       </div>

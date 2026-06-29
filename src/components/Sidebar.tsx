@@ -1,19 +1,23 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
+import {
+  Home, MessageSquare, Megaphone, Ticket, Rocket, BarChart3,
+  CheckSquare, Users, Search, Clock, ChevronsLeft, ChevronsRight, X, LogOut,
+} from 'lucide-react'
 import { useAuth } from '../store/auth'
 import ClientsManager from './ClientsManager'
 
 const NAV = [
-  { to: '/me', label: '내 작업', icon: '🏠' },
-  { to: '/channels', label: '채널', icon: '💬' },
-  { to: '/announcements', label: '공지', icon: '📢' },
-  { to: '/tickets', label: '티켓', icon: '🎫' },
-  { to: '/sprints', label: '스프린트', icon: '🏃' },
-  { to: '/gantt', label: '간트차트', icon: '📊' },
-  { to: '/checklists', label: '체크리스트', icon: '✅' },
-  { to: '/people', label: '팀원', icon: '👥' },
-  { to: '/search', label: '검색', icon: '🔍' },
-  { to: '/audit', label: '활동', icon: '🕑' },
+  { to: '/me', label: '내 작업', icon: Home },
+  { to: '/channels', label: '채널', icon: MessageSquare },
+  { to: '/announcements', label: '공지', icon: Megaphone },
+  { to: '/tickets', label: '티켓', icon: Ticket },
+  { to: '/sprints', label: '스프린트', icon: Rocket },
+  { to: '/gantt', label: '간트차트', icon: BarChart3 },
+  { to: '/checklists', label: '체크리스트', icon: CheckSquare },
+  { to: '/people', label: '팀원', icon: Users },
+  { to: '/search', label: '검색', icon: Search },
+  { to: '/audit', label: '활동', icon: Clock },
 ]
 
 interface SidebarProps {
@@ -74,7 +78,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             title={collapsed ? '펼치기' : '접기'}
             aria-label={collapsed ? '사이드바 펼치기' : '사이드바 접기'}
           >
-            {collapsed ? '»' : '«'}
+            {collapsed ? <ChevronsRight size={16} /> : <ChevronsLeft size={16} />}
           </button>
           {/* 모바일 닫기 버튼 */}
           <button
@@ -82,7 +86,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             className="ml-auto flex h-7 w-7 items-center justify-center rounded-full text-white/50 transition hover:bg-white/10 hover:text-white md:hidden"
             aria-label="메뉴 닫기"
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
 
@@ -106,7 +110,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
                   {isActive && (
                     <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-mint" />
                   )}
-                  <span className="text-base">{n.icon}</span>
+                  <n.icon size={18} className="shrink-0" strokeWidth={isActive ? 2.4 : 1.9} />
                   <span className={collapsed ? 'md:hidden' : ''}>{n.label}</span>
                 </>
               )}
@@ -133,10 +137,10 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
           </div>
           <button
             onClick={signOut}
-            className="mt-1 text-white/45 transition hover:text-white"
+            className="mt-1 flex items-center gap-1.5 text-white/45 transition hover:text-white"
             title="로그아웃"
           >
-            {collapsed ? <span className="hidden md:inline">⎋</span> : null}
+            <LogOut size={13} className="shrink-0" />
             <span className={collapsed ? 'md:hidden' : ''}>로그아웃</span>
           </button>
         </div>

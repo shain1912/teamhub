@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Menu, Search } from 'lucide-react'
 import Sidebar from './Sidebar'
 import AnnouncementBanner from './AnnouncementBanner'
 import NotificationBell from './NotificationBell'
@@ -29,16 +30,16 @@ export default function Layout({ children }: { children: ReactNode }) {
         <header className="flex items-center gap-3 border-b border-hairline bg-canvas px-3 py-2.5 sm:px-4">
           <button
             onClick={() => setMobileOpen(true)}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline bg-white text-ink transition hover:border-ink/30 md:hidden"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-hairline bg-white text-ink transition hover:border-ink/30 md:hidden"
             aria-label="메뉴 열기"
           >
-            ☰
+            <Menu size={18} />
           </button>
           <button
             onClick={() => navigate('/search')}
-            className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-hairline bg-white px-4 py-1.5 text-left text-sm text-ash transition hover:border-ink/30 sm:max-w-md"
+            className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-hairline bg-white px-4 py-2 text-left text-sm text-ash transition hover:border-ink/30 sm:max-w-md"
           >
-            <span>🔍</span>
+            <Search size={16} className="shrink-0" />
             <span className="truncate">메시지·티켓·파일 검색…</span>
           </button>
           <div className="hidden flex-1 sm:block" />

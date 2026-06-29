@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Calendar, Clock, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import type { Checklist, ChecklistItem, Profile } from '../lib/types'
@@ -160,7 +161,7 @@ export default function Checklists() {
                     className="text-ash hover:text-red-500"
                     title="체크리스트 삭제"
                   >
-                    ✕
+                    <Trash2 size={14} />
                   </button>
                 </div>
               </div>
@@ -207,18 +208,18 @@ export default function Checklists() {
                             }`}
                             title="마감일"
                           >
-                            {i.due_date ? <span className="font-mono">{`📅 ${fmtDate(i.due_date)}`}</span> : '+ 마감일'}
+                            {i.due_date ? <span className="flex items-center gap-1 font-mono"><Calendar size={11} className="shrink-0" /> {fmtDate(i.due_date)}</span> : '+ 마감일'}
                           </button>
 
                           {i.follow_up_at ? (
                             <button
                               onClick={() => setFollowUp(i)}
-                              className={`rounded-full px-1.5 py-0.5 font-mono text-[10px] ${
+                              className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 font-mono text-[10px] ${
                                 followOverdue ? 'bg-red-100 text-red-700' : 'bg-bone text-mute'
                               }`}
                               title="팔로업"
                             >
-                              ⏰ {fmtDate(i.follow_up_at)}
+                              <Clock size={11} className="shrink-0" /> {fmtDate(i.follow_up_at)}
                             </button>
                           ) : (
                             <button onClick={() => setFollowUp(i)} className="text-[10px] text-ash hover:text-brand">
@@ -233,10 +234,10 @@ export default function Checklists() {
                       </div>
                       <button
                         onClick={() => deleteItem(i)}
-                        className="mt-0.5 text-[11px] text-ash hover:text-red-500"
+                        className="mt-0.5 text-ash hover:text-red-500"
                         title="항목 삭제"
                       >
-                        ✕
+                        <Trash2 size={12} />
                       </button>
                     </li>
                   )

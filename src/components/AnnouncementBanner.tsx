@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Megaphone, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import type { Announcement } from '../lib/types'
 
@@ -43,20 +44,21 @@ export default function AnnouncementBanner() {
   const a = visible[0]
 
   return (
-    <div className={`flex items-center gap-3 px-6 py-2 text-sm ${STYLE[a.priority] ?? STYLE.normal}`}>
-      <span className="rounded-full bg-white/20 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider">
+    <div className={`flex items-center gap-3 px-4 py-2 text-sm sm:px-6 ${STYLE[a.priority] ?? STYLE.normal}`}>
+      <Megaphone size={15} className="shrink-0 opacity-90" />
+      <span className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
         {a.priority}
       </span>
       <Link to="/announcements" className="flex-1 truncate font-medium hover:underline">
         {a.title}
       </Link>
-      {visible.length > 1 && <span className="font-mono text-xs opacity-80">+{visible.length - 1}</span>}
+      {visible.length > 1 && <span className="text-xs opacity-80">+{visible.length - 1}</span>}
       <button
         onClick={() => setDismissed((s) => new Set(s).add(a.id))}
-        className="rounded-full px-1.5 text-white/80 transition hover:bg-white/20"
+        className="rounded-full p-1 text-white/80 transition hover:bg-white/20"
         aria-label="배너 닫기"
       >
-        ✕
+        <X size={15} />
       </button>
     </div>
   )
