@@ -618,6 +618,23 @@ export default function Gantt() {
                   </select>
                 </div>
 
+                {/* 담당자 지정 */}
+                <div className="flex items-center gap-2 text-xs text-mute">
+                  <span>담당자</span>
+                  <select
+                    value={t.assignee_id ?? ''}
+                    onChange={(e) => patchTask(t, { assignee_id: e.target.value || null })}
+                    className="ml-auto rounded-lg border border-hairline px-2 py-1 text-xs"
+                  >
+                    <option value="">미배정</option>
+                    {profiles.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.full_name || p.email || p.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* 종료일 ±1일 빠른 조정 (기존 bump 핸들러 유지) */}
                 <div className="flex items-center gap-2 text-xs text-mute">
                   <span>기간 조정</span>

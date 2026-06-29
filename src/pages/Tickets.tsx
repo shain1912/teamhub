@@ -30,9 +30,9 @@ const PRIO_LABEL: Record<TicketPriority, string> = {
 // 우선순위 칩 — 아웃라인(테두리+컬러 텍스트) 스타일 (Stitch 카드 칩)
 const PRIO_OUTLINE: Record<TicketPriority, string> = {
   low: 'border-stone/60 text-mute',
-  medium: 'border-info/50 text-info',
+  medium: 'border-info/40 text-info',
   high: 'border-mint/60 text-mint-ink',
-  urgent: 'border-danger/50 text-danger',
+  urgent: 'border-danger bg-danger-soft text-danger-ink',
 }
 
 const TYPE_LABEL: Record<TicketType, string> = {

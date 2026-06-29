@@ -5,7 +5,6 @@ import Sidebar from './Sidebar'
 import AnnouncementBanner from './AnnouncementBanner'
 import NotificationBell from './NotificationBell'
 import ThemeToggle from './ThemeToggle'
-import AiChat from './AiChat'
 
 export default function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
@@ -50,7 +49,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         <AnnouncementBanner />
         <main className="min-h-0 flex-1 overflow-hidden">{children}</main>
       </div>
-      <AiChat />
     </div>
   )
 }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   Home, MessageSquare, MessageCircle, Megaphone, Ticket, Rocket, BarChart3,
-  CheckSquare, Users, Search, Clock, ChevronsLeft, ChevronsRight, X, LogOut, Sparkles,
+  CheckSquare, Users, Search, Clock, ChevronsLeft, ChevronsRight, X, LogOut,
 } from 'lucide-react'
 import { useAuth } from '../store/auth'
 import ClientsManager from './ClientsManager'
@@ -94,18 +94,6 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             <X size={16} />
           </button>
         </div>
-
-        {/* 프라이머리 CTA — AI 비서 (전역 빠른 생성) */}
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent('teamhub:open-ai'))}
-          className={`mx-3 mb-3 flex items-center justify-center gap-2 rounded-lg bg-brand py-2.5 text-sm font-bold text-white shadow-raised transition hover:bg-brand-dark dark:shadow-glow ${
-            collapsed ? 'md:px-0' : ''
-          }`}
-          title="AI 비서로 빠르게 생성"
-        >
-          <Sparkles size={16} className="shrink-0" />
-          <span className={collapsed ? 'md:hidden' : ''}>AI 비서</span>
-        </button>
 
         {/* 네비 — 활성=좌측 액센트 + 브랜드 틴트 */}
         <nav className="flex-1 space-y-5 overflow-y-auto px-2 py-1">
