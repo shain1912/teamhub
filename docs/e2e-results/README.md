@@ -92,15 +92,31 @@
 
 ## 7. 발견 사항 / 후속 과제
 
-1. **MCP 생성물의 워크스페이스 미지정** (갭)
-   서버 MCP 도구(`create_ticket`·`create_channel`·`create_project` 등)는 `workspace_id`를 안 찍어 `null`로 저장됨.
-   UI 목록은 `workspace_id = 현재` 로 필터하므로 **MCP로 만든 항목이 어느 워크스페이스에도 안 보임**.
-   → 해결안: ① MCP 도구에 `workspace`(이름/UUID) 인자 추가, 또는 ② PAT을 발급 사용자·기본 워크스페이스에 매핑해 자동 기입. (PAT→user 매핑과 함께 처리 권장)
+1. ~~**MCP 생성물의 워크스페이스 미지정** (갭)~~ → **✅ 해결됨 (A안 배포)**
+   MCP 생성 도구(`create_channel·post_announcement·create_ticket·create_project`)에 `workspace` 인자 추가 +
+   미지정 시 **기본 워크스페이스 자동 귀속**. 운영 배포 후 검증: `create_ticket` → `workspace_id=8d91c6c2…`(기본).
 
 2. **하위 엔티티 격리는 상속 의존**
    sprints/gantt/checklists는 프로젝트 목록이 워크스페이스로 필터되는 것에 의존(내부 신뢰 모델). 완전 격리는 PAT→user RLS 스코프 단계에서 강화.
 
 3. 운영 배포 필요: 이번 변경(워크스페이스 + 줄바꿈)은 **로컬 검증 완료, 아직 미배포**.
+
+---
+
+## 8. 롤(관리자/팀원/외부인) + 마이페이지 (추가)
+
+3-롤 정립: **admin(관리자) · member(팀원) · guest(외부인)**. `seongho.cho@kodekorea.kr` 만 관리자.
+
+| 항목 | 결과 |
+|------|------|
+| 워크스페이스 생성 = 관리자 전용 | ✅ RLS `workspaces_insert` = `auth_is_admin()` |
+| 자가 권한상승 차단 | ✅ 팀원이 자기 `role='admin'` 시도 → `member` 유지(트리거), 일반 수정은 허용 |
+| 마이페이지 | ✅ 이름 수정·이메일·역할 배지·소속 워크스페이스 |
+| 사이드바 관리자 배지 | ✅ |
+
+| 마이페이지(팀원) | 전환기 — 팀원(생성 잠김) | 전환기 — 관리자(생성 가능) |
+|---|---|---|
+| ![mypage](shots/10-mypage-member.png) | ![locked](shots/11-switcher-member-locked.png) | ![admin](shots/13-switcher-admin-create.png) |
 
 ---
 

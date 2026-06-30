@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, Plus, Check, X } from 'lucide-react'
+import { ChevronDown, Plus, Check, X, Lock } from 'lucide-react'
 import { useWorkspace } from '../store/workspace'
+import { useAuth } from '../store/auth'
 
 function Logo() {
   return (
@@ -19,6 +20,7 @@ function Logo() {
 
 export default function WorkspaceSwitcher({ collapsed }: { collapsed: boolean }) {
   const { list, currentId, load, setCurrent, create } = useWorkspace()
+  const isAdmin = useAuth((s) => s.profile?.role) === 'admin'
   const navigate = useNavigate()
   const ref = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
@@ -107,9 +109,13 @@ export default function WorkspaceSwitcher({ collapsed }: { collapsed: boolean })
             ))}
           </div>
 
-          {/* 새 워크스페이스 */}
+          {/* 새 워크스페이스 — 관리자만 */}
           <div className="border-t border-hairline p-2">
-            {creating ? (
+            {!isAdmin ? (
+              <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-ash">
+                <Lock size={13} /> 워크스페이스 생성은 관리자만 가능합니다
+              </div>
+            ) : creating ? (
               <div className="flex items-center gap-1.5">
                 <input
                   autoFocus

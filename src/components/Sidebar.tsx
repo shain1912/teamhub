@@ -39,6 +39,7 @@ interface SidebarProps {
 export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClose }: SidebarProps) {
   const { profile, signOut } = useAuth()
   const isGuest = profile?.role === 'guest'
+  const isAdmin = profile?.role === 'admin'
   const [invite, setInvite] = useState(false)
   const [mcpOpen, setMcpOpen] = useState(false)
 
@@ -157,21 +158,29 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
           </div>
         )}
 
-        {/* 유저 프로필 카드 */}
+        {/* 유저 프로필 카드 — 클릭 시 마이페이지 */}
         <div className="border-t border-hairline p-3">
           <div className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand/10 text-sm font-bold text-brand">
-              {inits}
-            </span>
-            <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
-              <div className="flex items-center gap-1.5">
-                <span className="truncate text-sm font-semibold text-ink">{name}</span>
-                {isGuest && <span className="rounded bg-mint px-1 py-0.5 text-[9px] font-bold text-white dark:text-canvas">게스트</span>}
-              </div>
-              <span className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-mint-ink">
-                <span className="h-1.5 w-1.5 rounded-full bg-mint" /> 온라인
+            <NavLink
+              to="/mypage"
+              onClick={onClose}
+              title="마이페이지"
+              className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-1 transition hover:bg-black/5"
+            >
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand/10 text-sm font-bold text-brand">
+                {inits}
               </span>
-            </div>
+              <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-semibold text-ink">{name}</span>
+                  {isAdmin && <span className="rounded bg-brand px-1 py-0.5 text-[9px] font-bold text-white">관리자</span>}
+                  {isGuest && <span className="rounded bg-mint px-1 py-0.5 text-[9px] font-bold text-white dark:text-canvas">외부인</span>}
+                </div>
+                <span className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-mint-ink">
+                  <span className="h-1.5 w-1.5 rounded-full bg-mint" /> 온라인
+                </span>
+              </div>
+            </NavLink>
             <button
               onClick={signOut}
               className={`shrink-0 rounded-md p-1.5 text-ash transition hover:bg-black/5 hover:text-ink ${collapsed ? 'md:hidden' : ''}`}

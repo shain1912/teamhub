@@ -15,6 +15,7 @@ import Checklists from './pages/Checklists'
 import Search from './pages/Search'
 import Notifications from './pages/Notifications'
 import Audit from './pages/Audit'
+import MyPage from './pages/MyPage'
 
 export default function App() {
   const { session, loading, init, profile } = useAuth()
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/checklists" element={<Checklists />} />
         <Route path="/search" element={<Search />} />
         <Route path="/notifications" element={<Notifications />} />
+        <Route path="/mypage" element={<MyPage />} />
         <Route path="/audit" element={<Audit />} />
         <Route path="*" element={<Navigate to={home} replace />} />
       </Routes>

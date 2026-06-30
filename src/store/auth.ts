@@ -16,6 +16,7 @@ interface AuthState {
   ) => Promise<{ error?: string; needsConfirm?: boolean }>
   signInGoogle: () => Promise<{ error?: string }>
   signOut: () => Promise<void>
+  refreshProfile: () => Promise<void>
 }
 
 export const useAuth = create<AuthState>((set) => ({
@@ -70,6 +71,10 @@ export const useAuth = create<AuthState>((set) => ({
   signOut: async () => {
     await supabase.auth.signOut()
     set({ session: null, profile: null })
+  },
+
+  refreshProfile: async () => {
+    await loadProfile(set)
   },
 }))
 
