@@ -16,6 +16,7 @@ interface WsState {
   load: () => Promise<void>
   setCurrent: (id: string) => void
   create: (name: string) => Promise<{ error?: string; id?: string }>
+  rename: (id: string, name: string) => Promise<{ error?: string }>
 }
 
 export const useWorkspace = create<WsState>((set, get) => ({
@@ -60,5 +61,14 @@ export const useWorkspace = create<WsState>((set, get) => ({
     await get().load()
     get().setCurrent(ws.id)
     return { id: ws.id }
+  },
+
+  rename: async (id, name) => {
+    const trimmed = name.trim()
+    if (!trimmed) return { error: '이름을 입력하세요.' }
+    const { error } = await supabase.from('workspaces').update({ name: trimmed }).eq('id', id)
+    if (error) return { error: error.message }
+    await get().load()
+    return {}
   },
 }))

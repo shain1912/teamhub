@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ChevronLeft, MessageCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
+import { useWorkspace } from '../store/workspace'
 import { getOrCreateDmChannel } from '../lib/dm'
 import type { Profile } from '../lib/types'
 import { WorkBoard } from './MyWork'
@@ -26,24 +27,31 @@ function Avatar({ profile, size = 'h-10 w-10 text-sm' }: { profile: Profile; siz
 /** 팀원 목록 */
 function PeopleList() {
   const navigate = useNavigate()
+  const wsId = useWorkspace((s) => s.currentId)
   const [people, setPeople] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
-    supabase
-      .from('profiles')
-      .select('*')
-      .order('full_name', { ascending: true })
-      .then(({ data }) => {
-        if (cancelled) return
-        setPeople((data as Profile[]) ?? [])
-        setLoading(false)
-      })
+    setLoading(true)
+    ;(async () => {
+      // 현재 워크스페이스 멤버만
+      const ids = wsId
+        ? (((await supabase.from('workspace_members').select('user_id').eq('workspace_id', wsId)).data as
+            | { user_id: string }[]
+            | null) ?? []).map((m) => m.user_id)
+        : []
+      const { data } = ids.length
+        ? await supabase.from('profiles').select('*').in('id', ids).order('full_name', { ascending: true })
+        : { data: [] as Profile[] }
+      if (cancelled) return
+      setPeople((data as Profile[]) ?? [])
+      setLoading(false)
+    })()
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [wsId])
 
   return (
     <div className="h-full overflow-y-auto bg-canvas p-6">

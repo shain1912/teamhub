@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Calendar, Clock, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
+import { useWorkspace } from '../store/workspace'
 import type { Checklist, ChecklistItem, Profile } from '../lib/types'
 
 function fmtDate(iso: string) {
@@ -33,13 +34,25 @@ export default function Checklists() {
     return p?.full_name || p?.email || '알 수 없음'
   }
 
+  const wsId = useWorkspace((s) => s.currentId)
+
   async function loadProfiles() {
-    const { data } = await supabase.from('profiles').select('*').order('full_name')
+    if (!wsId) {
+      setProfiles([])
+      return
+    }
+    const { data: mem } = await supabase.from('workspace_members').select('user_id').eq('workspace_id', wsId)
+    const ids = ((mem as { user_id: string }[]) ?? []).map((m) => m.user_id)
+    const { data } = ids.length
+      ? await supabase.from('profiles').select('*').in('id', ids).order('full_name')
+      : { data: [] as Profile[] }
     setProfiles((data as Profile[]) ?? [])
   }
 
   async function loadLists() {
-    const { data } = await supabase.from('checklists').select('*').order('created_at', { ascending: false })
+    let q = supabase.from('checklists').select('*').order('created_at', { ascending: false })
+    if (wsId) q = q.eq('workspace_id', wsId)
+    const { data } = await q
     const list = (data as Checklist[]) ?? []
     setLists(list)
     for (const l of list) loadItems(l.id)
@@ -57,12 +70,13 @@ export default function Checklists() {
   useEffect(() => {
     loadProfiles()
     loadLists()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsId])
 
   async function createList() {
     const title = prompt('체크리스트 제목')
     if (!title) return
-    await supabase.from('checklists').insert({ title, owner_id: myId })
+    await supabase.from('checklists').insert({ title, owner_id: myId, workspace_id: wsId })
     loadLists()
   }
 

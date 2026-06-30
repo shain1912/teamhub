@@ -366,13 +366,20 @@ server.tool(
     end_date: z.string().optional().describe('YYYY-MM-DD'),
     goal: z.string().optional(),
     status: z.enum(['planned', 'active', 'completed']).default('planned'),
+    workspace: z.string().optional().describe('워크스페이스 이름 또는 UUID(선택)'),
   },
-  async ({ name, project, start_date, end_date, goal, status }) => {
+  async ({ name, project, start_date, end_date, goal, status, workspace }) => {
     const project_id = project ? await resolveId('projects', project) : null
     if (project && !project_id) return fail(`프로젝트를 찾을 수 없음: ${project}`)
+    let workspace_id = await resolveWorkspaceId(workspace)
+    if (project_id) {
+      const { data: p } = await db.from('projects').select('workspace_id').eq('id', project_id).maybeSingle()
+      const pWs = (p as { workspace_id: string | null } | null)?.workspace_id
+      if (pWs) workspace_id = pWs
+    }
     const { data, error } = await db
       .from('sprints')
-      .insert({ name, project_id, start_date, end_date, goal, status })
+      .insert({ name, project_id, start_date, end_date, goal, status, workspace_id })
       .select()
       .single()
     return error ? fail(error.message) : ok(data)
@@ -621,11 +628,17 @@ server.tool('list_checklists', '체크리스트와 항목을 함께 반환한다
 
 server.tool(
   'create_checklist',
-  '체크리스트를 생성한다. project/ticket 연동은 선택.',
-  { title: z.string(), project: z.string().optional(), ticket_id: z.string().optional() },
-  async ({ title, project, ticket_id }) => {
+  '체크리스트를 생성한다. project/ticket 연동은 선택. workspace 미지정 시 기본 워크스페이스.',
+  { title: z.string(), project: z.string().optional(), ticket_id: z.string().optional(), workspace: z.string().optional().describe('워크스페이스 이름 또는 UUID(선택)') },
+  async ({ title, project, ticket_id, workspace }) => {
     const project_id = project ? await resolveId('projects', project) : null
-    const { data, error } = await db.from('checklists').insert({ title, project_id, ticket_id }).select().single()
+    let workspace_id = await resolveWorkspaceId(workspace)
+    if (project_id) {
+      const { data: p } = await db.from('projects').select('workspace_id').eq('id', project_id).maybeSingle()
+      const pWs = (p as { workspace_id: string | null } | null)?.workspace_id
+      if (pWs) workspace_id = pWs
+    }
+    const { data, error } = await db.from('checklists').insert({ title, project_id, ticket_id, workspace_id }).select().single()
     return error ? fail(error.message) : ok(data)
   },
 )

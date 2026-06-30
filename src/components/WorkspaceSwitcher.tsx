@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronDown, Plus, Check, X, Lock } from 'lucide-react'
+import { ChevronDown, Plus, Check, X, Lock, Settings } from 'lucide-react'
 import { useWorkspace } from '../store/workspace'
 import { useAuth } from '../store/auth'
+import WorkspaceSettings from './WorkspaceSettings'
 
 function Logo() {
   return (
@@ -27,6 +28,7 @@ export default function WorkspaceSwitcher({ collapsed }: { collapsed: boolean })
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   useEffect(() => {
     load()
@@ -109,6 +111,21 @@ export default function WorkspaceSwitcher({ collapsed }: { collapsed: boolean })
             ))}
           </div>
 
+          {/* 현재 워크스페이스 설정 — 관리자만 */}
+          {isAdmin && currentId && (
+            <div className="border-t border-hairline p-2">
+              <button
+                onClick={() => {
+                  setSettingsOpen(true)
+                  setOpen(false)
+                }}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-mute transition hover:bg-black/5 hover:text-ink"
+              >
+                <Settings size={15} /> 현재 워크스페이스 설정 (이름·멤버)
+              </button>
+            </div>
+          )}
+
           {/* 새 워크스페이스 — 관리자만 */}
           <div className="border-t border-hairline p-2">
             {!isAdmin ? (
@@ -146,6 +163,10 @@ export default function WorkspaceSwitcher({ collapsed }: { collapsed: boolean })
             )}
           </div>
         </div>
+      )}
+
+      {settingsOpen && currentId && (
+        <WorkspaceSettings workspaceId={currentId} onClose={() => setSettingsOpen(false)} />
       )}
     </div>
   )

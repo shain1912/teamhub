@@ -14,6 +14,7 @@ import {
 import { parseISO, differenceInCalendarDays, isValid } from 'date-fns'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
+import { useWorkspace } from '../store/workspace'
 import type { Sprint, Ticket, Project, Profile } from '../lib/types'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -112,24 +113,37 @@ export default function Sprints() {
     status: 'planned' as Sprint['status'],
   })
 
+  const wsId = useWorkspace((s) => s.currentId)
+
   async function loadAll() {
-    const [{ data: pj }, { data: sp }, { data: tk }, { data: pr }] = await Promise.all([
-      supabase.from('projects').select('*').order('created_at'),
-      supabase.from('sprints').select('*').order('created_at', { ascending: false }),
-      supabase.from('tickets').select('*').order('created_at', { ascending: false }),
-      supabase.from('profiles').select('*'),
-    ])
+    let pjQ = supabase.from('projects').select('*').order('created_at')
+    let spQ = supabase.from('sprints').select('*').order('created_at', { ascending: false })
+    let tkQ = supabase.from('tickets').select('*').order('created_at', { ascending: false })
+    if (wsId) {
+      pjQ = pjQ.eq('workspace_id', wsId)
+      spQ = spQ.eq('workspace_id', wsId)
+      tkQ = tkQ.eq('workspace_id', wsId)
+    }
+    const memQ = wsId
+      ? supabase.from('workspace_members').select('user_id').eq('workspace_id', wsId)
+      : Promise.resolve({ data: [] as { user_id: string }[] })
+    const [{ data: pj }, { data: sp }, { data: tk }, mem] = await Promise.all([pjQ, spQ, tkQ, memQ])
+    const memberIds = ((mem.data as { user_id: string }[]) ?? []).map((m) => m.user_id)
+    const { data: pr } = memberIds.length
+      ? await supabase.from('profiles').select('*').in('id', memberIds)
+      : { data: [] as Profile[] }
     setProjects((pj as Project[]) ?? [])
     const sprintList = (sp as Sprint[]) ?? []
     setSprints(sprintList)
     setTickets((tk as Ticket[]) ?? [])
     setProfiles((pr as Profile[]) ?? [])
-    setSelectedId((cur) => cur || sprintList[0]?.id || '')
+    setSelectedId((cur) => (sprintList.some((s) => s.id === cur) ? cur : sprintList[0]?.id || ''))
   }
 
   useEffect(() => {
     loadAll()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsId])
 
   async function createSprint(e: React.FormEvent) {
     e.preventDefault()
@@ -140,6 +154,7 @@ export default function Sprints() {
       end_date: form.end_date || null,
       goal: form.goal || null,
       status: form.status,
+      workspace_id: wsId,
     }
     const { data } = await supabase.from('sprints').insert(payload).select().single()
     setShowForm(false)
