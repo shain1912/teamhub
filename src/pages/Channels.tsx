@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Paperclip, SmilePlus, MessageSquare, X, FileText } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
+import { useWorkspace } from '../store/workspace'
 import type { Channel, Message, Reaction, FileRow, Profile } from '../lib/types'
 import FilePreview from '../components/FilePreview'
 
@@ -12,6 +13,7 @@ export default function Channels() {
   const { channelId } = useParams()
   const navigate = useNavigate()
   const me = useAuth((s) => s.profile)
+  const wsId = useWorkspace((s) => s.currentId)
   const [channels, setChannels] = useState<Channel[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [reactions, setReactions] = useState<Reaction[]>([])
@@ -22,6 +24,14 @@ export default function Channels() {
   const [thread, setThread] = useState<Message | null>(null)
   const [preview, setPreview] = useState<FileRow | null>(null)
   const endRef = useRef<HTMLDivElement>(null)
+  const taRef = useRef<HTMLTextAreaElement>(null)
+
+  function autoGrow() {
+    const el = taRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px'
+  }
 
   // id -> Profile 맵 (멘션 해석 및 표시용)
   const profileMap = useMemo(() => {
@@ -38,18 +48,20 @@ export default function Channels() {
       .then(({ data }) => setProfiles((data as Profile[]) ?? []))
   }, [])
 
-  // 채널 목록
+  // 채널 목록 (현재 워크스페이스로 한정)
   useEffect(() => {
-    supabase
-      .from('channels')
-      .select('*')
-      .order('created_at')
-      .then(({ data }) => {
-        const list = (data as Channel[]) ?? []
-        setChannels(list)
-        if (!channelId && list[0]) navigate(`/channels/${list[0].id}`, { replace: true })
-      })
-  }, [])
+    let q = supabase.from('channels').select('*').order('created_at')
+    if (wsId) q = q.eq('workspace_id', wsId)
+    q.then(({ data }) => {
+      const list = (data as Channel[]) ?? []
+      setChannels(list)
+      // 선택된 채널이 이 워크스페이스에 없으면 첫 채널로 이동
+      if ((!channelId || !list.some((c) => c.id === channelId)) && list[0]) {
+        navigate(`/channels/${list[0].id}`, { replace: true })
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsId])
 
   // 선택 채널의 메시지 + 파일 + 반응 + 실시간 구독 + 읽음 기록
   useEffect(() => {
@@ -167,11 +179,12 @@ export default function Channels() {
     await supabase.from('notifications').insert(rows)
   }
 
-  async function send(e: React.FormEvent) {
+  async function send(e: React.FormEvent | React.KeyboardEvent) {
     e.preventDefault()
     if (!body.trim() || !channelId) return
     const text = body
     setBody('')
+    requestAnimationFrame(autoGrow)
     const { data } = await supabase
       .from('messages')
       .insert({ channel_id: channelId, user_id: me?.id, body: text })
@@ -180,12 +193,19 @@ export default function Channels() {
     await notifyMentions(text, (data as { id: string } | null)?.id ?? null)
   }
 
+  function onComposerKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault()
+      send(e)
+    }
+  }
+
   async function createChannel() {
     const name = prompt('새 채널 이름')
     if (!name) return
     const { data } = await supabase
       .from('channels')
-      .insert({ name, created_by: me?.id })
+      .insert({ name, created_by: me?.id, workspace_id: wsId })
       .select()
       .single()
     if (data) navigate(`/channels/${(data as Channel).id}`)
@@ -321,16 +341,22 @@ export default function Channels() {
           <div ref={endRef} />
         </div>
 
-        <form onSubmit={send} className="flex items-center gap-2 border-t border-hairline bg-card p-3 pr-[4.75rem] lg:pr-3">
+        <form onSubmit={send} className="flex items-end gap-2 border-t border-hairline bg-card p-3 pr-[4.75rem] lg:pr-3">
           <label className="flex cursor-pointer items-center rounded-full border border-hairline px-2 py-2 text-sm text-ash hover:bg-bone" title="파일 첨부">
             <Paperclip size={16} />
             <input type="file" multiple hidden onChange={(e) => uploadFiles(e.target.files)} />
           </label>
-          <input
+          <textarea
+            ref={taRef}
             value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder={`#${current?.name ?? ''} 에 메시지 (@이름 으로 멘션)`}
-            className="flex-1 rounded-lg border border-hairline px-3 py-2 text-sm outline-none focus:border-brand"
+            onChange={(e) => {
+              setBody(e.target.value)
+              autoGrow()
+            }}
+            onKeyDown={onComposerKey}
+            rows={1}
+            placeholder={`#${current?.name ?? ''} 에 메시지 (@이름 멘션 · Enter 전송, Shift+Enter 줄바꿈)`}
+            className="flex-1 resize-none rounded-lg border border-hairline px-3 py-2 text-sm leading-relaxed outline-none focus:border-brand"
           />
           <button className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
             전송
@@ -497,12 +523,21 @@ function ThreadPanel({
 }) {
   const [reply, setReply] = useState('')
   const replies = messages.filter((m) => m.parent_id === parent.id)
+  const replyRef = useRef<HTMLTextAreaElement>(null)
 
-  async function sendReply(e: React.FormEvent) {
+  function growReply() {
+    const el = replyRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 140) + 'px'
+  }
+
+  async function sendReply(e: React.FormEvent | React.KeyboardEvent) {
     e.preventDefault()
     if (!reply.trim() || !channelId) return
     const text = reply
     setReply('')
+    requestAnimationFrame(growReply)
     const { data } = await supabase
       .from('messages')
       .insert({ channel_id: channelId, user_id: myId, body: text, parent_id: parent.id })
@@ -577,12 +612,23 @@ function ThreadPanel({
         {replies.length === 0 && <p className="text-xs text-ash">아직 답글이 없습니다.</p>}
       </div>
 
-      <form onSubmit={sendReply} className="flex items-center gap-2 border-t border-hairline p-2">
-        <input
+      <form onSubmit={sendReply} className="flex items-end gap-2 border-t border-hairline p-2">
+        <textarea
+          ref={replyRef}
           value={reply}
-          onChange={(e) => setReply(e.target.value)}
-          placeholder="답글 입력 (@이름 으로 멘션)"
-          className="flex-1 rounded-lg border border-hairline px-3 py-2 text-sm outline-none focus:border-brand"
+          onChange={(e) => {
+            setReply(e.target.value)
+            growReply()
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+              e.preventDefault()
+              sendReply(e)
+            }
+          }}
+          rows={1}
+          placeholder="답글 입력 (@이름 멘션 · Enter 전송, Shift+Enter 줄바꿈)"
+          className="flex-1 resize-none rounded-lg border border-hairline px-3 py-2 text-sm leading-relaxed outline-none focus:border-brand"
         />
         <button className="rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-dark">
           답글

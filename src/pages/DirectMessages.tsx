@@ -29,6 +29,15 @@ export default function DirectMessages() {
   const [messages, setMessages] = useState<Message[]>([])
   const [body, setBody] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
+  const taRef = useRef<HTMLTextAreaElement>(null)
+
+  // textarea 높이 자동확장 (최대 ~6줄)
+  function autoGrow() {
+    const el = taRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px'
+  }
 
   // 게스트는 DM 사용 불가 (RLS로도 막히지만 UX상 홈으로)
   useEffect(() => {
@@ -147,11 +156,12 @@ export default function DirectMessages() {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function send(e: React.FormEvent) {
+  async function send(e: React.FormEvent | React.KeyboardEvent) {
     e.preventDefault()
     const text = body.trim()
     if (!text || !channelId || !me?.id) return
     setBody('')
+    requestAnimationFrame(autoGrow) // 높이 리셋
     const { error } = await supabase.from('messages').insert({ channel_id: channelId, user_id: me.id, body: text })
     if (error) {
       setBody(text) // 실패 시 입력 복원
@@ -159,6 +169,14 @@ export default function DirectMessages() {
       return
     }
     loadMessages()
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    // Enter=전송, Shift+Enter=줄바꿈. IME 조합 중(한글)에는 무시.
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault()
+      send(e)
+    }
   }
 
   async function startDm(otherId: string) {
@@ -253,12 +271,18 @@ export default function DirectMessages() {
               <div ref={endRef} />
             </div>
 
-            <form onSubmit={send} className="flex items-center gap-2 border-t border-hairline bg-card p-3">
-              <input
+            <form onSubmit={send} className="flex items-end gap-2 border-t border-hairline bg-card p-3">
+              <textarea
+                ref={taRef}
                 value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="메시지 입력…"
-                className="min-w-0 flex-1 rounded-lg border border-hairline px-3 py-2 text-sm outline-none focus:border-brand"
+                onChange={(e) => {
+                  setBody(e.target.value)
+                  autoGrow()
+                }}
+                onKeyDown={onKeyDown}
+                rows={1}
+                placeholder="메시지 입력…  (Enter 전송, Shift+Enter 줄바꿈)"
+                className="min-w-0 flex-1 resize-none rounded-lg border border-hairline px-3 py-2 text-sm leading-relaxed outline-none focus:border-brand"
               />
               <button
                 disabled={!body.trim()}

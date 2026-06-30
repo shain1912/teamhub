@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, ChevronRight, Link2, ListTree, Plus, Tag, Trash2, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
+import { useWorkspace } from '../store/workspace'
 import type {
   Ticket,
   TicketComment,
@@ -131,8 +132,12 @@ export default function Tickets() {
     return m
   }, [profiles])
 
+  const wsId = useWorkspace((s) => s.currentId)
+
   async function loadTickets() {
-    const { data } = await supabase.from('tickets').select('*').order('created_at', { ascending: false })
+    let q = supabase.from('tickets').select('*').order('created_at', { ascending: false })
+    if (wsId) q = q.eq('workspace_id', wsId)
+    const { data } = await q
     setTickets((data as Ticket[]) ?? [])
   }
 
@@ -157,7 +162,8 @@ export default function Tickets() {
     return () => {
       supabase.removeChannel(ch)
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsId])
 
   async function create(e: React.FormEvent) {
     e.preventDefault()
@@ -174,6 +180,7 @@ export default function Tickets() {
       sprint_id: form.sprint_id || null,
       parent_ticket_id: form.parent_ticket_id || null,
       reporter_id: me?.id ?? null,
+      workspace_id: wsId,
     })
     setForm(EMPTY_FORM)
     setOpen(false)

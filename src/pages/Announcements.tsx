@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
+import { useWorkspace } from '../store/workspace'
 import type { Announcement, Priority } from '../lib/types'
 
 // 우선순위별 비주얼 — Stitch faithful: 좌측 액센트 바 + 아웃라인 칩 + 흐린 큰 아이콘
@@ -80,12 +81,16 @@ export default function Announcements() {
   const [page, setPage] = useState(1)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
 
+  const wsId = useWorkspace((s) => s.currentId)
+
   async function load() {
-    const { data } = await supabase
+    let q = supabase
       .from('announcements')
       .select('*')
       .order('pinned', { ascending: false })
       .order('published_at', { ascending: false })
+    if (wsId) q = q.eq('workspace_id', wsId)
+    const { data } = await q
     const list = (data as Announcement[]) ?? []
     setItems(list)
     // 작성자 표시명/아바타 로드
@@ -102,7 +107,8 @@ export default function Announcements() {
 
   useEffect(() => {
     load()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsId])
 
   // 필터/검색이 바뀌면 1페이지로
   useEffect(() => {
@@ -111,7 +117,7 @@ export default function Announcements() {
 
   async function create(e: React.FormEvent) {
     e.preventDefault()
-    await supabase.from('announcements').insert({ ...form, author_id: profile?.id })
+    await supabase.from('announcements').insert({ ...form, author_id: profile?.id, workspace_id: wsId })
     setForm({ title: '', body: '', priority: 'normal', pinned: true })
     setOpen(false)
     load()

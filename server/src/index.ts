@@ -64,6 +64,33 @@ async function profileIdByEmail(email?: string): Promise<string | null> {
   return (data as { id: string } | null)?.id ?? null
 }
 
+/** 기본(가장 오래된) 워크스페이스 id — 프로세스 내 캐시. */
+let _defaultWsId: string | null | undefined
+async function defaultWorkspaceId(): Promise<string | null> {
+  if (_defaultWsId !== undefined) return _defaultWsId
+  const { data } = await db
+    .from('workspaces')
+    .select('id')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle()
+  _defaultWsId = (data as { id: string } | null)?.id ?? null
+  return _defaultWsId
+}
+
+/**
+ * workspace(이름 또는 UUID)를 workspace_id 로 해석한다.
+ * 미지정 시 기본 워크스페이스로 귀속해 MCP 생성물이 UI에서 보이도록 한다.
+ */
+async function resolveWorkspaceId(ref?: string): Promise<string | null> {
+  if (ref) {
+    if (UUID.test(ref)) return ref
+    const { data } = await db.from('workspaces').select('id').eq('name', ref).limit(1).maybeSingle()
+    if (data) return (data as { id: string }).id
+  }
+  return defaultWorkspaceId()
+}
+
 /**
  * 도구를 모두 등록한 새 McpServer 인스턴스를 만든다.
  * HTTP(무상태) 모드에선 요청마다 새 인스턴스를 생성하므로 팩토리로 감쌌다.
@@ -79,10 +106,11 @@ server.tool('list_channels', '모든 채널 목록을 반환한다.', {}, async 
 
 server.tool(
   'create_channel',
-  '새 채널을 생성한다.',
-  { name: z.string(), description: z.string().optional() },
-  async ({ name, description }) => {
-    const { data, error } = await db.from('channels').insert({ name, description }).select().single()
+  '새 채널을 생성한다. workspace 미지정 시 기본 워크스페이스에 생성된다.',
+  { name: z.string(), description: z.string().optional(), workspace: z.string().optional().describe('워크스페이스 이름 또는 UUID(선택)') },
+  async ({ name, description, workspace }) => {
+    const workspace_id = await resolveWorkspaceId(workspace)
+    const { data, error } = await db.from('channels').insert({ name, description, workspace_id }).select().single()
     return error ? fail(error.message) : ok(data)
   },
 )
@@ -145,12 +173,14 @@ server.tool(
     pinned: z.boolean().default(true),
     expires_at: z.string().optional().describe('ISO 8601 만료 시각 (선택)'),
     actor_email: z.string().optional(),
+    workspace: z.string().optional().describe('워크스페이스 이름 또는 UUID(선택)'),
   },
-  async ({ title, body, priority, pinned, expires_at, actor_email }) => {
+  async ({ title, body, priority, pinned, expires_at, actor_email, workspace }) => {
     const author_id = await profileIdByEmail(actor_email)
+    const workspace_id = await resolveWorkspaceId(workspace)
     const { data, error } = await db
       .from('announcements')
-      .insert({ title, body, priority, pinned, expires_at, author_id })
+      .insert({ title, body, priority, pinned, expires_at, author_id, workspace_id })
       .select()
       .single()
     return error ? fail(error.message) : ok(data)
@@ -186,14 +216,22 @@ server.tool(
     reporter_email: z.string().optional(),
     due_date: z.string().optional().describe('YYYY-MM-DD'),
     channel: z.string().optional().describe('연동 채널 이름 또는 UUID'),
+    workspace: z.string().optional().describe('워크스페이스 이름 또는 UUID(선택)'),
   },
-  async ({ title, description, priority, assignee_email, reporter_email, due_date, channel }) => {
+  async ({ title, description, priority, assignee_email, reporter_email, due_date, channel, workspace }) => {
     const assignee_id = await profileIdByEmail(assignee_email)
     const reporter_id = await profileIdByEmail(reporter_email)
     const channel_id = channel ? await resolveId('channels', channel) : null
+    // 채널이 있으면 그 채널의 워크스페이스를 따르고, 아니면 workspace 인자/기본값
+    let workspace_id = await resolveWorkspaceId(workspace)
+    if (channel_id) {
+      const { data: ch } = await db.from('channels').select('workspace_id').eq('id', channel_id).maybeSingle()
+      const chWs = (ch as { workspace_id: string | null } | null)?.workspace_id
+      if (chWs) workspace_id = chWs
+    }
     const { data, error } = await db
       .from('tickets')
-      .insert({ title, description, priority, assignee_id, reporter_id, due_date, channel_id })
+      .insert({ title, description, priority, assignee_id, reporter_id, due_date, channel_id, workspace_id })
       .select()
       .single()
     return error ? fail(error.message) : ok(data)
@@ -510,17 +548,19 @@ server.tool('list_projects', '프로젝트 목록을 반환한다.', {}, async (
 
 server.tool(
   'create_project',
-  '간트 프로젝트를 생성한다.',
+  '간트 프로젝트를 생성한다. workspace 미지정 시 기본 워크스페이스에 생성된다.',
   {
     name: z.string(),
     description: z.string().optional(),
     start_date: z.string().optional(),
     end_date: z.string().optional(),
+    workspace: z.string().optional().describe('워크스페이스 이름 또는 UUID(선택)'),
   },
-  async ({ name, description, start_date, end_date }) => {
+  async ({ name, description, start_date, end_date, workspace }) => {
+    const workspace_id = await resolveWorkspaceId(workspace)
     const { data, error } = await db
       .from('projects')
-      .insert({ name, description, start_date, end_date })
+      .insert({ name, description, start_date, end_date, workspace_id })
       .select()
       .single()
     return error ? fail(error.message) : ok(data)

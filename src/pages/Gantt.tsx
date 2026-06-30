@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
+import { useWorkspace } from '../store/workspace'
 import type { Project, GanttTask, GanttDependency, Profile } from '../lib/types'
 
 // ── 타임라인 기하 (Stitch 비율: 넉넉한 행/열) ──
@@ -33,18 +34,19 @@ export default function Gantt() {
   const [deps, setDeps] = useState<GanttDependency[]>([])
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [editorTask, setEditorTask] = useState<string | null>(null) // 편집 모달 대상 작업 id
+  const wsId = useWorkspace((s) => s.currentId)
 
   useEffect(() => {
-    supabase
-      .from('projects')
-      .select('*')
-      .order('created_at')
-      .then(({ data }) => {
-        const list = (data as Project[]) ?? []
-        setProjects(list)
-        if (list[0]) setProjectId((p) => p || list[0].id)
-      })
-  }, [])
+    let q = supabase.from('projects').select('*').order('created_at')
+    if (wsId) q = q.eq('workspace_id', wsId)
+    q.then(({ data }) => {
+      const list = (data as Project[]) ?? []
+      setProjects(list)
+      // 워크스페이스 전환 시 다른 워크스페이스 프로젝트가 선택돼 있으면 첫 항목으로
+      setProjectId((p) => (list.some((x) => x.id === p) ? p : list[0]?.id ?? ''))
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsId])
 
   // 담당자 아바타/역할 표시용 프로필 (읽기 전용, 데이터 보존엔 영향 없음)
   useEffect(() => {
@@ -99,7 +101,7 @@ export default function Gantt() {
   async function createProject() {
     const name = prompt('새 프로젝트 이름')
     if (!name) return
-    const { data } = await supabase.from('projects').insert({ name, owner_id: profile?.id }).select().single()
+    const { data } = await supabase.from('projects').insert({ name, owner_id: profile?.id, workspace_id: wsId }).select().single()
     if (data) {
       setProjects((p) => [...p, data as Project])
       setProjectId((data as Project).id)

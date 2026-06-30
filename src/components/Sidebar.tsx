@@ -7,6 +7,7 @@ import {
 import { useAuth } from '../store/auth'
 import ClientsManager from './ClientsManager'
 import McpConnect from './McpConnect'
+import WorkspaceSwitcher from './WorkspaceSwitcher'
 
 type Item = { to: string; label: string; icon: typeof Home }
 
@@ -66,21 +67,27 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
           'flex shrink-0 flex-col border-r border-hairline bg-bone text-ink',
         ].join(' ')}
       >
-        {/* 워크스페이스 카드 */}
-        <div className="flex items-center gap-2.5 px-3 py-4">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand text-white shadow-raised">
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <circle cx="12" cy="5" r="2" />
-              <circle cx="5" cy="16" r="2" />
-              <circle cx="19" cy="16" r="2" />
-              <circle cx="12" cy="13" r="2.2" fill="currentColor" stroke="none" />
-              <path d="M12 7.4 12 10.6M10 11.8 6.2 14.6M14 11.8l3.8 2.8" />
-            </svg>
-          </span>
-          <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
-            <div className="truncate font-display text-base font-bold leading-tight text-ink">TeamKode</div>
-            <div className="truncate font-mono text-[10px] uppercase tracking-wider text-ash">워크스페이스</div>
-          </div>
+        {/* 워크스페이스 전환기 */}
+        <div className="flex items-center gap-1 px-3 py-4">
+          {isGuest ? (
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand text-white shadow-raised">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="12" cy="5" r="2" />
+                  <circle cx="5" cy="16" r="2" />
+                  <circle cx="19" cy="16" r="2" />
+                  <circle cx="12" cy="13" r="2.2" fill="currentColor" stroke="none" />
+                  <path d="M12 7.4 12 10.6M10 11.8 6.2 14.6M14 11.8l3.8 2.8" />
+                </svg>
+              </span>
+              <div className={`min-w-0 flex-1 ${collapsed ? 'md:hidden' : ''}`}>
+                <div className="truncate font-display text-base font-bold leading-tight text-ink">TeamKode</div>
+                <div className="truncate font-mono text-[10px] uppercase tracking-wider text-ash">게스트</div>
+              </div>
+            </div>
+          ) : (
+            <WorkspaceSwitcher collapsed={collapsed} />
+          )}
           <button
             onClick={onToggleCollapse}
             className="hidden h-7 w-7 items-center justify-center rounded-md text-mute transition hover:bg-black/5 hover:text-ink md:flex"
