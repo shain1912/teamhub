@@ -120,6 +120,25 @@
 
 ---
 
+## 9. DB 복구(휴지통) (추가)
+
+모든 삭제 행을 트리거로 `deleted_records` 에 자동 보관 → 관리자가 복원. UI/MCP/연쇄삭제 어떤 경로든 포착.
+
+| 항목 | 결과 |
+|------|------|
+| 삭제 자동 보관 | ✅ 티켓 삭제 → `deleted_records`에 제목 포함 보관 |
+| 관리자 복원 | ✅ `restore_deleted_record` → 원본 테이블 재삽입 + 아카이브 제거 |
+| 팀원 복원 거부 | ✅ `관리자만 복구할 수 있습니다` |
+| 휴지통 UI | ✅ 타입 필터·복구 버튼 (관리자 전용 메뉴) |
+
+| 휴지통 목록 (삭제 4건) | 1건 복구 후 (3건) |
+|---|---|
+| ![trash](shots/14-trash-list.png) | ![restored](shots/15-trash-after-restore.png) |
+
+> 보관 대상: workspaces·channels·messages·files·announcements·tickets·ticket_comments·projects·gantt_tasks·sprints·checklists·checklist_items·reactions. 상위가 함께 삭제된 경우 상위 먼저 복구.
+
+---
+
 ## 부록 — 재현 방법
 
 ```bash

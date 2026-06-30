@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   Home, MessageSquare, MessageCircle, Megaphone, Ticket, Rocket, BarChart3,
-  CheckSquare, Users, Search, Clock, ChevronsLeft, ChevronsRight, X, LogOut,
+  CheckSquare, Users, Search, Clock, ChevronsLeft, ChevronsRight, X, LogOut, Trash2,
 } from 'lucide-react'
 import { useAuth } from '../store/auth'
 import ClientsManager from './ClientsManager'
@@ -43,12 +43,13 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
   const [invite, setInvite] = useState(false)
   const [mcpOpen, setMcpOpen] = useState(false)
 
+  const etcItems: Item[] = isAdmin ? [...ETC, { to: '/trash', label: '휴지통', icon: Trash2 }] : ETC
   const groups: { label: string; items: Item[] }[] = isGuest
     ? [{ label: '메뉴', items: [...COMM.filter((n) => n.to === '/channels'), ...MAIN.filter((n) => n.to === '/tickets')] }]
     : [
         { label: '메인', items: MAIN },
         { label: '커뮤니케이션', items: COMM },
-        { label: '기타', items: ETC },
+        { label: '기타', items: etcItems },
       ]
 
   const name = profile?.full_name ?? profile?.email ?? '사용자'

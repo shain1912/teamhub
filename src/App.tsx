@@ -16,6 +16,7 @@ import Search from './pages/Search'
 import Notifications from './pages/Notifications'
 import Audit from './pages/Audit'
 import MyPage from './pages/MyPage'
+import Trash from './pages/Trash'
 
 export default function App() {
   const { session, loading, init, profile } = useAuth()
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/mypage" element={<MyPage />} />
+        <Route path="/trash" element={<Trash />} />
         <Route path="/audit" element={<Audit />} />
         <Route path="*" element={<Navigate to={home} replace />} />
       </Routes>
