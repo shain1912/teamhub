@@ -8,6 +8,7 @@ import { useAuth } from '../store/auth'
 import ClientsManager from './ClientsManager'
 import McpConnect from './McpConnect'
 import WorkspaceSwitcher from './WorkspaceSwitcher'
+import InstallAppButton from './InstallAppButton'
 
 type Item = { to: string; label: string; icon: typeof Home }
 
@@ -139,6 +140,9 @@ export default function Sidebar({ collapsed, onToggleCollapse, mobileOpen, onClo
             </div>
           ))}
         </nav>
+
+        {/* 앱 설치 (설치 가능할 때만 노출) */}
+        <InstallAppButton collapsed={collapsed} />
 
         {!isGuest && (
           <div className={`mx-3 mb-2 flex gap-2 ${collapsed ? 'md:hidden' : ''}`}>
