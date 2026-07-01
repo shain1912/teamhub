@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Check, UserPlus, UserMinus, Pencil, Users, Link2, Mail, Copy, Ban } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
@@ -212,7 +213,9 @@ export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceI
   const memberIds = new Set(members.map((m) => m.user_id))
   const candidates = allProfiles.filter((p) => !memberIds.has(p.id))
 
-  return (
+  // Portal to document.body — Sidebar의 <aside>에 걸린 transform(모바일 드로어 애니메이션용)이
+  // fixed 자식의 containing block을 바꿔버려 모달이 사이드바 폭 안에 갇히는 문제를 회피한다.
+  return createPortal(
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={onClose}>
       <div
         className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-xl border border-hairline bg-card shadow-overlay"
@@ -416,6 +419,7 @@ export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceI
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

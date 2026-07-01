@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Download, Share, Plus, X } from 'lucide-react'
 
 // beforeinstallprompt 이벤트 타입 (표준 타입에 없음)
@@ -69,38 +70,40 @@ export default function InstallAppButton({ collapsed }: { collapsed: boolean }) 
         </button>
       </div>
 
-      {iosHelp && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setIosHelp(false)}>
-          <div
-            className="w-full max-w-sm rounded-xl border border-hairline bg-card shadow-overlay"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-hairline px-5 py-3.5">
-              <h2 className="font-display text-base font-bold text-ink">아이폰에 앱으로 추가</h2>
-              <button onClick={() => setIosHelp(false)} className="text-ash hover:text-ink" aria-label="닫기">
-                <X size={18} />
-              </button>
+      {iosHelp &&
+        createPortal(
+          <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" onClick={() => setIosHelp(false)}>
+            <div
+              className="w-full max-w-sm rounded-xl border border-hairline bg-card shadow-overlay"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-hairline px-5 py-3.5">
+                <h2 className="font-display text-base font-bold text-ink">아이폰에 앱으로 추가</h2>
+                <button onClick={() => setIosHelp(false)} className="text-ash hover:text-ink" aria-label="닫기">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="space-y-3 p-5 text-sm text-charcoal">
+                <p className="text-mute">사파리(Safari)에서 아래 순서로 추가하세요. (크롬 앱에서는 안 됩니다)</p>
+                <ol className="space-y-2.5">
+                  <li className="flex items-center gap-2.5">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-xs font-bold text-brand">1</span>
+                    하단의 <Share size={16} className="inline text-brand" /> <b>공유</b> 버튼을 누르세요
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-xs font-bold text-brand">2</span>
+                    스크롤해서 <Plus size={16} className="inline text-brand" /> <b>홈 화면에 추가</b> 선택
+                  </li>
+                  <li className="flex items-center gap-2.5">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-xs font-bold text-brand">3</span>
+                    오른쪽 위 <b>추가</b> → 홈 화면 아이콘으로 실행
+                  </li>
+                </ol>
+              </div>
             </div>
-            <div className="space-y-3 p-5 text-sm text-charcoal">
-              <p className="text-mute">사파리(Safari)에서 아래 순서로 추가하세요. (크롬 앱에서는 안 됩니다)</p>
-              <ol className="space-y-2.5">
-                <li className="flex items-center gap-2.5">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-xs font-bold text-brand">1</span>
-                  하단의 <Share size={16} className="inline text-brand" /> <b>공유</b> 버튼을 누르세요
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-xs font-bold text-brand">2</span>
-                  스크롤해서 <Plus size={16} className="inline text-brand" /> <b>홈 화면에 추가</b> 선택
-                </li>
-                <li className="flex items-center gap-2.5">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand/10 text-xs font-bold text-brand">3</span>
-                  오른쪽 위 <b>추가</b> → 홈 화면 아이콘으로 실행
-                </li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   )
 }
