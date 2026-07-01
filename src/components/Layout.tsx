@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Menu, Search } from 'lucide-react'
 import Sidebar from './Sidebar'
+import BottomNav from './BottomNav'
 import AnnouncementBanner from './AnnouncementBanner'
 import NotificationBell from './NotificationBell'
 import ThemeToggle from './ThemeToggle'
@@ -48,6 +49,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </header>
         <AnnouncementBanner />
         <main className="min-h-0 flex-1 overflow-hidden">{children}</main>
+        <BottomNav onOpenMenu={() => setMobileOpen(true)} />
       </div>
     </div>
   )
