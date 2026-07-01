@@ -118,6 +118,7 @@ export default function Tickets() {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [mobileStatus, setMobileStatus] = useState<TicketStatus>('open')
 
   // 필터
   const [labelFilter, setLabelFilter] = useState('')
@@ -454,7 +455,28 @@ export default function Tickets() {
           </form>
         )}
 
-        <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
+        <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-bone p-1 lg:hidden">
+          {COLUMNS.map((col) => {
+            const count = filtered.filter((t) => t.status === col.key).length
+            const active = mobileStatus === col.key
+            return (
+              <button
+                key={col.key}
+                type="button"
+                onClick={() => setMobileStatus(col.key)}
+                className={`flex shrink-0 items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                  active ? 'bg-card text-brand shadow-sm' : 'text-mute hover:text-ink'
+                }`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${col.dot}`} />
+                {col.label}
+                <span className="font-mono text-[10px] text-ash">{count}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="flex min-h-0 flex-1 gap-4 lg:grid lg:grid-cols-4">
           {COLUMNS.map((col) => {
             const list = filtered.filter((t) => t.status === col.key)
             const isDropTarget = dragOverCol === col.key
@@ -480,9 +502,9 @@ export default function Tickets() {
                   const t = tickets.find((x) => x.id === id)
                   if (t && t.status !== col.key) move(t, col.key)
                 }}
-                className={`flex min-h-0 w-[80%] shrink-0 flex-col rounded-xl transition sm:w-[46%] lg:w-auto lg:shrink ${
-                  isDropTarget ? 'bg-brand/10 ring-2 ring-brand' : 'bg-bone/40'
-                }`}
+                className={`min-h-0 w-full flex-col rounded-xl transition lg:flex lg:w-auto lg:shrink ${
+                  col.key === mobileStatus ? 'flex' : 'hidden'
+                } ${isDropTarget ? 'bg-brand/10 ring-2 ring-brand' : 'bg-bone/40'}`}
               >
                 {/* 컬럼 헤더: 상태 점 + 대문자 모노 라벨 + 카운트 배지 */}
                 <div className="flex items-center gap-2 px-3 pt-3 pb-2">

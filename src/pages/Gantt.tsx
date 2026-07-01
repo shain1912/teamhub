@@ -374,7 +374,7 @@ export default function Gantt() {
       </div>
 
       {/* ── 간트 테이블 ── */}
-      <div className="relative z-10 min-h-0 flex-1 overflow-auto rounded-xl border border-hairline bg-card shadow-raised">
+      <div className="relative z-10 hidden min-h-0 flex-1 overflow-auto rounded-xl border border-hairline bg-card shadow-raised lg:block">
         <div className="inline-block min-w-full">
           {/* 헤더 행: 좌측 라벨 컬럼 + 날짜 컬럼 */}
           <div className="sticky top-0 z-30 flex border-b border-hairline bg-bone">
@@ -528,6 +528,60 @@ export default function Gantt() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ── 모바일 세로 로드맵 카드 (lg 미만 전용) ── */}
+      <div className="relative z-10 min-h-0 flex-1 space-y-2.5 overflow-y-auto lg:hidden">
+        {tasks.map((t) => {
+          const v = variantOf(t)
+          const a = t.assignee_id ? profileById.get(t.assignee_id) : undefined
+          const barColor =
+            v === 'done' ? 'bg-mint' : v === 'overdue' ? 'bg-danger' : v === 'doing' ? 'bg-brand' : 'bg-stone'
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setEditorTask(t.id)}
+              className={`w-full rounded-xl border border-hairline bg-card p-3.5 text-left shadow-raised transition hover:shadow-overlay ${
+                v === 'overdue' ? 'border-danger/40 bg-danger-soft/30' : ''
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className={`truncate text-sm font-bold ${v === 'overdue' ? 'text-danger-ink' : 'text-ink'}`}>
+                  {t.title}
+                </span>
+                {v === 'overdue' ? (
+                  <AlertTriangle size={14} className="shrink-0 text-danger" />
+                ) : v === 'done' ? (
+                  <CheckCircle2 size={14} className="shrink-0 text-mint" />
+                ) : null}
+              </div>
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <Avatar profile={a} />
+                <span className="truncate font-mono text-[10px] uppercase tracking-wide text-ash">
+                  {a ? shortName(a) : '미배정'}
+                </span>
+                <span className="ml-auto shrink-0 font-mono text-[10px] text-ash">
+                  {format(parseISO(t.start_date), 'M/d')} – {format(parseISO(t.end_date), 'M/d')}
+                </span>
+              </div>
+              <div className="mt-2.5 flex items-center gap-2">
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-bone">
+                  <div
+                    className={`h-full rounded-full ${barColor}`}
+                    style={{ width: `${v === 'done' ? 100 : Math.max(t.progress, 4)}%` }}
+                  />
+                </div>
+                <span className="shrink-0 font-mono text-[10px] text-ash">{v === 'done' ? '완료' : `${t.progress}%`}</span>
+              </div>
+            </button>
+          )
+        })}
+        {tasks.length === 0 && (
+          <div className="rounded-xl border border-dashed border-hairline px-4 py-10 text-center text-sm text-ash">
+            작업을 추가하세요.
+          </div>
+        )}
       </div>
 
       {/* 작업 편집 모달 — 레이아웃에 영향 없는 오버레이(행 정렬 보존) */}
