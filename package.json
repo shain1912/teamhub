@@ -10,6 +10,8 @@
     "preview": "vite preview --port 4173"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
     "@supabase/supabase-js": "^2.45.4",
     "date-fns": "^3.6.0",
     "lucide-react": "^1.22.0",
@@ -19,6 +21,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.4.1",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",

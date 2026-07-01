@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TeamKode</string>
+    <string name="title_activity_main">TeamKode</string>
+    <string name="package_name">kr.co.kodekorea.teamkode</string>
+    <string name="custom_url_scheme">kr.co.kodekorea.teamkode</string>
+</resources>
