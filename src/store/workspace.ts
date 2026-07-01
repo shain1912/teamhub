@@ -17,6 +17,7 @@ interface WsState {
   setCurrent: (id: string) => void
   create: (name: string) => Promise<{ error?: string; id?: string }>
   rename: (id: string, name: string) => Promise<{ error?: string }>
+  accept: (token: string) => Promise<{ error?: string; id?: string }>
 }
 
 export const useWorkspace = create<WsState>((set, get) => ({
@@ -70,5 +71,16 @@ export const useWorkspace = create<WsState>((set, get) => ({
     if (error) return { error: error.message }
     await get().load()
     return {}
+  },
+
+  accept: async (token) => {
+    const trimmed = token.trim()
+    if (!trimmed) return { error: '초대 코드를 입력하세요.' }
+    const { data, error } = await supabase.rpc('accept_workspace_invite', { p_token: trimmed })
+    if (error) return { error: error.message }
+    const id = data as string
+    await get().load()
+    if (id) get().setCurrent(id)
+    return { id }
   },
 }))

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { X, Check, UserPlus, UserMinus, Pencil, Users } from 'lucide-react'
+import { X, Check, UserPlus, UserMinus, Pencil, Users, Link2, Mail, Copy, Ban } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import { useWorkspace } from '../store/workspace'
@@ -9,6 +9,28 @@ interface Member {
   user_id: string
   role: string
   profile: Profile | null
+}
+
+interface Invite {
+  id: string
+  token: string
+  email: string | null
+  role: string
+  max_uses: number | null
+  used_count: number
+  expires_at: string | null
+  revoked: boolean
+  created_at: string
+}
+
+type InviteRole = 'member' | 'guest'
+
+function newToken() {
+  return crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '')
+}
+
+function inviteLink(token: string) {
+  return `${window.location.origin}/join?invite=${token}`
 }
 
 export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceId: string; onClose: () => void }) {
@@ -24,6 +46,14 @@ export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceI
   const [allProfiles, setAllProfiles] = useState<Profile[]>([])
   const [addId, setAddId] = useState('')
   const [busy, setBusy] = useState(false)
+
+  // 초대
+  const [invites, setInvites] = useState<Invite[]>([])
+  const [shareRole, setShareRole] = useState<InviteRole>('member')
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [emailRole, setEmailRole] = useState<InviteRole>('member')
+  const [inviteBusy, setInviteBusy] = useState(false)
+  const [copied, setCopied] = useState<string | null>(null)
 
   async function loadMembers() {
     const { data: mem } = await supabase
@@ -44,8 +74,19 @@ export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceI
     )
   }
 
+  async function loadInvites() {
+    const { data } = await supabase
+      .from('workspace_invites')
+      .select('id, token, email, role, max_uses, used_count, expires_at, revoked, created_at')
+      .eq('workspace_id', workspaceId)
+      .eq('revoked', false)
+      .order('created_at', { ascending: false })
+    setInvites((data as Invite[]) ?? [])
+  }
+
   useEffect(() => {
     loadMembers()
+    loadInvites()
     // 게스트 제외 전체 프로필(추가 후보)
     supabase
       .from('profiles')
@@ -55,6 +96,74 @@ export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceI
       .then(({ data }) => setAllProfiles((data as Profile[]) ?? []))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId])
+
+  async function copyLink(token: string) {
+    try {
+      await navigator.clipboard.writeText(inviteLink(token))
+      setCopied(token)
+      setTimeout(() => setCopied((c) => (c === token ? null : c)), 1600)
+    } catch {
+      alert('복사에 실패했습니다. 링크: ' + inviteLink(token))
+    }
+  }
+
+  async function createShareLink() {
+    if (inviteBusy) return
+    setInviteBusy(true)
+    const token = newToken()
+    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    const { error } = await supabase.from('workspace_invites').insert({
+      workspace_id: workspaceId,
+      token,
+      email: null,
+      role: shareRole,
+      max_uses: null,
+      created_by: me?.id ?? null,
+      expires_at: expires,
+    })
+    setInviteBusy(false)
+    if (error) {
+      alert('링크 생성 실패: ' + error.message)
+      return
+    }
+    await loadInvites()
+    copyLink(token)
+  }
+
+  async function createEmailInvite() {
+    const email = inviteEmail.trim().toLowerCase()
+    if (!email || inviteBusy) return
+    setInviteBusy(true)
+    const token = newToken()
+    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    const { error } = await supabase.from('workspace_invites').insert({
+      workspace_id: workspaceId,
+      token,
+      email,
+      role: emailRole,
+      max_uses: 1,
+      created_by: me?.id ?? null,
+      expires_at: expires,
+    })
+    setInviteBusy(false)
+    if (error) {
+      alert('초대 생성 실패: ' + error.message)
+      return
+    }
+    setInviteEmail('')
+    await loadInvites()
+    copyLink(token)
+  }
+
+  async function revokeInvite(inv: Invite) {
+    if (!confirm('이 초대를 취소할까요? 취소하면 링크가 더 이상 동작하지 않습니다.')) return
+    const { error } = await supabase.from('workspace_invites').update({ revoked: true }).eq('id', inv.id)
+    if (error) {
+      alert('취소 실패: ' + error.message)
+      return
+    }
+    loadInvites()
+  }
 
   async function saveName() {
     if (!name.trim() || savingName) return
@@ -202,6 +311,108 @@ export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceI
               {members.length === 0 && <p className="px-3 py-4 text-center text-xs text-ash">멤버가 없습니다.</p>}
             </div>
             <p className="mt-2 text-[11px] text-ash">멤버만 이 워크스페이스의 채널·티켓·스프린트·체크리스트를 볼 수 있습니다.</p>
+          </div>
+
+          {/* 초대 */}
+          <div>
+            <div className="mb-2 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-widest text-ash">
+              <UserPlus size={12} /> 초대
+            </div>
+
+            {/* 공유 링크 */}
+            <div className="mb-3 rounded-lg border border-hairline p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-ink">
+                <Link2 size={13} className="text-brand" /> 공유 링크
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={shareRole}
+                  onChange={(e) => setShareRole(e.target.value as InviteRole)}
+                  className="min-w-0 flex-1 rounded-lg border border-hairline bg-card px-3 py-2 text-sm outline-none focus:border-brand"
+                >
+                  <option value="member">팀원</option>
+                  <option value="guest">외부인</option>
+                </select>
+                <button
+                  onClick={createShareLink}
+                  disabled={inviteBusy}
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-brand bg-brand/5 px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand/10 disabled:opacity-40"
+                >
+                  <Link2 size={15} /> 링크 생성
+                </button>
+              </div>
+              <p className="mt-2 text-[11px] text-ash">이 링크를 아는 사람은 누구나 참여할 수 있습니다(30일 후 만료).</p>
+            </div>
+
+            {/* 이메일 1인용 초대 */}
+            <div className="mb-3 rounded-lg border border-hairline p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-ink">
+                <Mail size={13} className="text-brand" /> 이메일 초대 (1인용)
+              </div>
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="invitee@example.com"
+                className="mb-2 w-full rounded-lg border border-hairline bg-card px-3 py-2 text-sm outline-none focus:border-brand"
+              />
+              <div className="flex items-center gap-2">
+                <select
+                  value={emailRole}
+                  onChange={(e) => setEmailRole(e.target.value as InviteRole)}
+                  className="min-w-0 flex-1 rounded-lg border border-hairline bg-card px-3 py-2 text-sm outline-none focus:border-brand"
+                >
+                  <option value="member">팀원</option>
+                  <option value="guest">외부인</option>
+                </select>
+                <button
+                  onClick={createEmailInvite}
+                  disabled={inviteBusy || !inviteEmail.trim()}
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-brand bg-brand/5 px-3 py-2 text-sm font-semibold text-brand transition hover:bg-brand/10 disabled:opacity-40"
+                >
+                  <Mail size={15} /> 초대
+                </button>
+              </div>
+              <p className="mt-2 text-[11px] text-ash">생성된 링크를 해당 이메일 사용자에게 전달하세요. 그 이메일로 로그인한 사람만 1회 사용할 수 있습니다.</p>
+            </div>
+
+            {/* 초대 목록 */}
+            <div className="divide-y divide-hairline rounded-lg border border-hairline">
+              {invites.map((inv) => (
+                <div key={inv.id} className="flex items-center gap-2.5 px-3 py-2.5">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand/10 text-brand">
+                    {inv.email ? <Mail size={14} /> : <Link2 size={14} />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-ink">
+                      {inv.email ?? '공유 링크'}
+                      <span className="ml-1.5 rounded-full bg-bone px-1.5 py-0.5 text-[10px] font-semibold text-mute">
+                        {inv.role === 'guest' ? '외부인' : '팀원'}
+                      </span>
+                    </div>
+                    <div className="truncate text-[11px] text-ash">
+                      사용 {inv.used_count}
+                      {inv.max_uses != null ? `/${inv.max_uses}` : ''}
+                      {inv.expires_at ? ` · ${new Date(inv.expires_at).toLocaleDateString()} 만료` : ''}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => copyLink(inv.token)}
+                    className="flex shrink-0 items-center gap-1 rounded-md border border-hairline px-2 py-1 text-[11px] text-mute transition hover:bg-bone hover:text-ink"
+                  >
+                    {copied === inv.token ? <Check size={12} /> : <Copy size={12} />}
+                    {copied === inv.token ? '복사됨' : '링크'}
+                  </button>
+                  <button
+                    onClick={() => revokeInvite(inv)}
+                    className="flex shrink-0 items-center gap-1 rounded-md border border-hairline px-2 py-1 text-[11px] text-danger transition hover:bg-danger-soft"
+                  >
+                    <Ban size={12} /> 취소
+                  </button>
+                </div>
+              ))}
+              {invites.length === 0 && <p className="px-3 py-4 text-center text-xs text-ash">활성 초대가 없습니다.</p>}
+            </div>
           </div>
         </div>
       </div>
