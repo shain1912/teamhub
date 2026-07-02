@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Check, UserPlus, UserMinus, Pencil, Users, Link2, Mail, Copy, Ban } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { X, Check, UserPlus, UserMinus, Pencil, Users, Link2, Mail, Copy, Ban, Trash2, AlertTriangle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../store/auth'
 import { useWorkspace } from '../store/workspace'
@@ -36,12 +37,19 @@ function inviteLink(token: string) {
 
 export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceId: string; onClose: () => void }) {
   const me = useAuth((s) => s.profile)
-  const { list, rename } = useWorkspace()
+  const { list, rename, remove } = useWorkspace()
+  const navigate = useNavigate()
   const ws = list.find((w) => w.id === workspaceId)
 
   const [name, setName] = useState(ws?.name ?? '')
   const [savingName, setSavingName] = useState(false)
   const [nameSaved, setNameSaved] = useState(false)
+
+  // 삭제(파괴적) — 소유자만, 이름 정확 입력 확인
+  const isOwner = !!me?.id && me.id === ws?.created_by
+  const isOnlyWorkspace = list.length <= 1
+  const [confirmName, setConfirmName] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   const [members, setMembers] = useState<Member[]>([])
   const [allProfiles, setAllProfiles] = useState<Profile[]>([])
@@ -208,6 +216,20 @@ export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceI
       return
     }
     loadMembers()
+  }
+
+  async function deleteWorkspace() {
+    if (deleting || !ws || confirmName.trim() !== ws.name.trim()) return
+    setDeleting(true)
+    const { error } = await remove(workspaceId)
+    setDeleting(false)
+    if (error) {
+      alert('워크스페이스 삭제 실패: ' + error)
+      return
+    }
+    onClose()
+    // 남은 워크스페이스로(없으면 App이 참여 안내로) 전환
+    navigate('/me')
   }
 
   const memberIds = new Set(members.map((m) => m.user_id))
@@ -417,6 +439,48 @@ export default function WorkspaceSettings({ workspaceId, onClose }: { workspaceI
               {invites.length === 0 && <p className="px-3 py-4 text-center text-xs text-ash">활성 초대가 없습니다.</p>}
             </div>
           </div>
+
+          {/* 위험 구역 — 워크스페이스 삭제 (소유자만) */}
+          {isOwner && (
+            <div>
+              <div className="mb-2 flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-widest text-danger">
+                <AlertTriangle size={12} /> 위험 구역
+              </div>
+              <div className="rounded-lg border border-danger/40 bg-danger-soft/40 p-3">
+                <div className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-ink">
+                  <Trash2 size={13} className="text-danger" /> 워크스페이스 삭제
+                </div>
+                <p className="mb-3 text-[11px] text-mute">
+                  이 워크스페이스와 <span className="font-semibold text-ink">모든 채널·메시지·프로젝트·티켓·스프린트·체크리스트·초대</span>가
+                  영구히 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                </p>
+                {isOnlyWorkspace ? (
+                  <p className="text-[11px] text-ash">마지막 워크스페이스는 삭제할 수 없습니다.</p>
+                ) : (
+                  <>
+                    <label className="mb-1.5 block text-[11px] text-mute">
+                      확인을 위해 워크스페이스 이름 <span className="font-semibold text-ink">{ws?.name}</span> 을(를) 입력하세요.
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        value={confirmName}
+                        onChange={(e) => setConfirmName(e.target.value)}
+                        placeholder={ws?.name}
+                        className="min-w-0 flex-1 rounded-lg border border-hairline px-3 py-2 text-sm outline-none focus:border-danger"
+                      />
+                      <button
+                        onClick={deleteWorkspace}
+                        disabled={deleting || confirmName.trim() !== (ws?.name.trim() ?? '')}
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg bg-danger px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-danger/90 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <Trash2 size={15} /> {deleting ? '삭제 중…' : '삭제'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>,

@@ -17,6 +17,7 @@ interface WsState {
   setCurrent: (id: string) => void
   create: (name: string) => Promise<{ error?: string; id?: string }>
   rename: (id: string, name: string) => Promise<{ error?: string }>
+  remove: (id: string) => Promise<{ error?: string }>
   accept: (token: string) => Promise<{ error?: string; id?: string }>
 }
 
@@ -69,6 +70,18 @@ export const useWorkspace = create<WsState>((set, get) => ({
     if (!trimmed) return { error: '이름을 입력하세요.' }
     const { error } = await supabase.from('workspaces').update({ name: trimmed }).eq('id', id)
     if (error) return { error: error.message }
+    await get().load()
+    return {}
+  },
+
+  remove: async (id) => {
+    // 소유자(created_by)만 삭제 가능 — RLS(workspaces_delete)가 강제.
+    // 채널·프로젝트·티켓·스프린트·체크리스트·초대·멤버는 모두 ON DELETE CASCADE로 함께 정리됨.
+    // RLS에 막히면 PostgREST가 에러 없이 빈 결과를 반환하므로 삭제된 행을 select해 실제 삭제 여부를 확인한다.
+    const { data, error } = await supabase.from('workspaces').delete().eq('id', id).select('id')
+    if (error) return { error: error.message }
+    if (!data || data.length === 0) return { error: '삭제 권한이 없거나 이미 삭제된 워크스페이스입니다.' }
+    // 현재 워크스페이스가 삭제됐다면 load()가 남은 목록의 첫 항목으로 재선택(없으면 null).
     await get().load()
     return {}
   },
